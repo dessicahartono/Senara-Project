@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cek Emailmu — Senara</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..800;1,6..12,300..800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/auth.css">
+</head>
+
+<body>
+  <header class="top-bar"></header>
+
+  <main class="site-main">
+    <div class="verify">
+      <div class="glow glow--lavender verify__glow-left"></div>
+      <div class="glow glow--peach-strong verify__glow-right"></div>
+      <div class="verify__halo"></div>
+
+      <section class="verify__card" aria-labelledby="verify-title">
+        <h1 class="verify__title" id="verify-title">Cek Emailmu</h1>
+        <p class="verify__text">
+          Kami sudah mengirim link verifikasi ke email kamu. Klik link tersebut untuk melanjutkan.
+        </p>
+
+        <div class="verify__email">
+          <div class="verify__email-address">
+            <span class="icon-circle verify__email-icon">
+              <span class="icon icon--sm" aria-hidden="true">mail</span>
+            </span>
+            <span class="text-label-lg truncate" id="email-display">…</span>
+          </div>
+          <span class="verify__status">
+            <span class="verify__ping" aria-hidden="true"></span>
+            <span class="text-label-sm">Menunggu Konfirmasi</span>
+          </span>
+        </div>
+
+        <div class="verify__actions">
+          <button class="btn btn--secondary btn--lg btn--block verify__resend" type="button" id="btn-resend">
+            <span class="icon verify__resend-icon" aria-hidden="true">refresh</span>
+            <span>Kirim Ulang Email Verifikasi</span>
+          </button>
+          <span class="text-label-md verify__timer" id="timer" aria-live="polite"></span>
+        </div>
+
+        <a class="back-link verify__back" href="login.html">
+          <span class="icon icon--md" aria-hidden="true">arrow_back</span>
+          <span>Kembali ke Login</span>
+        </a>
+
+        <div class="verify__tip">
+          <span class="icon-circle icon-circle--sage verify__tip-icon">
+            <span class="icon" aria-hidden="true">help_outline</span>
+          </span>
+          <div>
+            <span class="verify__tip-title text-label-md">Tidak menemukan email?</span>
+            <p class="text-body-sm">
+              Cek folder spam atau promosi, atau pastikan alamat email yang dimasukkan sudah benar.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/pages/cek-email.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar — Senara</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..800;1,6..12,300..800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/auth.css">
+</head>
+
+<body>
+  <header id="site-header" class="site-header"></header>
+
+  <main class="site-main auth">
+    <div class="auth__column auth__column--wide register">
+      <p class="register__eyebrow text-label-sm">Pendaftaran Akun Baru</p>
+
+      <section class="auth-card register__card" aria-labelledby="register-title">
+        <h1 class="register__title text-headline-lg" id="register-title">Mulai Bersama Senara</h1>
+
+        <form class="form" id="register-form" novalidate>
+          <!-- Nama -->
+          <div class="field">
+            <label class="field__label field__label--plain" for="full-name">
+              Nama Lengkap<span class="field__required">*</span>
+            </label>
+            <div class="input-wrap">
+              <input class="input input--auth" id="full-name" name="name" type="text"
+                placeholder="Contoh: Senandika Kirana" autocomplete="name">
+              <span class="input-wrap__icon input-wrap__icon--valid hidden" id="name-valid-icon">
+                <span class="icon icon--filled" aria-hidden="true">check_circle</span>
+              </span>
+            </div>
+            <p class="field__error hidden" id="name-error">
+              <span class="icon icon--sm" aria-hidden="true">error</span>
+              Nama lengkap tidak boleh dikosongkan.
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div class="field">
+            <div class="field__row">
+              <label class="field__label field__label--plain" for="email">
+                Alamat Email<span class="field__required">*</span>
+              </label>
+              <span class="chip chip--sm register__badge hidden" id="email-badge">Perlu Perhatian</span>
+            </div>
+            <div class="input-wrap">
+              <input class="input input--auth" id="email" name="email" type="email"
+                placeholder="jiwa.teduh@senara.id" autocomplete="email">
+              <span class="input-wrap__icon" id="email-icon">
+                <span class="icon" aria-hidden="true">mail</span>
+              </span>
+            </div>
+            <p class="field__error hidden" id="email-format-error">
+              <span class="icon icon--sm" aria-hidden="true">error</span>
+              Format email belum sesuai.
+            </p>
+            <div class="inline-alert hidden" id="email-taken">
+              <span class="icon icon--md" aria-hidden="true">report_problem</span>
+              <div>
+                <span class="inline-alert__title">Email sudah terdaftar</span>
+                <p>
+                  Alamat ini telah terhubung dengan ruang Senara. Silakan gunakan alamat lain atau
+                  <a href="login.html">masuk langsung</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kata sandi -->
+          <div class="field">
+            <div class="field__row">
+              <label class="field__label field__label--plain" for="password">
+                Kata Sandi<span class="field__required">*</span>
+              </label>
+              <span class="text-label-sm register__hint">Min. 6 karakter</span>
+            </div>
+            <div class="input-wrap">
+              <input class="input input--auth input--secret" id="password" name="password" type="password"
+                placeholder="••••••••" autocomplete="new-password">
+              <button class="input-wrap__icon" type="button" data-toggle-password="password"
+                aria-label="Tampilkan kata sandi">
+                <span class="icon" aria-hidden="true">visibility</span>
+              </button>
+            </div>
+            <div class="strength" id="strength" data-level="0">
+              <div class="strength__bars" aria-hidden="true">
+                <span class="strength__bar"></span>
+                <span class="strength__bar"></span>
+                <span class="strength__bar"></span>
+              </div>
+              <div class="strength__row">
+                <span class="text-body-sm">Kekuatan Sandi:</span>
+                <span class="strength__label text-label-sm" id="strength-label">Belum diisi</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Konfirmasi kata sandi -->
+          <div class="field">
+            <label class="field__label field__label--plain" for="confirm-password">
+              Konfirmasi Kata Sandi<span class="field__required">*</span>
+            </label>
+            <div class="input-wrap">
+              <input class="input input--auth input--secret" id="confirm-password" name="confirmPassword"
+                type="password" placeholder="••••••••" autocomplete="new-password">
+              <button class="input-wrap__icon" type="button" data-toggle-password="confirm-password"
+                aria-label="Tampilkan kata sandi">
+                <span class="icon" aria-hidden="true">visibility</span>
+              </button>
+            </div>
+            <div class="inline-alert register__mismatch hidden" id="password-mismatch">
+              <span class="icon icon--md" aria-hidden="true">gpp_maybe</span>
+              <span>Konfirmasi password belum cocok dengan kata sandi di atas.</span>
+            </div>
+          </div>
+
+          <!-- Syarat & ketentuan -->
+          <div class="register__terms">
+            <label class="checkbox">
+              <input type="checkbox" id="terms" checked>
+              <span>
+                Saya menyetujui <a href="#">Syarat &amp; Ketentuan</a> serta
+                <a href="#">Kebijakan Privasi</a> Senara
+              </span>
+            </label>
+            <p class="field__error hidden" id="terms-error">
+              <span class="icon icon--sm" aria-hidden="true">error</span>
+              Setujui syarat &amp; ketentuan untuk melanjutkan.
+            </p>
+          </div>
+
+          <button class="btn btn--secondary btn--lg btn--block register__submit" type="submit" id="btn-submit">
+            Mulai Bersama Senara
+          </button>
+        </form>
+
+        <div class="divider register__divider text-body-sm">atau daftar dengan</div>
+
+        <button class="btn btn--social btn--block register__google" type="button" id="btn-google">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z" fill="#EA4335" />
+            <path d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" fill="#4285F4" />
+            <path d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 10.8 0 12s.7 2.3 1.9 4.7l3.7-2.9z" fill="#FBBC05" />
+            <path d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2-6.4-4.8L1.9 16.4C3.7 20.4 7.5 23 12 23z" fill="#34A853" />
+          </svg>
+          <span>Lanjutkan dengan Google</span>
+        </button>
+
+        <p class="auth-card__switch register__switch text-body-sm text-muted">
+          Sudah punya akun Senara?
+          <a class="register__login-link text-label-md" href="login.html">Masuk di sini</a>
+        </p>
+
+        <p class="register__seal text-label-sm">Data pribadimu terlindungi secara aman &amp; terenkripsi.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/pages/registrasi.js"></script>
+</body>
+
+</html>

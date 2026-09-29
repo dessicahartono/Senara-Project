@@ -1,0 +1,302 @@
+/* ==========================================================================
+   Journaling
+   ========================================================================== */
+
+.journal {
+  padding: var(--space-lg) 0;
+}
+
+@media (min-width: 768px) {
+  .journal {
+    padding: 2rem 1.5rem;
+  }
+}
+
+.journal__inner {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding-bottom: var(--space-lg);
+}
+
+/* ---------- Judul + toggle mode ---------- */
+.journal__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .journal__head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.journal__title {
+  margin-top: var(--space-xs);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.journal__head .segmented {
+  align-self: flex-start;
+}
+
+@media (min-width: 768px) {
+  .journal__head .segmented {
+    align-self: auto;
+  }
+}
+
+/* ---------- Kartu form ---------- */
+.journal__card {
+  padding: var(--space-lg);
+}
+
+.journal .field__label--strong {
+  gap: 0.375rem;
+  letter-spacing: 0.02em;
+}
+
+/* Banner mode edit */
+.journal__notice {
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  padding: var(--space-md);
+}
+
+.journal__notice .alert__icon {
+  margin-top: 0;
+}
+
+.journal__notice .alert__title {
+  letter-spacing: -0.01em;
+}
+
+.journal__notice-text {
+  color: var(--color-on-secondary-fixed-variant);
+}
+
+.journal__notice-chip {
+  background: rgb(255 255 255 / 0.8);
+  color: var(--color-secondary);
+}
+
+/* ---------- Tanggal ---------- */
+.journal__date-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.journal__date-input {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+}
+
+.journal__date-display {
+  cursor: pointer;
+  padding-right: 3rem;
+}
+
+.journal__date-display:read-only {
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+
+/* Input tanggal asli disembunyikan; dibuka lewat showPicker() */
+.journal__date-native {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.journal__date-icon {
+  position: absolute;
+  top: 50%;
+  right: var(--space-md);
+  transform: translateY(-50%);
+  color: var(--color-on-surface-variant);
+  pointer-events: none;
+}
+
+.journal__date-quick {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.journal__quick.is-active {
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed);
+}
+
+.journal__quick.is-active:hover {
+  background: var(--color-primary-container);
+}
+
+/* ---------- Dropzone foto ---------- */
+.dropzone {
+  position: relative;
+  height: 9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border-radius: var(--radius);
+  background: rgb(247 243 238 / 0.6);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+
+.dropzone:hover,
+.dropzone.is-dragover {
+  background: var(--color-surface-container-low);
+}
+
+.dropzone.is-dragover {
+  box-shadow: inset 0 0 0 2px var(--color-primary-container);
+}
+
+.dropzone__icon {
+  transition: transform var(--duration) var(--ease);
+}
+
+.dropzone:hover .dropzone__icon {
+  transform: scale(1.05);
+}
+
+.dropzone__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin-top: var(--space-xs);
+}
+
+.dropzone__title {
+  color: var(--color-on-surface);
+}
+
+.dropzone__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ---------- Pratinjau foto ---------- */
+.photo-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius);
+  background: var(--color-surface-container-low);
+  animation: fade-in-up var(--duration-slow) var(--ease);
+}
+
+.photo-preview__thumb {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.photo-preview__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-preview__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(135 81 49 / 0.1);
+}
+
+.photo-preview__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-preview__name {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.photo-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.photo-preview__remove {
+  background: var(--color-surface-container-lowest);
+  color: var(--color-error);
+}
+
+.photo-preview__remove:hover {
+  background: var(--color-error-container);
+}
+
+/* ---------- Tombol aksi ---------- */
+.journal__actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+}
+
+.journal__actions .btn {
+  width: 100%;
+}
+
+.journal__submit {
+  min-width: 120px;
+}
+
+.journal__submit:hover:not(:disabled) {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  box-shadow: var(--shadow-primary-glow);
+}
+
+.journal__cancel {
+  min-width: 100px;
+}
+
+@media (min-width: 640px) {
+  .journal__actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .journal__actions .btn {
+    width: auto;
+  }
+
+  .journal__delete {
+    margin-right: auto;
+  }
+}

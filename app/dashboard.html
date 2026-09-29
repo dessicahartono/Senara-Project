@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beranda — Senara</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..800;1,6..12,300..800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/dashboard.css">
+</head>
+
+<body>
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <div class="app-shell">
+    <header class="app-header"></header>
+
+    <main class="app-main">
+      <div class="container dashboard">
+        <!-- Sapaan -->
+        <section class="dashboard__greeting">
+          <h1 class="text-display" id="greeting-title">Hi!</h1>
+          <p class="text-body-lg text-muted dashboard__intro">
+            Ambil waktu sebentar untuk bernapas. Hari ini kamu tidak harus sempurna, cukup jalani satu per satu.
+          </p>
+        </section>
+
+        <!-- Afirmasi & streak -->
+        <section class="dashboard__hero">
+          <article class="card card--roomy affirmation">
+            <div class="affirmation__bloom affirmation__bloom--peach"></div>
+            <div class="affirmation__bloom affirmation__bloom--lavender"></div>
+
+            <div class="affirmation__body">
+              <div class="affirmation__meta">
+                <span class="chip">
+                  <span class="icon icon--sm text-primary" aria-hidden="true">calendar_today</span>
+                  <span id="today-date"></span>
+                </span>
+                <span class="text-label-sm text-muted">Afirmasi Untukmu</span>
+              </div>
+              <blockquote class="affirmation__quote" id="affirmation-text">…</blockquote>
+            </div>
+
+            <div class="affirmation__actions">
+              <button class="btn btn--primary" type="button" id="btn-share-affirmation">
+                <span class="icon icon--md" aria-hidden="true">share</span>
+                <span>Bagikan</span>
+              </button>
+            </div>
+          </article>
+
+          <article class="card card--roomy streak">
+            <div class="streak__body">
+              <div>
+                <div class="streak__count">
+                  <span class="text-display text-primary streak__number" id="streak-count">0</span>
+                  <span class="text-headline-sm">Hari Berturut-turut</span>
+                </div>
+                <p class="text-body-sm text-muted streak__desc">
+                  Konsisten meluangkan waktu untuk diri sendiri membantu menjaga pikiran tetap jernih.
+                </p>
+              </div>
+
+              <div class="inset-box streak__track">
+                <div class="streak__labels text-label-sm" id="streak-labels"></div>
+                <div class="streak__days" id="streak-days"></div>
+              </div>
+            </div>
+            <p class="streak__note text-body-sm">"Hebat! Tetap konsisten, ya."</p>
+          </article>
+        </section>
+
+        <!-- Aksi cepat -->
+        <section class="dashboard__actions">
+          <p class="text-body-md text-muted">Pilih ruang untuk mengeksplorasi apa yang ada di pikiranmu hari ini</p>
+
+          <div class="dashboard__action-grid">
+            <article class="card card--interactive action-card action-card--lavender">
+              <div class="action-card__text">
+                <h3 class="text-headline-sm action-card__title">Ngobrol dengan Nomi</h3>
+                <p class="text-body-sm text-muted">
+                  Teman virtualmu siap mendengarkan cerita, curahan hati, atau sekadar bertukar sapa santai tanpa penghakiman.
+                </p>
+              </div>
+              <a class="btn action-card__link" href="nomi-chat.html">
+                <span>Mulai Percakapan</span>
+                <span class="icon icon--md" aria-hidden="true">arrow_forward</span>
+              </a>
+            </article>
+
+            <article class="card card--interactive action-card action-card--peach">
+              <div class="action-card__text">
+                <h3 class="text-headline-sm action-card__title">Tulis Momen Hari Ini</h3>
+                <p class="text-body-sm text-muted">
+                  Tuangkan isi pikiran, rasa syukur, atau emosi yang sedang singgah ke lembar jurnal pribadimu yang aman.
+                </p>
+              </div>
+              <a class="btn action-card__link" href="journaling.html">
+                <span>Buka Jurnal</span>
+                <span class="icon icon--md" aria-hidden="true">arrow_forward</span>
+              </a>
+            </article>
+
+            <article class="card card--interactive action-card action-card--sage">
+              <div class="action-card__text">
+                <h3 class="text-headline-sm action-card__title">Lihat Log History</h3>
+                <p class="text-body-sm text-muted">
+                  Telusuri jejak perjalanan batin, catatan suasana hati, dan refleksi bermakna yang telah kamu lalui.
+                </p>
+              </div>
+              <a class="btn action-card__link" href="riwayat.html">
+                <span>Lihat Riwayat</span>
+                <span class="icon icon--md" aria-hidden="true">arrow_forward</span>
+              </a>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav"></nav>
+
+  <script type="module" src="js/pages/dashboard.js"></script>
+</body>
+
+</html>

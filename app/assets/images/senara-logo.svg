@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Bulan sabit -->
+  <path d="M45 11.5A23 23 0 1 0 57 41.5A17.5 17.5 0 0 1 45 11.5Z" stroke="#9189c0" stroke-width="2.2"/>
+  <path d="M41.5 14.2A20 20 0 1 0 53.6 43.2" stroke="#eaa67f" stroke-width="1.8"/>
+  <!-- Bintang kecil -->
+  <path d="M38 16.5c.5 2.6 1.4 3.5 4 4-2.6.5-3.5 1.4-4 4-.5-2.6-1.4-3.5-4-4 2.6-.5 3.5-1.4 4-4Z" stroke="#eaa67f" stroke-width="1.3"/>
+  <!-- Teratai -->
+  <g stroke="#9189c0" stroke-width="1.4">
+    <path d="M43 44.5c-3-3.6-3-8.8 0-13.5 3 4.7 3 9.9 0 13.5Z"/>
+    <path d="M43 44.5c-5.2-.4-8.6-4-9.4-9.6 5 .9 8 4.4 9.4 9.6Z"/>
+    <path d="M43 44.5c5.2-.4 8.6-4 9.4-9.6-5 .9-8 4.4-9.4 9.6Z"/>
+    <path d="M43 44.5c-6.4 1.3-11.2-.6-13.6-4.4 5-.9 9.8.6 13.6 4.4Z"/>
+    <path d="M43 44.5c6.4 1.3 11.2-.6 13.6-4.4-5-.9-9.8.6-13.6 4.4Z"/>
+  </g>
+</svg>

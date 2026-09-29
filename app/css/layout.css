@@ -1,0 +1,455 @@
+/* ==========================================================================
+   Layout: kerangka halaman.
+   1. App shell  — halaman setelah login (sidebar, header, bottom nav).
+   2. Site shell — landing & halaman auth (header publik, footer).
+   ========================================================================== */
+
+/* ==========================================================================
+   1. APP SHELL
+   ========================================================================== */
+
+/* ---------- Sidebar (desktop, ≥768px) ---------- */
+.sidebar {
+  display: none;
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: var(--z-nav);
+  width: var(--sidebar-width);
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  background: rgb(247 243 238 / 0.9); /* surface-container-low/90 */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-sidebar);
+}
+
+.sidebar__top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.sidebar__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  color: var(--color-on-surface-variant);
+  font-size: var(--text-label-lg);
+  line-height: var(--lh-label-lg);
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  transition: all var(--duration) var(--ease);
+}
+
+.sidebar__link:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.sidebar__link.is-active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-weight: 700;
+  box-shadow: var(--shadow-soft);
+}
+
+.sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border-radius: var(--radius-full);
+  background: rgb(241 237 232 / 0.7); /* surface-container/70 */
+  transition: background var(--duration) var(--ease);
+}
+
+.sidebar__user:hover {
+  background: var(--color-surface-container-high);
+}
+
+.sidebar__user-name {
+  min-width: 0;
+  padding-right: var(--space-xs);
+}
+
+/* ---------- Brand (logo + nama) ---------- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-xs);
+}
+
+.brand__logo {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-md);
+  line-height: var(--lh-headline-md);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-on-surface);
+}
+
+/* ---------- Header atas app (bar kosong, sesuai Stitch) ---------- */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  height: var(--app-header-height);
+  background: rgb(253 249 244 / 0.85); /* surface/85 */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-header);
+}
+
+/* ---------- Area konten ---------- */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  width: 100%;
+  flex: 1;
+  padding: var(--app-header-height) var(--margin-mobile) 6rem;
+  background: var(--color-surface);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.container--narrow {
+  max-width: 48rem; /* max-w-3xl */
+}
+
+/* ---------- Bottom nav (mobile, <768px) ---------- */
+.bottom-nav {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: var(--z-nav);
+  height: var(--bottom-nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 var(--space-xs);
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgb(255 255 255 / 0.95); /* surface-container-lowest/95 */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-bottom-nav);
+}
+
+.bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  color: var(--color-on-surface-variant);
+  transition: all var(--duration) var(--ease);
+}
+
+.bottom-nav__link:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.bottom-nav__link.is-active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    display: flex;
+  }
+
+  .app-shell {
+    padding-left: var(--sidebar-width);
+  }
+
+  .app-header {
+    left: var(--sidebar-width);
+  }
+
+  .app-main {
+    padding: var(--app-header-height) var(--margin) var(--margin);
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   2. SITE SHELL (landing & auth)
+   ========================================================================== */
+
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: var(--z-nav);
+  background: rgb(253 249 244 / 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-surface-container);
+}
+
+.site-header__inner {
+  height: var(--site-header-height);
+  max-width: var(--site-max);
+  margin-inline: auto;
+  padding: 0 var(--margin-mobile);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.site-brand__logo {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.site-brand__name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+}
+
+.site-brand__tagline {
+  display: none;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.05em;
+  color: var(--color-outline);
+}
+
+.site-nav {
+  display: none;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem;
+  border-radius: var(--radius-full);
+  background: var(--color-sand);
+}
+
+.site-nav__link {
+  padding: 0.375rem var(--space-md);
+  border-radius: var(--radius-full);
+  font-size: var(--text-body-sm);
+  line-height: var(--lh-body-sm);
+  color: var(--color-ink-muted);
+  transition: all var(--duration) var(--ease);
+}
+
+.site-nav__link:hover,
+.site-nav__link.is-active {
+  color: var(--color-ink);
+  background: rgb(0 0 0 / 0.05);
+}
+
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.site-header__login {
+  padding: var(--space-sm) 0.75rem;
+  font-size: var(--text-body-sm);
+  line-height: var(--lh-body-sm);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  transition: color var(--duration) var(--ease);
+}
+
+.site-header__login:hover {
+  color: var(--color-ink);
+}
+
+.site-header__cta {
+  padding: 0.625rem var(--space-lg);
+  font-size: var(--text-body-sm);
+  line-height: var(--lh-body-sm);
+  letter-spacing: normal;
+}
+
+.site-header__cta:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.site-header__cta:active {
+  transform: scale(0.95);
+}
+
+.site-header__cta-long {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .site-brand__tagline {
+    display: block;
+  }
+}
+
+@media (min-width: 640px) {
+  .site-header__actions {
+    gap: var(--space-md);
+  }
+
+  .site-header__cta-long {
+    display: inline;
+  }
+
+  .site-header__cta-short {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .site-header__inner {
+    padding: 0 var(--margin);
+  }
+
+  .site-nav {
+    display: flex;
+  }
+}
+
+/* Di tablet, nav + CTA panjang terlalu sempit → CTA dipendekkan */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .site-brand__tagline,
+  .site-header__cta-long {
+    display: none;
+  }
+
+  .site-header__cta-short {
+    display: inline;
+  }
+}
+
+/* ---------- Varian header landing page ---------- */
+.site-brand__emblem {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem;
+  border-radius: var(--radius-full);
+  background: rgb(232 222 255 / 0.4);
+  transition: transform var(--duration) var(--ease);
+}
+
+.site-brand__emblem .site-brand__logo {
+  width: 100%;
+  height: 100%;
+}
+
+.site-brand:hover .site-brand__emblem {
+  transform: scale(1.05);
+}
+
+.site-header--landing .site-brand__name {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-secondary);
+}
+
+.site-header--landing .site-nav {
+  background: rgb(247 243 238 / 0.7);
+  border: 1px solid rgb(235 232 227 / 0.8);
+}
+
+.site-header--landing .site-nav__link {
+  padding: var(--space-sm) 1.25rem;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.site-header--landing .site-nav__link:hover {
+  color: var(--color-secondary);
+  background: rgb(235 232 227 / 0.5);
+}
+
+.site-header--landing .site-nav__link.is-active {
+  font-weight: 700;
+  color: var(--color-secondary);
+  background: rgb(232 222 255 / 0.5);
+}
+
+.site-header--landing .site-header__login:hover {
+  color: var(--color-secondary);
+}
+
+/* Bar atas kosong di login & cek email (sesuai Stitch: tanpa isi, tinggi 0) */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: var(--z-nav);
+  background: rgb(253 249 244 / 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------- Halaman publik ---------- */
+.site-main {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding-top: var(--site-header-height);
+  overflow: hidden;
+  background: var(--color-background);
+}
+

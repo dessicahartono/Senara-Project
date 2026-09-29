@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masuk — Senara</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..800;1,6..12,300..800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/auth.css">
+</head>
+
+<body>
+  <header class="top-bar"></header>
+
+  <main class="site-main auth">
+
+    <div class="auth__column">
+      <a class="back-link auth__back" href="index.html">
+        <span class="icon icon--md" aria-hidden="true">arrow_back</span>
+        <span>Kembali ke Beranda</span>
+      </a>
+
+      <section class="auth-card" aria-labelledby="login-title">
+        <h1 class="auth-card__title text-headline-md" id="login-title">Selamat Datang Kembali</h1>
+
+        <!-- Banner status (ditampilkan oleh login.js) -->
+        <div class="auth-card__banners hidden" id="banners">
+          <div class="alert alert--warning hidden" id="banner-unverified">
+            <span class="alert__icon"><span class="icon" aria-hidden="true">mail</span></span>
+            <div class="alert__body">
+              <div class="auth-banner__row">
+                <span class="alert__title">Email kamu belum diverifikasi</span>
+                <button class="auth-banner__action" type="button" id="btn-resend">
+                  <span>Kirim ulang</span>
+                  <span class="icon" aria-hidden="true">arrow_forward</span>
+                </button>
+              </div>
+              <p class="alert__text">Tautan aktivasi telah dikirim ke kotak masuk atau folder spam kamu.</p>
+            </div>
+          </div>
+
+          <div class="alert alert--error hidden" id="banner-notfound">
+            <span class="alert__icon"><span class="icon" aria-hidden="true">person_off</span></span>
+            <div class="alert__body">
+              <span class="alert__title">Akun belum terdaftar</span>
+              <p class="alert__text">Alamat email belum dikenali di Senara. Silakan cek ejaanmu atau daftar akun baru.</p>
+            </div>
+          </div>
+
+          <div class="alert alert--warning hidden" id="banner-toomany">
+            <span class="alert__icon"><span class="icon" aria-hidden="true">lock_clock</span></span>
+            <div class="alert__body">
+              <span class="alert__title">Terlalu banyak percobaan masuk</span>
+              <p class="alert__text">Demi keamanan akunmu, tunggu beberapa menit lalu coba lagi, atau atur ulang kata sandi.</p>
+            </div>
+          </div>
+
+          <div class="alert alert--success hidden" id="banner-resent" role="status">
+            <span class="icon icon--md" aria-hidden="true">check_circle</span>
+            <span class="text-label-sm">Tautan verifikasi baru berhasil dikirimkan ke emailmu!</span>
+          </div>
+        </div>
+
+        <form class="form" id="login-form" novalidate>
+          <div class="field">
+            <label class="field__label" for="email-input">
+              <span>Alamat Email</span>
+              <span class="text-label-sm text-error hidden" id="email-error-label">Tidak ditemukan</span>
+            </label>
+            <div class="input-group" id="email-group">
+              <span class="icon input-group__icon" aria-hidden="true">alternate_email</span>
+              <input class="input-group__input" id="email-input" name="email" type="email"
+                placeholder="jiwa.teduh@senara.id" autocomplete="email" required>
+              <button class="input-group__action auth__clear" type="button" data-clear-input="email-input"
+                aria-label="Bersihkan email">
+                <span class="icon icon--sm" aria-hidden="true">cancel</span>
+              </button>
+            </div>
+            <p class="field__error hidden" id="email-error">Email belum terdaftar. Periksa kembali atau daftar akun baru.</p>
+          </div>
+
+          <div class="field">
+            <div class="field__label">
+              <label for="password-input">Kata Sandi</label>
+              <button class="link link--secondary text-label-sm" type="button" id="btn-forgot">Lupa kata sandi?</button>
+            </div>
+            <div class="input-group" id="password-group">
+              <span class="icon input-group__icon" aria-hidden="true">lock_open</span>
+              <input class="input-group__input" id="password-input" name="password" type="password"
+                placeholder="Masukkan kata sandi" autocomplete="current-password" required>
+              <button class="input-group__action" type="button" data-toggle-password="password-input"
+                aria-label="Tampilkan kata sandi">
+                <span class="icon" aria-hidden="true">visibility</span>
+              </button>
+            </div>
+            <p class="field__error hidden" id="password-error">
+              <span class="icon icon--sm" aria-hidden="true">error</span>
+              <span id="password-error-text">Kata sandi salah. Harap coba lagi atau gunakan opsi lupa kata sandi.</span>
+            </p>
+          </div>
+
+          <button class="btn btn--secondary btn--lg btn--block auth__submit" type="submit" id="btn-submit">
+            Masuk
+          </button>
+        </form>
+
+        <div class="divider text-label-sm">atau masuk dengan</div>
+
+        <button class="btn btn--social btn--block" type="button" id="btn-google">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" fill="#4285F4" />
+            <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.31 7.31 24 12 24z" fill="#34A853" />
+            <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12c0 2.06.46 3.84 1.26 5.42l4.02-3.15z" fill="#FBBC05" />
+            <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335" />
+          </svg>
+          <span>Lanjutkan dengan Google</span>
+        </button>
+
+        <p class="auth-card__switch text-body-sm text-muted">
+          Belum punya akun Senara?
+          <a class="link text-label-md" href="registrasi.html">Daftar Sekarang</a>
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="js/pages/login.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profil — Senara</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..800;1,6..12,300..800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/profil.css">
+</head>
+
+<body>
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <div class="app-shell">
+    <header class="app-header"></header>
+
+    <main class="app-main profile-main">
+      <div class="profile">
+        <!-- Banner profil -->
+        <section class="profile-card profile-banner">
+          <div class="profile-banner__bloom profile-banner__bloom--peach"></div>
+          <div class="profile-banner__bloom profile-banner__bloom--lavender"></div>
+
+          <div class="profile-banner__content">
+            <div class="profile-banner__identity">
+              <div class="profile-banner__avatar-wrap">
+                <span class="profile-banner__avatar" id="profile-avatar">S</span>
+                <button class="profile-banner__camera" type="button" data-pick-photo aria-label="Ganti foto profil">
+                  <span class="icon icon--sm" aria-hidden="true">photo_camera</span>
+                </button>
+              </div>
+              <div class="profile-banner__text">
+                <h1 class="text-headline-md profile-banner__name" id="profile-greeting">Hi!</h1>
+                <p class="text-body-sm text-muted profile-banner__bio" id="profile-bio"></p>
+              </div>
+            </div>
+            <button class="btn btn--md profile-banner__photo-btn" type="button" data-pick-photo>
+              <span class="icon icon--md" aria-hidden="true">photo_camera</span>
+              <span>Ganti Foto</span>
+            </button>
+            <input class="sr-only" id="photo-input" type="file" accept="image/png, image/jpeg" tabindex="-1">
+          </div>
+        </section>
+
+        <div class="profile__grid">
+          <!-- Data diri -->
+          <section class="profile-card profile-data" aria-labelledby="data-title">
+            <div class="profile-card__head">
+              <h2 class="text-headline-sm" id="data-title">Data Diri</h2>
+              <span class="text-label-sm text-muted">Profil Pribadi</span>
+            </div>
+
+            <form class="form profile-form" id="profile-form" novalidate>
+              <div class="profile-field">
+                <label class="profile-field__label" for="input-name">Nama Lengkap</label>
+                <div class="input-wrap">
+                  <input class="input profile-input" id="input-name" type="text" maxlength="40" required>
+                  <span class="input-wrap__icon"><span class="icon icon--md" aria-hidden="true">edit</span></span>
+                </div>
+                <p class="field__error hidden" id="name-error">
+                  <span class="icon icon--sm" aria-hidden="true">error</span>
+                  Nama lengkap tidak boleh kosong.
+                </p>
+              </div>
+
+              <div class="profile-field">
+                <div class="field__row">
+                  <label class="profile-field__label" for="input-bio">Bio Singkat / Kutipan Diri</label>
+                  <span class="text-label-sm text-muted" id="bio-counter">0 / 160</span>
+                </div>
+                <textarea class="textarea profile-input profile-input--area" id="input-bio" rows="3" maxlength="160"></textarea>
+              </div>
+
+              <div class="profile-field">
+                <span class="profile-field__label profile-field__label--icon">
+                  Alamat Email
+                  <span class="icon icon--xs text-muted" aria-hidden="true">lock</span>
+                </span>
+                <div class="profile-email">
+                  <span class="text-body-sm truncate" id="profile-email"></span>
+                  <span class="chip chip--sm chip--sage profile-email__badge" id="email-verified">
+                    <span class="icon icon--xs" aria-hidden="true">verified</span>
+                    Terverifikasi
+                  </span>
+                </div>
+              </div>
+
+              <div class="profile-member">
+                <span class="icon-circle profile-member__icon">
+                  <span class="icon icon--md" aria-hidden="true">calendar_today</span>
+                </span>
+                <div class="profile-member__text">
+                  <span class="text-label-sm text-muted">Keanggotaan Senara</span>
+                  <span class="text-body-sm truncate profile-member__since" id="member-since"></span>
+                </div>
+              </div>
+
+              <div class="profile-saved hidden" id="save-feedback" role="status">
+                <span class="icon icon--md" aria-hidden="true">check_circle</span>
+                <span>Perubahan profil berhasil disimpan dengan hangat.</span>
+              </div>
+
+              <div class="profile-form__actions">
+                <button class="btn btn--md profile-save" type="submit" id="btn-save">Simpan Perubahan</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- Streak -->
+          <section class="profile-card profile-streak" aria-labelledby="streak-title">
+            <div class="profile-card__head">
+              <h2 class="text-headline-sm" id="streak-title">Streak Kamu</h2>
+            </div>
+
+            <div class="streak-stat">
+              <div class="streak-stat__top">
+                <span class="text-label-sm streak-stat__label">Kehadiran Harian</span>
+                <span class="streak-stat__badge text-label-sm">
+                  <span class="icon icon--sm text-primary" aria-hidden="true">local_fire_department</span>
+                  <span id="streak-badge">Streak 0 Hari</span>
+                </span>
+              </div>
+              <div class="streak-stat__body">
+                <div class="streak-stat__count">
+                  <span class="text-display text-primary" id="streak-count">0</span>
+                  <span class="text-headline-sm">hari</span>
+                  <span class="text-body-sm text-muted streak-stat__of" id="streak-of">dari 365 hari tahun ini</span>
+                </div>
+                <div class="streak-stat__bar" role="progressbar" aria-valuemin="0" id="streak-bar">
+                  <span class="streak-stat__fill" id="streak-fill"></span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Pengaturan akun -->
+        <section class="profile-card profile-settings" aria-labelledby="settings-title">
+          <div class="profile-settings__head">
+            <div class="profile-settings__title">
+              <span class="profile-settings__icon">
+                <span class="icon" aria-hidden="true">manage_accounts</span>
+              </span>
+              <h2 class="text-headline-sm" id="settings-title">Pengaturan Akun</h2>
+            </div>
+            <p class="text-body-sm text-muted profile-settings__desc">Kelola keamanan akses dan akun pribadimu.</p>
+          </div>
+
+          <div class="profile-notice hidden" id="pwd-notice" role="status">
+            <div class="profile-notice__text">
+              <span class="icon" aria-hidden="true">mark_email_read</span>
+              <span>Tautan reset kata sandi telah dikirimkan ke <strong id="pwd-notice-email"></strong>.</span>
+            </div>
+            <button class="profile-notice__close" type="button" id="btn-close-notice" aria-label="Tutup pemberitahuan">
+              <span class="icon icon--md" aria-hidden="true">close</span>
+            </button>
+          </div>
+
+          <div class="profile-settings__actions">
+            <button class="btn btn--md profile-action" type="button" id="btn-change-pwd">
+              <span class="icon icon--md" aria-hidden="true">lock_reset</span>
+              <span>Ganti Password</span>
+            </button>
+            <button class="btn btn--md profile-action" type="button" id="btn-logout">
+              <span class="icon icon--md" aria-hidden="true">logout</span>
+              <span>Keluar</span>
+            </button>
+            <button class="btn btn--md profile-action profile-action--danger" type="button" id="btn-open-delete">
+              <span class="icon icon--md" aria-hidden="true">delete_forever</span>
+              <span>Hapus Akun</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav"></nav>
+
+  <!-- Modal hapus akun -->
+  <div class="modal hidden" id="delete-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title">
+    <form class="modal__dialog delete-account" id="delete-form" novalidate>
+      <div class="modal__header">
+        <span class="icon-circle icon-circle--lg delete-account__icon">
+          <span class="icon" aria-hidden="true">warning</span>
+        </span>
+        <div>
+          <h3 class="modal__title" id="delete-title">Hapus Akun Senara?</h3>
+          <span class="modal__subtitle modal__subtitle--danger">Tindakan permanen</span>
+        </div>
+      </div>
+      <p class="modal__text">
+        Tindakan ini permanen. Semua log jurnal dan riwayat percakapan dengan Nomi akan dihapus selamanya dari ruang tenang Senara.
+      </p>
+      <div class="profile-field">
+        <label class="profile-field__label" for="delete-password">Masukkan kata sandi untuk konfirmasi</label>
+        <div class="input-wrap">
+          <input class="input delete-account__input" id="delete-password" type="password"
+            placeholder="Kata sandi akunmu" autocomplete="current-password">
+          <button class="input-wrap__icon" type="button" data-toggle-password="delete-password"
+            aria-label="Tampilkan kata sandi">
+            <span class="icon" aria-hidden="true">visibility</span>
+          </button>
+        </div>
+        <p class="field__error hidden" id="delete-error">
+          <span class="icon icon--sm" aria-hidden="true">error</span>
+          <span id="delete-error-text">Kata sandi tidak cocok.</span>
+        </p>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--md delete-account__cancel" type="button" data-modal-close>Batal</button>
+        <button class="btn btn--danger btn--md" type="submit" id="btn-confirm-delete">Hapus Akun Saya</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module" src="js/pages/profil.js"></script>
+</body>
+
+</html>

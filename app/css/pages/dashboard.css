@@ -1,0 +1,291 @@
+/* ==========================================================================
+   Dashboard (Beranda)
+   ========================================================================== */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* ---------- Sapaan ---------- */
+.dashboard__greeting {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-top: var(--space-xs);
+}
+
+.dashboard__greeting h1 {
+  letter-spacing: -0.025em;
+}
+
+.dashboard__intro {
+  max-width: 36rem;
+}
+
+/* ---------- Grid afirmasi + streak ---------- */
+.dashboard__hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+  align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+  .dashboard__hero {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .affirmation {
+    grid-column: span 8;
+  }
+
+  .streak {
+    grid-column: span 4;
+  }
+}
+
+/* ---------- Kartu afirmasi ---------- */
+.affirmation {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(
+    to bottom right,
+    rgb(255 219 201 / 0.4),
+    var(--color-surface-container-low),
+    rgb(232 222 255 / 0.3)
+  );
+}
+
+.affirmation__bloom {
+  position: absolute;
+  border-radius: var(--radius-full);
+  pointer-events: none;
+}
+
+.affirmation__bloom--peach {
+  top: -4rem;
+  right: -4rem;
+  width: 16rem;
+  height: 16rem;
+  background: rgb(234 166 127 / 0.2);
+  filter: blur(64px);
+}
+
+.affirmation__bloom--lavender {
+  bottom: -4rem;
+  left: 33%;
+  width: 14rem;
+  height: 14rem;
+  background: rgb(205 189 254 / 0.25);
+  filter: blur(40px);
+}
+
+.affirmation__body,
+.affirmation__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.affirmation__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.affirmation__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.affirmation__quote {
+  margin: var(--space-md) 0;
+  font-family: var(--font-body);
+  font-size: var(--text-headline-lg-m);
+  line-height: var(--lh-headline-lg-m);
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+@media (min-width: 768px) {
+  .affirmation__quote {
+    font-size: var(--text-headline-lg);
+    line-height: var(--lh-headline-lg);
+  }
+}
+
+.affirmation__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+}
+
+.affirmation__actions .btn {
+  padding-block: var(--space-sm);
+  gap: var(--space-xs);
+}
+
+/* ---------- Kartu streak ---------- */
+.streak {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.streak__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.streak__count {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.streak__number {
+  line-height: 1;
+}
+
+.streak__desc {
+  margin-top: var(--space-xs);
+}
+
+.streak__track {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.streak__labels,
+.streak__days {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+}
+
+.streak__labels {
+  text-align: center;
+  color: var(--color-on-surface-variant);
+}
+
+.streak__day {
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+.streak__day--done {
+  background: var(--color-tertiary-container);
+  color: var(--color-on-tertiary-container);
+  box-shadow: var(--shadow-sm);
+}
+
+.streak__day--today {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.streak__note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  font-style: italic;
+  color: var(--color-on-surface-variant);
+}
+
+/* ---------- Aksi cepat ---------- */
+.dashboard__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.dashboard__action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .dashboard__action-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.action-card {
+  --accent: var(--color-secondary);
+  --on-accent: var(--color-on-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.action-card--peach {
+  --accent: var(--color-primary);
+  --on-accent: var(--color-on-primary);
+}
+
+.action-card--sage {
+  --accent: var(--color-tertiary);
+  --on-accent: var(--color-on-tertiary);
+}
+
+.action-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.action-card__text p {
+  line-height: 1.625;
+}
+
+.action-card__title {
+  color: var(--color-on-surface);
+  transition: color var(--duration) var(--ease);
+}
+
+.action-card:hover .action-card__title {
+  color: var(--accent);
+}
+
+.action-card__link {
+  align-self: flex-start;
+  gap: var(--space-xs);
+  margin-top: var(--space-lg);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.action-card__link .icon {
+  transition: transform var(--duration) var(--ease);
+}
+
+.action-card:hover .action-card__link {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.action-card:hover .action-card__link .icon {
+  transform: translateX(4px);
+}

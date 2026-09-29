@@ -1,0 +1,138 @@
+/* ==========================================================================
+   Design tokens Senara — diambil langsung dari tailwind.config desain Stitch.
+   Semua warna/ukuran di CSS lain WAJIB memakai variabel di sini.
+   ========================================================================== */
+
+:root {
+  /* ---------- Warna: primary (peach) ---------- */
+  --color-primary: #875131;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #eaa67f;
+  --color-on-primary-container: #6a3a1c;
+  --color-primary-fixed: #ffdbc9;
+  --color-primary-fixed-dim: #fdb78f;
+  --color-on-primary-fixed: #321200;
+  --color-on-primary-fixed-variant: #6a3a1c;
+
+  /* ---------- Warna: secondary (lavender) ---------- */
+  --color-secondary: #63568f;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #cdbdfe;
+  --color-on-secondary-container: #574a82;
+  --color-secondary-fixed: #e8deff;
+  --color-secondary-fixed-dim: #cdbdfe;
+  --color-on-secondary-fixed: #1f1147;
+  --color-on-secondary-fixed-variant: #4b3e75;
+
+  /* ---------- Warna: tertiary (sage) ---------- */
+  --color-tertiary: #3f6750;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #95bfa4;
+  --color-on-tertiary-container: #284e39;
+  --color-tertiary-fixed: #c1edd0;
+  --color-tertiary-fixed-dim: #a6d0b4;
+  --color-on-tertiary-fixed: #002111;
+  --color-on-tertiary-fixed-variant: #284e39;
+
+  /* ---------- Warna: error ---------- */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* ---------- Warna: surface ---------- */
+  --color-background: #fdf9f4;
+  --color-surface: #fdf9f4;
+  --color-surface-dim: #ddd9d5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f7f3ee;
+  --color-surface-container: #f1ede8;
+  --color-surface-container-high: #ebe8e3;
+  --color-surface-container-highest: #e6e2dd;
+  --color-on-surface: #1c1c19;
+  --color-on-surface-variant: #52443c;
+  --color-outline: #84746b;
+  --color-outline-variant: #d7c2b9;
+  --color-inverse-surface: #31302d;
+  --color-inverse-on-surface: #f4f0eb;
+
+  /* ---------- Warna header publik (dipakai Stitch di luar palet) ---------- */
+  --color-ink: #3b2d26;
+  --color-ink-muted: #736a62;
+  --color-sand: #f3ede6;
+
+  /* ---------- Tipografi ---------- */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Nunito Sans", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+
+  /* Skala teks: [ukuran, tinggi baris] — lihat .text-* di base.css */
+  --text-display: 44px;        --lh-display: 52px;
+  --text-headline-lg: 36px;    --lh-headline-lg: 44px;
+  --text-headline-lg-m: 28px;  --lh-headline-lg-m: 36px;
+  --text-headline-md: 24px;    --lh-headline-md: 32px;
+  --text-headline-sm: 20px;    --lh-headline-sm: 28px;
+  --text-body-lg: 18px;        --lh-body-lg: 28px;
+  --text-body-md: 16px;        --lh-body-md: 24px;
+  --text-body-sm: 14px;        --lh-body-sm: 20px;
+  --text-label-lg: 14px;       --lh-label-lg: 20px;
+  --text-label-md: 12px;       --lh-label-md: 16px;
+  --text-label-sm: 11px;       --lh-label-sm: 14px;
+
+  /* ---------- Spasi ---------- */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --gutter: 1.25rem;
+  --margin: 2rem;
+  --margin-mobile: 1.25rem;
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 0.75rem;
+  --radius: 1rem;       /* rounded / rounded-2xl */
+  --radius-md: 1.5rem;  /* rounded-3xl */
+  --radius-card: 28px;  /* kartu auth */
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-full: 9999px;
+
+  /* ---------- Bayangan ---------- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-soft: 0 12px 36px -8px rgba(59, 47, 74, 0.06);
+  --shadow-card: 0 16px 48px -12px rgba(59, 47, 74, 0.08);
+  --shadow-header: 0 1px 8px rgba(59, 47, 74, 0.03);
+  --shadow-sidebar: 0 1px 12px rgba(59, 47, 74, 0.03);
+  --shadow-bottom-nav: 0 -4px 20px rgba(59, 47, 74, 0.05);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --shadow-focus: 0 4px 16px rgba(99, 86, 143, 0.12);
+  --shadow-error: 0 2px 12px rgba(186, 26, 26, 0.1);
+  --shadow-secondary: 0 10px 25px -5px rgba(99, 86, 143, 0.35);
+  --shadow-secondary-hover: 0 12px 28px -4px rgba(99, 86, 143, 0.45);
+  --shadow-primary-glow: 0 16px 40px -6px rgba(234, 166, 127, 0.35);
+
+  /* ---------- Layout ---------- */
+  --sidebar-width: 18rem;
+  --app-header-height: 4rem;
+  --site-header-height: 5rem;
+  --bottom-nav-height: 4rem;
+  --content-max: 72rem;   /* max-w-6xl */
+  --site-max: 80rem;      /* max-w-7xl */
+
+  /* ---------- Gerak ---------- */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration: 200ms;
+  --duration-slow: 300ms;
+
+  /* ---------- Lapisan (z-index) ---------- */
+  --z-header: 40;
+  --z-nav: 50;
+  --z-modal: 100;
+  --z-toast: 110;
+}
+
+/* Breakpoint (untuk referensi, CSS var tidak bisa dipakai di @media):
+   sm = 640px, md = 768px, lg = 1024px */

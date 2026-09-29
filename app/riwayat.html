@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log History — Senara</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Nunito+Sans:ital,opsz,wght@0,6..12,300..800;1,6..12,300..800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/riwayat.css">
+</head>
+
+<body>
+  <aside id="sidebar" class="sidebar"></aside>
+
+  <div class="app-shell">
+    <header class="app-header"></header>
+
+    <main class="app-main">
+      <div class="container history">
+        <header class="history__head">
+          <h1 class="text-headline-lg">Log History</h1>
+
+          <div class="history__stats">
+            <span class="text-label-lg history__stats-count" id="stats-count">– Momen Tersimpan di Bulan Ini</span>
+            <span class="text-label-sm text-tertiary history__stats-rate" id="stats-rate">Konsistensi Refleksi –</span>
+          </div>
+        </header>
+
+        <div class="history__grid">
+          <!-- Kalender -->
+          <section class="calendar" aria-labelledby="calendar-title">
+            <div class="calendar__bar">
+              <div class="calendar__nav">
+                <button class="calendar__arrow" type="button" id="btn-prev-month" aria-label="Bulan Sebelumnya">
+                  <span class="icon" aria-hidden="true">chevron_left</span>
+                </button>
+                <h2 class="text-headline-sm calendar__title" id="calendar-title" aria-live="polite">–</h2>
+                <button class="calendar__arrow" type="button" id="btn-next-month" aria-label="Bulan Berikutnya">
+                  <span class="icon" aria-hidden="true">chevron_right</span>
+                </button>
+              </div>
+
+              <div class="calendar__views">
+                <span class="calendar__view is-active text-label-md">Kalender</span>
+                <button class="calendar__view calendar__view--link text-label-md" type="button" id="btn-this-month">
+                  Bulan Ini
+                </button>
+              </div>
+            </div>
+
+            <div class="calendar__weekdays text-label-md" aria-hidden="true">
+              <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+              <span class="calendar__sunday">Min</span>
+            </div>
+
+            <div class="calendar__grid" id="calendar-grid" role="grid"></div>
+
+            <div class="calendar__legend">
+              <div class="calendar__legend-items text-label-md">
+                <span><span class="calendar__legend-dot calendar__legend-dot--memory"></span> Momen Tercatat</span>
+                <span><span class="calendar__legend-dot calendar__legend-dot--selected"></span> Tanggal Dipilih</span>
+              </div>
+              <span class="text-label-sm calendar__legend-hint">Ketuk tanggal untuk membuka lembaran</span>
+            </div>
+          </section>
+
+          <!-- Detail tanggal terpilih -->
+          <section class="history__detail" aria-live="polite">
+            <article class="memory hidden" id="memory-card">
+              <div class="memory__author">
+                <span class="avatar avatar--md avatar--peach" id="memory-avatar">S</span>
+                <div>
+                  <span class="text-label-lg memory__name" id="memory-name"></span>
+                  <span class="text-label-sm text-muted memory__time" id="memory-time"></span>
+                </div>
+              </div>
+
+              <div class="memory__photo" id="memory-photo">
+                <img id="memory-photo-img" alt="Foto momen">
+                <span class="chip chip--sm memory__photo-chip">
+                  <span class="icon icon--xs" aria-hidden="true">photo_camera</span>Momen Kamu
+                </span>
+              </div>
+
+              <div class="memory__body">
+                <div class="memory__heading">
+                  <span class="text-headline-sm memory__date" id="memory-date"></span>
+                  <span class="icon icon--filled text-primary" aria-hidden="true">bookmark</span>
+                </div>
+                <div class="memory__note">
+                  <span class="text-label-sm memory__note-label">Catatan</span>
+                  <p class="text-body-md" id="memory-note"></p>
+                </div>
+              </div>
+
+              <div class="memory__actions">
+                <a class="btn btn--md memory__edit" id="memory-edit" href="journaling.html">
+                  <span class="icon icon--md" aria-hidden="true">edit</span>
+                  <span>Edit</span>
+                </a>
+                <button class="btn btn--danger-soft btn--md memory__delete" type="button" id="memory-delete">
+                  <span class="icon icon--md" aria-hidden="true">delete</span>
+                  <span>Hapus</span>
+                </button>
+              </div>
+            </article>
+
+            <article class="memory-empty empty-state hidden" id="empty-card">
+              <span class="icon-circle icon-circle--xl memory-empty__icon">
+                <span class="icon icon--xl" aria-hidden="true">auto_stories</span>
+              </span>
+              <div class="memory-empty__text">
+                <h3 class="empty-state__title">Belum ada jurnal di tanggal ini</h3>
+                <p class="empty-state__text" id="empty-text">
+                  Hari ini masih menjadi lembaran hening. Tuangkan apa yang sedang berbisik di dadamu.
+                </p>
+              </div>
+              <a class="btn btn--primary btn--md memory-empty__cta" id="empty-write" href="journaling.html">
+                <span class="icon icon--md" aria-hidden="true">edit</span>
+                <span>Tulis Sekarang</span>
+              </a>
+            </article>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" class="bottom-nav"></nav>
+
+  <script type="module" src="js/pages/riwayat.js"></script>
+</body>
+
+</html>
