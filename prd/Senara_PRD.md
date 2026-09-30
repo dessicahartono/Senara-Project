@@ -206,7 +206,63 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 | **Delete 2**        | Hapus satu pesan atau bersihkan riwayat chat Nomi          | chats/{uid}                                                      |
 | **Delete 3**        | Hapus akun beserta seluruh datanya                         | users, journals, journalDates, chats, Storage, Firebase Auth     |
 
-Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya terhubung ke Firebase Realtime Database. Pembacaan tambahan seperti afirmasi harian dan riwayat chat tidak dihitung dalam 12 fungsi ini.
+Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya terhubung ke Firebase Realtime Database. Pembacaan tambahan seperti afirmasi harian dan riwayat chat tidak dihitung dalam 12 fungsi ini. Daftar lengkap semua operasi yang berjalan di website ada di 6.1.
+
+## **6.1 Daftar Lengkap Operasi CRUD**
+
+Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Storage. Totalnya 26 operasi: 6 Create, 10 Read, 6 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+
+**Create**
+
+| **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
+| **C1**  | Registrasi email: membuat profil pengguna                    | users/{uid}: name, email, createdAt, stats awal         | authService.register            | Create 1         |
+| **C2**  | Login Google pertama kali: membuat profil jika belum ada     | users/{uid}                                             | authService.loginWithGoogle     | -                |
+| **C3**  | Menyimpan jurnal baru                                        | journals/{uid}/{dateKey} dan journalDates/{uid}/{dateKey} | journalService.saveJournal    | Create 2         |
+| **C4**  | Mengunggah foto jurnal                                       | Storage, lalu photoUrl dan storagePath di jurnal        | journalService.saveJournal      | -                |
+| **C5**  | Menyimpan pesan pengguna di chat Nomi                        | chats/{uid}/{messageId}                                 | chatService.sendMessage         | Create 3         |
+| **C6**  | Menyimpan balasan Nomi                                       | chats/{uid}/{messageId}                                 | chatService.getNomiReply        | Create 3         |
+
+**Read**
+
+| **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
+| **R1**  | Nama dan avatar di sidebar (setiap halaman setelah login)    | users/{uid}                                             | userService.getProfile          | -                |
+| **R2**  | Profile: data diri dan statistik                             | users/{uid}                                             | userService.getProfile, journalService.getStreak | Read 3 |
+| **R3**  | Dashboard: afirmasi acak                                     | affirmations/{n}                                        | affirmationService.getRandomAffirmation | -        |
+| **R4**  | Dashboard: streak dan status 5 hari terakhir                 | users/{uid}/stats dan journalDates/{uid}                | journalService.getStreak        | -                |
+| **R5**  | Journaling: membuka jurnal pada tanggal tertentu             | journals/{uid}/{dateKey}                                | journalService.getJournalByDate | -                |
+| **R6**  | Journaling: mode Sunting mencari jurnal terakhir             | journals/{uid}, limitToLast(1)                          | journalService.getJournals      | -                |
+| **R7**  | Log History: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournals      | Read 2           |
+| **R8**  | Log History: ringkasan bulan (jumlah momen, konsistensi %)   | journalDates/{uid}, query per bulan                     | journalService.getMonthSummary  | -                |
+| **R9**  | Log History: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournals      | Read 1           |
+| **R10** | Chat Nomi: memuat riwayat percakapan                         | chats/{uid}, limitToLast(50)                            | chatService.getMessages         | -                |
+
+**Update**
+
+| **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
+| **U1**  | Edit catatan jurnal                                          | journals/{uid}/{dateKey}: note, updatedAt               | journalService.saveJournal      | Update 1         |
+| **U2**  | Ganti foto jurnal (foto lama di Storage dihapus)             | Storage dan journals/{uid}/{dateKey}: photoUrl          | journalService.saveJournal      | Update 1         |
+| **U3**  | Hapus foto dari jurnal tanpa menghapus jurnalnya             | Storage dan journals/{uid}/{dateKey}: photoUrl = null   | journalService.saveJournal (removePhoto) | -       |
+| **U4**  | Simpan perubahan profil (nama lengkap, bio)                  | users/{uid}: name, bio                                  | userService.updateProfile       | Update 2         |
+| **U5**  | Ganti foto profil (avatar)                                   | Storage dan users/{uid}/avatar                          | userService.updateProfilePhoto  | Update 3         |
+| **U6**  | Hitung ulang streak setelah jurnal dibuat atau dihapus       | users/{uid}/stats: streak, lastCheckIn                  | journalService (saat simpan/hapus) | -             |
+
+**Delete**
+
+| **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
+| ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
+| **D1**  | Hapus jurnal beserta fotonya (dari Journaling dan Log History) | journals, journalDates, Storage, dan stats            | journalService.deleteJournal    | Delete 1         |
+| **D2**  | Hapus satu pesan chat                                        | chats/{uid}/{messageId}                                 | chatService.deleteMessage       | Delete 2         |
+| **D3**  | Bersihkan seluruh riwayat chat                               | chats/{uid}                                             | chatService.clearMessages       | Delete 2         |
+| **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, Storage, Firebase Auth | userService.deleteAccount  | Delete 3         |
+
+**Tidak dihitung sebagai CRUD database**
+
+> • Operasi Firebase Auth: login email, login Google, logout, cek dan kirim ulang email verifikasi, reset password, dan login ulang sebelum hapus akun.
+>
+> • Data statis di frontend: pertanyaan pemantik jurnal (journalService.getRandomPrompt) dan tombol pertanyaan cepat di chat Nomi (chatService.getQuickPrompts).
 
 **B. RANCANGAN TEKNIS**
 
