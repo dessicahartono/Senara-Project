@@ -457,3 +457,30 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 > • 13 sampai 17 Okt: Nomi (backend dan chat), Welcome Email, hapus akun, Security Rules.
 >
 > • 18 sampai 19 Okt: pengujian akhir, perbaikan, deploy final. 20 Okt: pengumpulan.
+
+# **13. Catatan UI**
+
+## **13.1 Font**
+
+UI memakai tiga font teks dan satu font ikon, semuanya dari Google Fonts. Font teks didefinisikan sebagai variabel di app/css/variables.css.
+
+| **Font**                      | **Variabel**   | **Dipakai untuk**                                                              |
+| ----------------------------- | -------------- | ------------------------------------------------------------------------------ |
+| **Bricolage Grotesque**       | --font-display | Judul/heading, nama brand "Senara" di sidebar                                  |
+| **Nunito Sans**               | --font-body    | Teks biasa di seluruh halaman: paragraf, tombol, label menu, form              |
+| **Fraunces** (serif)          | --font-serif   | Nama brand di header landing page (hanya dimuat di index.html)                 |
+| **Material Symbols Outlined** | -              | Ikon (tombol Keluar, avatar default, dan ikon di halaman lain)                 |
+
+> • Font dimuat lewat tag link Google Fonts di bagian head setiap file HTML.
+>
+> • Font cadangan jika gagal dimuat: system-ui/sans-serif untuk Bricolage Grotesque dan Nunito Sans, Georgia/serif untuk Fraunces.
+
+## **13.2 Navigasi**
+
+> • Desktop/tablet (lebar layar 768px ke atas): sidebar kiri berisi menu Beranda, Nomi (Chat), Journaling, dan Log History. Halaman Profil dibuka lewat kartu nama pengguna di kiri bawah sidebar (tidak ada menu Profil terpisah agar tidak dobel).
+>
+> • Mobile (lebar layar di bawah 768px): sidebar disembunyikan dan diganti bottom nav di bagian bawah layar dengan label pendek Beranda, Nomi, Journal, Riwayat, dan Profil.
+>
+> • Menu di sidebar dan bottom nav hanya berupa teks, tanpa emoji atau ikon.
+>
+> • Daftar menu diatur di satu tempat, yaitu app/js/components/app-shell.js.

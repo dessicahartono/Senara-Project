@@ -83,6 +83,12 @@
   background: var(--color-surface-container-high);
 }
 
+.sidebar__user.is-active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  box-shadow: var(--shadow-soft);
+}
+
 .sidebar__user-name {
   min-width: 0;
   padding-right: var(--space-xs);

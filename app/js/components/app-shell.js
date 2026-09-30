@@ -19,11 +19,11 @@ window.addEventListener("pageshow", (e) => {
 });
 
 const NAV_ITEMS = [
-  { key: "dashboard", label: "Beranda", short: "Beranda", icon: "spa", href: ROUTES.dashboard },
-  { key: "chat", label: "Nomi (Chat)", short: "Nomi", icon: "forum", href: ROUTES.chat },
-  { key: "journal", label: "Journaling", short: "Journal", icon: "auto_stories", href: ROUTES.journal },
-  { key: "history", label: "Log History", short: "Riwayat", icon: "history_toggle_off", href: ROUTES.history },
-  { key: "profile", label: "Profil", short: "Profil", icon: "sentiment_calm", href: ROUTES.profile },
+  { key: "dashboard", label: "Beranda", short: "Beranda", href: ROUTES.dashboard },
+  { key: "chat", label: "Nomi (Chat)", short: "Nomi", href: ROUTES.chat },
+  { key: "journal", label: "Journaling", short: "Journal", href: ROUTES.journal },
+  { key: "history", label: "Log History", short: "Riwayat", href: ROUTES.history },
+  { key: "profile", label: "Profil", short: "Profil", href: ROUTES.profile },
 ];
 
 function brandMarkup() {
@@ -42,7 +42,8 @@ function avatarMarkup(user, sizeClass = "") {
 }
 
 function sidebarMarkup(active, user) {
-  const links = NAV_ITEMS.map(
+  // Profil tidak masuk daftar menu sidebar: kartu nama pengguna di bawah sudah menuju ke sana
+  const links = NAV_ITEMS.filter((item) => item.key !== "profile").map(
     (item) => `
       <a class="sidebar__link${item.key === active ? " is-active" : ""}" href="${item.href}"
         ${item.key === active ? 'aria-current="page"' : ""}>${item.label}</a>`
@@ -57,7 +58,8 @@ function sidebarMarkup(active, user) {
       <button class="sidebar__link" type="button" data-action="logout">
         ${icon("logout", "icon--lg")}<span>Keluar</span>
       </button>
-      <a class="sidebar__user" href="${ROUTES.profile}">
+      <a class="sidebar__user${active === "profile" ? " is-active" : ""}" href="${ROUTES.profile}"
+        ${active === "profile" ? 'aria-current="page"' : ""}>
         ${avatarMarkup(user)}
         <span class="sidebar__user-name text-label-md truncate">${escapeHtml(user.name)}</span>
       </a>
@@ -69,7 +71,6 @@ function bottomNavMarkup(active) {
     (item) => `
       <a class="bottom-nav__link${item.key === active ? " is-active" : ""}" href="${item.href}"
         ${item.key === active ? 'aria-current="page"' : ""}>
-        ${icon(item.icon)}
         <span class="text-label-sm">${item.short}</span>
       </a>`
   ).join("");
