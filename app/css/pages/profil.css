@@ -49,7 +49,7 @@
   justify-content: space-between;
   gap: var(--space-sm);
   padding-bottom: var(--space-xs);
-  border-bottom: 1px solid rgb(235 232 227 / 0.6);
+  border-bottom: 1px solid rgb(var(--rgb-surface-container-high) / 0.6);
 }
 
 .profile-card__head h2 {
@@ -72,7 +72,7 @@
   right: -4rem;
   width: 16rem;
   height: 16rem;
-  background: rgb(234 166 127 / 0.2);
+  background: rgb(var(--rgb-primary-container) / 0.2);
   filter: blur(64px);
 }
 
@@ -81,7 +81,7 @@
   left: -3rem;
   width: 12rem;
   height: 12rem;
-  background: rgb(205 189 254 / 0.25);
+  background: rgb(var(--rgb-secondary-container) / 0.25);
   filter: blur(40px);
 }
 
@@ -122,7 +122,7 @@
   justify-content: center;
   overflow: hidden;
   border-radius: var(--radius-full);
-  background: rgb(253 183 143 / 0.5);
+  background: rgb(var(--rgb-primary-fixed-dim) / 0.5);
   box-shadow: var(--shadow-md), 0 0 0 4px var(--color-surface-container-lowest);
   font-family: var(--font-display);
   font-size: var(--text-headline-lg);
@@ -298,7 +298,7 @@
   gap: 0.75rem;
   padding: 0.75rem var(--space-md);
   border-radius: var(--radius-full);
-  background: rgb(255 255 255 / 0.8);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.8);
   box-shadow: var(--shadow-sm);
 }
 
@@ -372,8 +372,8 @@
   gap: 1.25rem;
   padding: var(--space-lg);
   border-radius: var(--radius-xl);
-  background: rgb(255 255 255 / 0.95);
-  border: 1px solid rgb(235 232 227 / 0.4);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.95);
+  border: 1px solid rgb(var(--rgb-surface-container-high) / 0.4);
   box-shadow: var(--shadow-sm);
 }
 
@@ -396,7 +396,7 @@
   gap: 0.375rem;
   padding: var(--space-xs) 0.75rem;
   border-radius: var(--radius-full);
-  background: rgb(234 166 127 / 0.2);
+  background: rgb(var(--rgb-primary-container) / 0.2);
   color: var(--color-on-primary-container);
 }
 
@@ -426,7 +426,7 @@
   height: 0.625rem;
   overflow: hidden;
   border-radius: var(--radius-full);
-  background: rgb(235 232 227 / 0.6);
+  background: rgb(var(--rgb-surface-container-high) / 0.6);
 }
 
 .streak-stat__fill {
@@ -451,7 +451,7 @@
   flex-direction: column;
   gap: var(--space-xs);
   padding-bottom: var(--space-xs);
-  border-bottom: 1px solid rgb(235 232 227 / 0.6);
+  border-bottom: 1px solid rgb(var(--rgb-surface-container-high) / 0.6);
 }
 
 .profile-settings__title {
@@ -536,7 +536,7 @@
 
 .profile-action--danger {
   margin-left: auto;
-  background: rgb(255 218 214 / 0.3);
+  background: rgb(var(--rgb-error-container) / 0.3);
   color: var(--color-error);
 }
 

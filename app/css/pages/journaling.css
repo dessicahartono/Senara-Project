@@ -82,7 +82,7 @@
 }
 
 .journal__notice-chip {
-  background: rgb(255 255 255 / 0.8);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.8);
   color: var(--color-secondary);
 }
 
@@ -153,7 +153,7 @@
   gap: var(--space-xs);
   padding: var(--space-md);
   border-radius: var(--radius);
-  background: rgb(247 243 238 / 0.6);
+  background: rgb(var(--rgb-surface-container-low) / 0.6);
   text-align: center;
   cursor: pointer;
   transition: all var(--duration) var(--ease);
@@ -225,7 +225,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgb(135 81 49 / 0.1);
+  background: rgb(var(--rgb-primary) / 0.1);
 }
 
 .photo-preview__info {

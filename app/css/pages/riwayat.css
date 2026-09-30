@@ -42,7 +42,7 @@
   min-width: 0;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-full);
-  background: rgb(247 243 238 / 0.9);
+  background: rgb(var(--rgb-surface-container-low) / 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
@@ -92,10 +92,10 @@
   gap: var(--space-md);
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
-  background: rgb(255 255 255 / 0.8);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.8);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 12px 36px -8px rgba(59, 47, 74, 0.04);
+  box-shadow: 0 12px 36px -8px rgb(var(--rgb-shadow) / 0.04);
 }
 
 .calendar__bar {
@@ -178,7 +178,7 @@
   gap: var(--space-xs);
   padding: var(--space-xs) 0;
   text-align: center;
-  color: rgb(82 68 60 / 0.8);
+  color: rgb(var(--rgb-on-surface-variant) / 0.8);
 }
 
 .calendar__sunday {
@@ -244,7 +244,7 @@
 }
 
 .calendar__day--outside {
-  background: rgb(241 237 232 / 0.3);
+  background: rgb(var(--rgb-surface-container) / 0.3);
   opacity: 0.4;
   pointer-events: none;
 }
@@ -269,7 +269,7 @@
 .calendar__day.is-selected {
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
-  box-shadow: 0 4px 16px rgba(234, 166, 127, 0.4);
+  box-shadow: 0 4px 16px rgb(var(--rgb-primary-container) / 0.4);
   transform: scale(1.05);
 }
 
@@ -331,7 +331,7 @@
 .calendar__legend-dot--selected { background: var(--color-primary-container); }
 
 .calendar__legend-hint {
-  color: rgb(82 68 60 / 0.7);
+  color: rgb(var(--rgb-on-surface-variant) / 0.7);
 }
 
 /* ---------- Detail jurnal ---------- */
@@ -347,10 +347,10 @@
   gap: var(--space-md);
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
-  background: rgb(255 255 255 / 0.9);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.9);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 16px 40px -10px rgba(59, 47, 74, 0.06);
+  box-shadow: 0 16px 40px -10px rgb(var(--rgb-shadow) / 0.06);
   animation: fade-in-up var(--duration-slow) var(--ease);
 }
 
@@ -395,7 +395,7 @@
   bottom: 0.75rem;
   left: 0.75rem;
   gap: var(--space-xs);
-  background: rgb(255 255 255 / 0.8);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: var(--color-on-surface);
@@ -424,7 +424,7 @@
   gap: var(--space-xs);
   padding: var(--space-sm);
   border-radius: var(--radius);
-  background: rgb(247 243 238 / 0.7);
+  background: rgb(var(--rgb-surface-container-low) / 0.7);
 }
 
 .memory__note-label {
@@ -464,7 +464,7 @@
 .memory-empty {
   padding: var(--space-lg);
   border-radius: var(--radius-lg);
-  background: rgb(255 255 255 / 0.8);
+  background: rgb(var(--rgb-surface-container-lowest) / 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
