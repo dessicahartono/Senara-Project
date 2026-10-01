@@ -391,10 +391,30 @@ Catatan: JournalService juga memperbarui UserStats setiap kali jurnal dibuat ata
 
 # **10. Struktur Database (Realtime Database)**
 
-Realtime Database menyimpan data sebagai satu pohon JSON. Rancangan pohonnya:
+Realtime Database menyimpan data sebagai satu pohon JSON. Seluruh baca dan tulis dilakukan oleh backend PHP lewat Firebase Admin SDK (kreait/firebase-php); browser tidak mengakses database secara langsung. Rancangan pohonnya:
 
-| users<br>{uid}<br>name, email, bio, avatar, createdAt<br>stats<br>streak, lastCheckIn<br>journals<br>{uid}<br>{dateKey} contoh: 2026-09-29<br>photoUrl, storagePath, note<br>createdAt, updatedAt<br>journalDates<br>{uid}<br>{dateKey}: true<br>affirmations<br>1: "teks afirmasi hari ke-1"<br>...<br>365: "teks afirmasi hari ke-365"<br>chats<br>{uid}<br>{messageId}: { role, text, timestamp } |
-|---|
+```
+users
+  {uid}
+    name, email, bio, photoUrl, createdAt
+    stats
+      streak, lastCheckIn
+journals
+  {uid}
+    {dateKey}                      contoh: 2026-09-29
+      note, photoUrl, storagePath, photoName, createdAt, updatedAt
+journalDates
+  {uid}
+    {dateKey}: true
+affirmations
+  1: "teks afirmasi ke-1"
+  ...
+  365: "teks afirmasi ke-365"
+chats
+  {uid}
+    {messageId}                    kunci dari push(), otomatis urut waktu
+      sender, text, createdAt
+```
 
 | **Path**                         | **Isi**                                               | **Kapan dibaca**                               |
 |----------------------------------|-------------------------------------------------------|------------------------------------------------|
@@ -403,6 +423,23 @@ Realtime Database menyimpan data sebagai satu pohon JSON. Rancangan pohonnya:
 | **journalDates/{uid}/{dateKey}** | Penanda tanggal yang punya jurnal (bernilai true)     | Saat membuka kalender bulanan                  |
 | **affirmations/{1..365}**        | Kalimat afirmasi                                      | Satu node acak setiap halaman dimuat           |
 | **chats/{uid}/{messageId}**      | Riwayat percakapan dengan Nomi                        | Saat membuka halaman chat (dibatasi jumlahnya) |
+
+**Keterangan field:**
+
+| **Field**                  | **Tipe dan isi**                                                                                         |
+|----------------------------|----------------------------------------------------------------------------------------------------------|
+| **name, email, bio**       | String. email disalin dari Firebase Auth saat registrasi dan hanya dibaca. bio boleh kosong.             |
+| **photoUrl**               | String URL dari Storage, atau null jika tidak ada foto. Dipakai untuk foto profil dan foto jurnal.       |
+| **storagePath**            | String path file di Storage, dipakai untuk menghapus file saat foto diganti atau jurnal dihapus.         |
+| **photoName**              | String nama file asli foto jurnal, ditampilkan di form edit.                                             |
+| **note**                   | String catatan jurnal, maksimal 2000 karakter.                                                           |
+| **sender**                 | "user" atau "nomi".                                                                                      |
+| **createdAt, updatedAt**   | String waktu ISO 8601 (UTC), contoh "2026-10-02T08:30:00Z".                                              |
+| **stats.streak**           | Angka hari berturut-turut yang punya jurnal.                                                             |
+| **stats.lastCheckIn**      | dateKey jurnal terbaru, atau null.                                                                       |
+| **dateKey**                | Tanggal berformat yyyy-mm-dd.                                                                            |
+
+Nama field disamakan dengan data yang dipakai frontend, sehingga data dari endpoint PHP bisa langsung ditampilkan tanpa pemetaan ulang.
 
 Karena jurnal hanya satu per tanggal, tanggal langsung dipakai sebagai kunci. Dengan begitu journalId tidak diperlukan, dan membuka jurnal pada tanggal tertentu cukup satu baca langsung ke path-nya.
 
