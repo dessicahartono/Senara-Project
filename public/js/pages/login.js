@@ -17,6 +17,8 @@ const el = {
   notFound: $("#banner-notfound"),
   tooMany: $("#banner-toomany"),
   resent: $("#banner-resent"),
+  verified: $("#banner-verified"),
+  unverifiedText: $("#unverified-text"),
   emailGroup: $("#email-group"),
   emailError: $("#email-error"),
   emailErrorLabel: $("#email-error-label"),
@@ -26,7 +28,7 @@ const el = {
 };
 
 /**
- * State tampilan: "normal" | "invalid" | "invalidemail" | "toomany" | "unverified"
+ * State tampilan: "normal" | "invalid" | "invalidemail" | "toomany" | "unverified" | "server" | "verified"
  * + "notfound" | "wrongpw" (desain Stitch; hanya terpakai bila Email Enumeration Protection mati)
  */
 function setState(state) {
@@ -34,6 +36,7 @@ function setState(state) {
   hide(el.notFound);
   hide(el.tooMany);
   hide(el.resent);
+  hide(el.verified);
   setFieldError(el.emailGroup, el.emailError, false);
   hide(el.emailErrorLabel);
   setFieldError(el.passwordGroup, el.passwordError, false);
@@ -59,13 +62,18 @@ function setState(state) {
     el.passwordErrorText.textContent =
       "Kata sandi salah. Harap coba lagi atau gunakan opsi lupa kata sandi.";
     setFieldError(el.passwordGroup, el.passwordError, true);
+  } else if (state === "verified") {
+    show(el.verified);
+  } else if (state === "server") {
+    el.passwordErrorText.textContent = "Terjadi gangguan saat masuk. Coba lagi beberapa saat lagi.";
+    setFieldError(el.passwordGroup, el.passwordError, true);
   }
 
   updateBannerContainer();
 }
 
 function updateBannerContainer() {
-  const anyVisible = [el.unverified, el.notFound, el.tooMany, el.resent].some(
+  const anyVisible = [el.unverified, el.notFound, el.tooMany, el.resent, el.verified].some(
     (b) => !b.classList.contains("hidden")
   );
   show(el.banners, anyVisible);
@@ -89,6 +97,43 @@ function validate() {
   }
   return valid;
 }
+
+// Hasil login gagal dari actions/login.php dikirim lewat ?error=<kode>;
+// ?verified=1 datang dari link verifikasi di email (continueUrl Firebase).
+const LOGIN_ERRORS = ["invalid", "invalidemail", "toomany", "unverified", "server"];
+const params = new URLSearchParams(window.location.search);
+const loginError = params.get("error");
+if (LOGIN_ERRORS.includes(loginError)) {
+  setState(loginError);
+} else if (params.has("verified")) {
+  setState("verified");
+}
+if (params.has("error") || params.has("verified")) {
+  // Hapus parameter dari URL agar pesan tidak muncul lagi saat halaman di-refresh
+  history.replaceState(null, "", window.location.pathname);
+}
+
+// Kirim ulang email verifikasi. Email tujuan diambil dari session di server.
+const resendButton = $("#btn-resend");
+resendButton.addEventListener("click", async () => {
+  resendButton.disabled = true;
+  hide(el.resent);
+  try {
+    const response = await fetch("actions/resend_verification.php", { method: "POST", credentials: "same-origin" });
+    const result = await response.json();
+    if (!response.ok || !result.success) throw new Error(result.message);
+    if (result.alreadyVerified) {
+      setState("verified");
+    } else {
+      show(el.resent);
+    }
+  } catch (error) {
+    el.unverifiedText.textContent = error.message || "Email verifikasi gagal dikirim. Coba lagi beberapa saat lagi.";
+  } finally {
+    resendButton.disabled = false;
+    updateBannerContainer();
+  }
+});
 
 // Submit valid dibiarkan berjalan normal ke action PHP (method POST).
 // preventDefault hanya dipakai saat input tidak valid agar browser tidak mengirimkannya.
@@ -165,12 +210,8 @@ googleButton.addEventListener("click", async () => {
   }
 });
 
-// Dinonaktifkan: tombol-tombol ini masih memanggil implementasi mock.
+// Dinonaktifkan: tombol ini masih memanggil implementasi mock.
 /*
-$("#btn-resend").addEventListener("click", async (e) => {
-  await withLoading(e.currentTarget, () => resendVerificationEmail(), "Mengirim...");
-});
-
 $("#btn-forgot").addEventListener("click", async () => {
   await sendPasswordReset(emailInput.value.trim());
 });

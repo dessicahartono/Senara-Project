@@ -29,17 +29,14 @@ try {
     $picture = $claims->get('picture');
 
     // Login Google pertama kali: buat profil (PRD 6.1 C2). Login berikutnya tidak mengubah profil.
-    createUserProfileIfMissing(
-        $database,
-        $uid,
-        is_string($name) && $name !== '' ? $name : (is_string($email) ? strtok($email, '@') : ''),
-        is_string($email) ? $email : '',
-        is_string($picture) ? $picture : null
-    );
+    // Akun Google dianggap sudah terverifikasi.
+    $email = is_string($email) ? $email : '';
+    $name = is_string($name) && $name !== '' ? $name : strtok($email, '@');
+    createUserProfileIfMissing($database, $uid, $name, $email, is_string($picture) ? $picture : null);
 
     session_regenerate_id(true);
     $_SESSION['firebase_uid'] = $uid;
-    $_SESSION['firebase_email'] = is_string($email) ? $email : '';
+    $_SESSION['firebase_email'] = $email;
 
     echo json_encode(['success' => true]);
 } catch (Throwable $error) {

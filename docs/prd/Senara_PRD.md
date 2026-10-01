@@ -37,7 +37,7 @@ Requirements:
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Database**         | Firebase Realtime Database                                                                                                                                                                                       |
 | **Autentikasi**      | Firebase Auth: login dengan Email & Password, ditambah Login with Google. Login email hanya berhasil jika email sudah diverifikasi.                                                                              |
-| **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerification) setelah registrasi. Welcome Email: backend PHP lewat API email HTTPS (Brevo atau Resend); lihat 8.3 untuk alasan tidak memakai SMTP Gmail. |
+| **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerification) setelah registrasi. Tidak ada email lain selain verifikasi. |
 | **Penyimpanan Foto** | Firebase Storage (gratis hingga 5 GB); URL foto disimpan di Realtime Database                                                                                                                                    |
 | **Chatbot AI**       | Gemini API (dipilih karena gratis)                                                                                                                                                                               |
 | **Hosting / Deploy** | Render (paket gratis)                                                                                                                                                                                            |
@@ -52,7 +52,7 @@ Halaman awal berupa slider geser dengan 3 slide untuk menarik perhatian pengunju
 |-------------|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Slide 1** | Tentang Senara            | Pengenalan singkat Senara sebagai ruang aman untuk refleksi dan afirmasi harian.                                                                                                                                           |
 | **Slide 2** | Daily Affirmation Preview | Kutipan afirmasi untuk umum, berganti acak setiap kali halaman dimuat.                                                                                                                                                     |
-| **Slide 3** | Mulai / Registrasi        | Tombol aksi cepat ke Registrasi. Tombol Login ("Masuk ke Akunmu") berada di bagian ajakan (CTA) di bawah slider, berdampingan dengan tombol Daftar. Registrasi memicu email verifikasi (Firebase Authentication) dan Welcome Email lewat Web Mailer. Setelah klik link verifikasi, pengguna diarahkan ke halaman Login. |
+| **Slide 3** | Mulai / Registrasi        | Tombol aksi cepat ke Registrasi. Tombol Login ("Masuk ke Akunmu") berada di bagian ajakan (CTA) di bawah slider, berdampingan dengan tombol Daftar. Registrasi memicu email verifikasi lewat Web Mailer (Firebase Authentication). Setelah klik link verifikasi, pengguna diarahkan ke halaman Login. |
 
 ## **3.2 Main Dashboard (Setelah Login)**
 
@@ -144,8 +144,8 @@ Berikut input form registrasi yang paling ideal beserta fungsinya.
 
 | **Field**               | **Fungsi**                                                                                                                                   |
 |-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| **Nama Lengkap**        | Disimpan utuh sebagai nama pengguna dan tampil di halaman Profile. Untuk sapaan personal hanya dipakai nama depannya, misalnya "Seno Prasetyo" menjadi "Hi, Seno!" di Homepage dan Profile, serta sapaan di Welcome Email dari Web Mailer. |
-| **Alamat Email**        | Identitas unik login di Firebase Auth dan tujuan pengiriman email dari Web Mailer.                                                           |
+| **Nama Lengkap**        | Disimpan utuh sebagai nama pengguna dan tampil di halaman Profile. Untuk sapaan personal hanya dipakai nama depannya, misalnya "Seno Prasetyo" menjadi "Hi, Seno!" di Homepage dan Profile. |
+| **Alamat Email**        | Identitas unik login di Firebase Auth dan tujuan pengiriman email verifikasi.                                                           |
 | **Password**            | Keamanan akun. Firebase Auth mewajibkan minimal 6 karakter.                                                                                  |
 | **Konfirmasi Password** | Validasi di frontend agar pengguna tidak salah ketik password.                                                                               |
 
@@ -286,7 +286,7 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 | **4** | Panggilan ke backend | Semua akses data, chat Nomi, dan pengiriman email lewat endpoint backend PHP di Render (HTTPS). Setelah login, backend menyimpan uid di session. |
 | **5** | Verifikasi token | Middleware backend memeriksa keaslian ID Token lewat Firebase Admin SDK sebelum memproses permintaan. |
 | **6** | Chat Nomi | Backend mengirim pesan pengguna dan system prompt Nomi ke Gemini API, lalu meneruskan jawabannya ke frontend. |
-| **7** | Web Mailer | Email verifikasi (syarat wajib, lewat Firebase): setelah register, frontend memanggil sendEmailVerification() dari Firebase Authentication dengan continueUrl ke halaman Login. Setelah pengguna klik link, ia diarahkan ke halaman Login.<br>Aturan login: berhasil hanya jika emailVerified bernilai true (akun Google dianggap sudah terverifikasi). Jika belum, tampilkan pesan, tombol "Kirim ulang email verifikasi", lalu sign out.<br>Welcome Email: frontend memanggil endpoint backend dengan ID Token; backend mengirim email lewat API email HTTPS (lihat 8.3). Registrasi tidak menunggu email ini selesai.<br>Error handling saat login: Email Enumeration Protection diaktifkan di Firebase Console, sehingga akun tidak ditemukan dan password salah sama-sama dikembalikan sebagai auth/invalid-credential dan ditampilkan dengan satu pesan "Email atau kata sandi salah". Error lain yang ditangani: format email tidak valid (auth/invalid-email), email belum diverifikasi, dan terlalu banyak percobaan (auth/too-many-requests). |
+| **7** | Web Mailer | Email verifikasi (syarat wajib, lewat Firebase): setelah register, backend PHP memanggil sendEmailVerificationLink() dari Firebase Authentication dengan continueUrl ke halaman Login, lalu pengguna diarahkan ke halaman Cek Email. Setelah pengguna klik link di email, ia diarahkan ke halaman Login. Email verifikasi bisa dikirim ulang dari halaman Cek Email atau banner login, dengan jeda 60 detik.<br>Aturan login: berhasil hanya jika emailVerified bernilai true (akun Google dianggap sudah terverifikasi). Jika belum, backend tidak membuat session login dan halaman Login menampilkan pesan beserta tombol "Kirim ulang email verifikasi".<br>Web Mailer hanya mengirim email verifikasi; tidak ada Welcome Email.<br>Error handling saat login: Email Enumeration Protection diaktifkan di Firebase Console, sehingga akun tidak ditemukan dan password salah sama-sama dikembalikan sebagai auth/invalid-credential dan ditampilkan dengan satu pesan "Email atau kata sandi salah". Error lain yang ditangani: format email tidak valid (auth/invalid-email), email belum diverifikasi, dan terlalu banyak percobaan (auth/too-many-requests). |
 
 ## **7.3 Komponen**
 
@@ -296,9 +296,8 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 | **Firebase Authentication** | Registrasi, login email dan password, login Google, email verifikasi, reset password               | Firebase Auth                                          |
 | **Realtime Database**       | Profil, jurnal, afirmasi, riwayat chat                                                             | Firebase Realtime Database                             |
 | **Cloud Storage**           | File foto jurnal (yang sudah dikompres)                                                            | Firebase Storage                                       |
-| **Backend**                 | Endpoint data (CRUD), chat, dan email, verifikasi token, menyimpan rahasia (service account Firebase, API key Gemini, kunci layanan email) | PHP + kreait/firebase-php di Render (paket gratis) |
+| **Backend**                 | Endpoint auth, data (CRUD), dan chat, verifikasi token, pengiriman email verifikasi, menyimpan rahasia (service account Firebase, API key Gemini) | PHP + kreait/firebase-php di Render (paket gratis) |
 | **Gemini API**              | Mesin chatbot Nomi, dan pembuat afirmasi baru bila dibutuhkan                                      | Google Gemini API                                      |
-| **Layanan Email**           | Mengirim Welcome Email (email verifikasi dikirim langsung oleh Firebase Auth)                      | Brevo atau Resend lewat HTTPS API dari backend PHP     |
 
 Render juga menyajikan file frontend (static), jadi seluruh aplikasi cukup di-deploy dari satu tempat.
 
@@ -306,7 +305,7 @@ Render juga menyajikan file frontend (static), jadi seluruh aplikasi cukup di-de
 
 > • **Frontend:** web biasa (HTML, CSS, JavaScript) yang memakai Firebase SDK. Framework belum ditentukan.
 >
-> • **Backend:** PHP (endpoint di public/actions, konfigurasi di config/) dengan Firebase Admin SDK kreait/firebase-php, di Render paket gratis. Menangani seluruh akses Realtime Database, Web Mailer, dan pemanggilan Gemini API dengan aman.
+> • **Backend:** PHP (endpoint di public/actions, konfigurasi di config/) dengan Firebase Admin SDK kreait/firebase-php, di Render paket gratis. Menangani seluruh akses Realtime Database, pengiriman email verifikasi, dan pemanggilan Gemini API dengan aman.
 
 # **8. Alasan Memilih Arsitektur Ini**
 
@@ -318,9 +317,9 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 >
 > • **Cepat dikerjakan oleh dua orang.** Autentikasi, database, dan penyimpanan file sudah dikelola Firebase, sehingga tim tidak perlu membangun dan memelihara server sendiri. Deadline 20 Oktober 2026 kira-kira tiga minggu dari sekarang.
 >
-> • Backend tipis tetap perlu untuk dua hal. Pertama, API key Gemini harus rahasia; kalau dipanggil dari browser, key bisa dilihat siapa saja lewat kode atau tab jaringan. Kedua, pengiriman Welcome Email butuh server karena kunci layanan email tidak boleh ada di frontend.
+> • Backend tetap perlu karena service account Firebase dan API key Gemini harus rahasia; kalau dipakai dari browser, keduanya bisa dilihat siapa saja lewat kode atau tab jaringan.
 >
-> • **Keamanan berlapis.** Security Rules menolak akses langsung dari browser, dan backend hanya mengakses data milik uid yang sedang login. Backend memverifikasi ID Token, sehingga endpoint chat dan email tidak bisa dipakai orang yang belum login, dan kuota Gemini tidak terkuras oleh pihak luar.
+> • **Keamanan berlapis.** Security Rules menolak akses langsung dari browser, dan backend hanya mengakses data milik uid yang sedang login. Backend memverifikasi ID Token, sehingga endpoint data dan chat tidak bisa dipakai orang yang belum login, dan kuota Gemini tidak terkuras oleh pihak luar.
 >
 > • **Biaya rendah.** Semua layanan punya free tier, sejalan dengan keputusan memakai Gemini karena gratis. Batasnya bisa berubah, jadi cek halaman harga terbaru sebelum rilis.
 
@@ -328,7 +327,7 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 
 | **Alternatif**                                             | **Kelebihan**                | **Alasan tidak dipilih**                                                                                                            |
 |------------------------------------------------------------|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| **Semua langsung dari frontend, tanpa backend**            | Paling sederhana             | API key Gemini dan kredensial email terekspos, dan Web Mailer tidak bisa berjalan dengan aman.                                      |
+| **Semua langsung dari frontend, tanpa backend**            | Paling sederhana             | API key Gemini terekspos, dan akses database hanya dilindungi Security Rules di sisi klien.                                      |
 | **Backend penuh dengan database sendiri (misalnya MySQL)** | Kontrol penuh atas data      | Harus membangun autentikasi, upload file, dan hosting database sendiri. Bertentangan dengan persyaratan Firebase dan memakan waktu. |
 | **Firebase Cloud Functions sebagai backend**               | Terintegrasi dengan Firebase | Persyaratan menyebut hosting di Render. Cloud Functions juga umumnya membutuhkan paket berbayar; cek ketentuan terbaru.             |
 
@@ -338,9 +337,9 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 >
 > • Realtime Database tidak mendukung join dan query kompleks. Karena itu struktur datanya dirancang khusus (Bagian 10) dan dioptimasi (Bagian 11).
 >
-> • Karena tim memakai Render paket gratis, layanan bisa "tidur" saat lama tidak dipakai, sehingga permintaan pertama ke backend (chat Nomi atau email) terasa lambat beberapa detik. Karena semua akses data juga lewat backend, jeda ini bisa terasa di halaman mana pun setelah layanan tidur. Frontend sebaiknya tidak menunggu pengiriman Welcome Email agar registrasi tetap terasa cepat.
+> • Karena tim memakai Render paket gratis, layanan bisa "tidur" saat lama tidak dipakai, sehingga permintaan pertama ke backend terasa lambat beberapa detik. Karena semua akses data juga lewat backend, jeda ini bisa terasa di halaman mana pun setelah layanan tidur.
 
-Pengiriman email: paket gratis Render diketahui memblokir port SMTP keluar (25, 465, 587), sehingga Nodemailer dengan Gmail berisiko gagal dari sana (cek dokumentasi Render terbaru). Karena itu Welcome Email dikirim lewat API email berbasis HTTPS seperti Brevo atau Resend, yang memiliki kuota gratis (cek batas terbaru). Email verifikasi tidak terpengaruh karena dikirim oleh Firebase.
+Pengiriman email: satu-satunya email adalah email verifikasi, yang dikirim oleh server Firebase. Karena itu tidak perlu layanan email tambahan, dan pembatasan port SMTP di Render paket gratis tidak berpengaruh.
 
 # **9. Class Diagram**
 
@@ -370,7 +369,6 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 | **PhotoService**       | Mengompres, mengunggah, dan menghapus foto di Storage                                                                                                                   | Frontend |
 | **AffirmationService** | Mengambil satu afirmasi acak setiap halaman dimuat, tidak sama dengan afirmasi yang terakhir tampil                                                                     | Frontend → backend PHP |
 | **ChatService**        | Mengirim pesan ke backend dan membaca riwayat chat                                                                                                                      | Frontend → backend PHP |
-| **MailerService**      | Mengirim Welcome Email                                                                                                                                                  | Backend                      |
 | **GeminiClient**       | Memanggil Gemini API dengan system prompt Nomi dan beberapa pesan terakhir                                                                                              | Backend                      |
 
 ## **9.3 Relasi Antar Kelas**
@@ -381,7 +379,7 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 >
 > • **User dan UserStats (composition, 1 ke 1):** statistik adalah bagian dari pengguna dan ikut hilang jika akun dihapus.
 >
-> • AuthService memakai MailerService: saat registrasi, AuthService memanggil sendEmailVerification (Firebase) dan meminta backend mengirim Welcome Email.
+> • AuthService memanggil endpoint registrasi di backend PHP, yang mengirim email verifikasi lewat Firebase Authentication.
 >
 > • **JournalService memakai PhotoService:** foto dikompres dan diunggah dulu, baru URL-nya disimpan. Saat jurnal dihapus atau fotonya diganti, file lama dihapus lewat PhotoService.remove.
 >
@@ -527,7 +525,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 >
 > • Email verifikasi memakai Firebase Authentication (sendEmailVerification). Login email diblokir sampai email terverifikasi; login Google dianggap terverifikasi.
 >
-> • Welcome Email dikirim backend lewat API email HTTPS (Brevo atau Resend), bukan SMTP Gmail, kecuali terbukti port SMTP dapat dipakai.
+> • Tidak ada Welcome Email; Web Mailer hanya mengirim email verifikasi lewat Firebase Authentication.
 >
 > • Fungsi CRUD mengikuti tabel Bagian 6: 12 fungsi mencakup jurnal, chat Nomi, profil, avatar, dan hapus akun.
 >
@@ -537,7 +535,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 >
 > • Email Enumeration Protection diaktifkan; login menampilkan satu pesan "Email atau kata sandi salah" untuk akun tidak ditemukan dan password salah.
 >
-> • Registrasi meminta nama lengkap; sapaan di aplikasi dan Welcome Email hanya memakai nama depan.
+> • Registrasi meminta nama lengkap; sapaan di aplikasi hanya memakai nama depan.
 >
 > • Jurnal berisi tanggal, foto, dan catatan (tanpa field "Kenapa momen ini precious").
 >
@@ -546,8 +544,6 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 ## **12.2 Hal yang Dicek Sebelum Mulai Coding**
 
 > • Paket Firebase Storage: apakah project baru wajib Blaze. Jika ya dan tidak diinginkan, pakai Cloudinary atau layanan gratis lain.
->
-> • Port SMTP di Render paket gratis dan kuota gratis Brevo atau Resend terbaru.
 >
 > • Pastikan Email Enumeration Protection sudah aktif di Firebase Console, karena pesan error login mengikuti pengaturan ini.
 >
@@ -561,7 +557,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 >
 > • 6 sampai 12 Okt: Journaling dan foto, Log History, afirmasi harian, landing page.
 >
-> • 13 sampai 17 Okt: Nomi (backend dan chat), Welcome Email, hapus akun, Security Rules.
+> • 13 sampai 17 Okt: Nomi (backend dan chat), hapus akun, Security Rules.
 >
 > • 18 sampai 19 Okt: pengujian akhir, perbaikan, deploy final. 20 Okt: pengumpulan.
 
