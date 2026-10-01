@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 // session_start() tidak diperlukan karena tahap ini hanya membuat akun, belum membuat session login.
-require_once __DIR__ . '/../config/firebase_config.php';
+require_once __DIR__ . '/../../config/firebase_config.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

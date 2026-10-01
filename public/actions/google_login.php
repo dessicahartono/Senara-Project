@@ -19,7 +19,7 @@ if (!is_string($idToken) || $idToken === '') {
 }
 
 try {
-    require_once __DIR__ . '/../config/firebase_config.php';
+    require_once __DIR__ . '/../../config/firebase_config.php';
     $verifiedToken = $auth->verifyIdToken($idToken);
     $claims = $verifiedToken->claims();
     $uid = $claims->get('sub');

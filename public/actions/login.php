@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-require_once __DIR__ . '/../config/firebase_config.php';
+require_once __DIR__ . '/../../config/firebase_config.php';
 
 $message = '';
 
