@@ -1,9 +1,9 @@
 import { ROUTES } from "../config.js";
 import { mountSiteHeader } from "../components/site-header.js";
 import { initFormHelpers, isValidEmail } from "../components/form.js";
-import { showToast } from "../components/toast.js";
-import { register, loginWithGoogle, AUTH_ERRORS } from "../services/authService.js";
-import { $, show, hide, shake, withLoading } from "../utils/dom.js";
+// Comment out service ini karena masih menggunakan mock, bukan endpoint PHP/Firebase.
+// import { register, loginWithGoogle, AUTH_ERRORS } from "../services/authService.js";
+import { $, show, hide, shake } from "../utils/dom.js";
 
 mountSiteHeader();
 initFormHelpers();
@@ -12,7 +12,6 @@ const MIN_PASSWORD = 6;
 
 const form = $("#register-form");
 const card = $(".register__card");
-const submitBtn = $("#btn-submit");
 
 const name = {
   input: $("#full-name"),
@@ -106,10 +105,8 @@ confirm.input.addEventListener("input", () => checkMatch({ showError: true }));
 
 terms.input.addEventListener("change", () => hide(terms.error));
 
-/* ---------- Submit ---------- */
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
+/* ---------- Validasi sebelum POST ke PHP ---------- */
+form.addEventListener("submit", (e) => {
   const nameOk = checkName({ showError: true });
   const emailOk = checkEmail({ showError: true });
   const passwordOk = password.input.value.length >= MIN_PASSWORD;
@@ -120,35 +117,70 @@ form.addEventListener("submit", async (e) => {
   show(terms.error, !termsOk);
 
   if (!(nameOk && emailOk && passwordOk && matchOk && termsOk)) {
+    // Hanya hentikan submit saat tidak valid; data valid dikirim ke actions/register.php.
+    e.preventDefault();
     shake(card);
     form.querySelector(".is-error, #terms:not(:checked)")?.focus();
-    return;
-  }
-
-  try {
-    await withLoading(
-      submitBtn,
-      () =>
-        register({
-          name: name.input.value.trim(),
-          email: email.input.value,
-          password: password.input.value,
-        }),
-      "Menyiapkan ruangmu..."
-    );
-    window.location.href = ROUTES.checkEmail;
-  } catch (err) {
-    if (err.code === AUTH_ERRORS.EMAIL_IN_USE) {
-      setEmailState("taken");
-      email.input.focus();
-    } else {
-      showToast(err.message || "Terjadi kendala. Coba lagi sebentar.", { type: "error" });
-    }
-    shake(card);
   }
 });
 
-$("#btn-google").addEventListener("click", async (e) => {
-  await withLoading(e.currentTarget, () => loginWithGoogle(), "Menghubungkan...");
-  window.location.href = ROUTES.dashboard;
+/*
+ Handler registrasi lama dinonaktifkan
+ 
+form.addEventListener("submit", async (e) => {
+   e.preventDefault();
+   await register({
+     name: name.input.value.trim(),
+     email: email.input.value,
+     password: password.input.value,
+   });
+   window.location.href = ROUTES.checkEmail;
+ });
+ */
+
+const googleButton = $("#btn-google");
+const googleStatus = $("#google-status");
+
+googleButton.addEventListener("click", async () => {
+  googleButton.disabled = true;
+  googleStatus.classList.remove("hidden");
+  googleStatus.textContent = "Menghubungkan ke Google...";
+
+  try {
+    const configResponse = await fetch("actions/firebase_web_config.php");
+    const firebaseConfig = await configResponse.json();
+
+    if (!configResponse.ok) {
+      throw new Error(firebaseConfig.message || "Konfigurasi Firebase belum tersedia.");
+    }
+
+    const [{ initializeApp }, { getAuth, GoogleAuthProvider, signInWithPopup }] =
+      await Promise.all([
+        import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"),
+      ]);
+
+    const auth = getAuth(initializeApp(firebaseConfig));
+    const result = await signInWithPopup(auth, new GoogleAuthProvider());
+
+    googleStatus.textContent = "Memverifikasi akun...";
+    const formData = new FormData();
+    formData.append("idToken", await result.user.getIdToken());
+
+    const response = await fetch("actions/google_login.php", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+    const verification = await response.json();
+
+    if (!response.ok || !verification.success) {
+      throw new Error(verification.message || "Verifikasi akun gagal.");
+    }
+
+    window.location.href = ROUTES.dashboard;
+  } catch (error) {
+    googleStatus.textContent = error.message || "Google sign-in gagal. Coba lagi.";
+    googleButton.disabled = false;
+  }
 });
