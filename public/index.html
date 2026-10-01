@@ -38,7 +38,7 @@
       <div class="slider" id="slider">
         <div class="slider__track" id="slider-track">
           <!-- Slide 1 -->
-          <article class="slide" aria-roledescription="slide" aria-label="1 dari 3">
+          <article class="slide" aria-roledescription="slide" aria-label="1 dari 4">
             <div class="slide__grid">
               <div class="slide__text">
                 <h1 class="slide__title">Senara</h1>
@@ -58,7 +58,27 @@
           </article>
 
           <!-- Slide 2 -->
-          <article class="slide" aria-roledescription="slide" aria-label="2 dari 3">
+          <article class="slide slide--center" id="slide-afirmasi" aria-roledescription="slide" aria-label="2 dari 4">
+            <div class="slide__stack">
+              <span class="slide__badge text-label-sm">Afirmasi Hari Ini</span>
+              <h2 class="slide__title">Satu kalimat baik untukmu hari ini</h2>
+              <div class="slide__note">
+                <div class="slide__note-head">
+                  <span class="icon text-primary" aria-hidden="true">spa</span>
+                  <span>Afirmasi untukmu</span>
+                </div>
+                <p class="slide__note-text" id="landing-affirmation" aria-live="polite">Memuat afirmasi...</p>
+              </div>
+              <div class="slide__actions slide__actions--center">
+                <a class="btn landing-btn landing-btn--primary landing-btn--wide" href="registrasi.html">
+                  Dapatkan Afirmasi Setiap Hari
+                </a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Slide 3 -->
+          <article class="slide" aria-roledescription="slide" aria-label="3 dari 4">
             <div class="slide__grid">
               <div class="slide__text">
                 <span class="slide__badge text-label-sm">Teman Virtual Kamu</span>
@@ -85,8 +105,8 @@
             </div>
           </article>
 
-          <!-- Slide 3 -->
-          <article class="slide slide--center" aria-roledescription="slide" aria-label="3 dari 3">
+          <!-- Slide 4 -->
+          <article class="slide slide--center" aria-roledescription="slide" aria-label="4 dari 4">
             <div class="slide__stack">
               <h2 class="slide__title">Mengabadikan Momen Berharga Setiap Hari Bersama Senara</h2>
               <p class="slide__lead">
@@ -98,8 +118,7 @@
                   <span>Catatan Hari Ini</span>
                 </div>
                 <p class="slide__note-text">
-                  “Hari ini secangkir kopi pagi terasa begitu hangat. Aku bersyukur sempat berhenti sejenak dan
-                  tersenyum pada diri sendiri.”
+                  “Untuk aku dari aku, memaafkan tidak akan memperbaiki masalalu, tapi akan memperindah masa depan.”
                 </p>
               </div>
               <div class="slide__actions slide__actions--center">
@@ -117,6 +136,7 @@
           <button class="slider__dot" type="button" data-slide="0" aria-label="Lompat ke slide 1"></button>
           <button class="slider__dot" type="button" data-slide="1" aria-label="Lompat ke slide 2"></button>
           <button class="slider__dot" type="button" data-slide="2" aria-label="Lompat ke slide 3"></button>
+          <button class="slider__dot" type="button" data-slide="3" aria-label="Lompat ke slide 4"></button>
         </div>
         <p class="slider__hint">
           <span class="icon icon--xs" aria-hidden="true">swipe</span>

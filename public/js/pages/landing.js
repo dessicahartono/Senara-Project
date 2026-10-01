@@ -1,4 +1,5 @@
 import { mountSiteHeader } from "../components/site-header.js";
+import { getRandomAffirmation } from "../services/affirmationService.js";
 import { $, $$ } from "../utils/dom.js";
 
 mountSiteHeader({ active: "home", variant: "landing" });
@@ -121,4 +122,28 @@ slider.addEventListener("wheel", (e) => {
   setTimeout(() => { wheelLocked = false; }, 700);
 }, { passive: false });
 
+/* ---------- Afirmasi ---------- */
+
+const affirmationSlide = slides.indexOf($("#slide-afirmasi"));
+
+async function loadAffirmation() {
+  const text = $("#landing-affirmation");
+  try {
+    const affirmation = await getRandomAffirmation();
+    text.textContent = `“${affirmation.text}”`;
+  } catch {
+    text.textContent = "Afirmasi belum bisa dimuat. Coba muat ulang halaman sebentar lagi.";
+  }
+  fitHeight();
+}
+
+/** Link "Afirmasi Harian" di header (index.html#afirmasi) langsung membuka slide afirmasi. */
+function openSlideFromHash() {
+  if (window.location.hash === "#afirmasi") goTo(affirmationSlide);
+}
+
+window.addEventListener("hashchange", openSlideFromHash);
+
 goTo(0);
+openSlideFromHash();
+loadAffirmation();

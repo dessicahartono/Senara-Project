@@ -46,13 +46,14 @@ Requirements:
 
 ## **3.1 Landing Page (Sebelum Login)**
 
-Halaman awal berupa slider geser dengan 3 slide untuk menarik perhatian pengunjung:
+Halaman awal berupa slider geser dengan 4 slide untuk menarik perhatian pengunjung:
 
 | **Slide**   | **Judul**                 | **Isi**                                                                                                                                                                                                                    |
 |-------------|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Slide 1** | Tentang Senara            | Pengenalan singkat Senara sebagai ruang aman untuk refleksi dan afirmasi harian.                                                                                                                                           |
-| **Slide 2** | Daily Affirmation Preview | Kutipan afirmasi untuk umum, berganti acak setiap kali halaman dimuat.                                                                                                                                                     |
-| **Slide 3** | Mulai / Registrasi        | Tombol aksi cepat ke Registrasi. Tombol Login ("Masuk ke Akunmu") berada di bagian ajakan (CTA) di bawah slider, berdampingan dengan tombol Daftar. Registrasi memicu email verifikasi lewat Web Mailer (Firebase Authentication). Setelah klik link verifikasi, pengguna diarahkan ke halaman Login. |
+| **Slide 2** | Daily Affirmation Preview | Kutipan afirmasi untuk umum, berganti acak setiap kali halaman dimuat. Tombol "Afirmasi Harian" di header langsung membuka slide ini.                                                                                                                                                     |
+| **Slide 3** | Kenalan dengan Nomi       | Perkenalan Nomi sebagai teman bicara virtual, dengan tombol "Sapa Nomi Sekarang" ke Registrasi.                                                                                                                                                     |
+| **Slide 4** | Mulai / Registrasi        | Tombol aksi cepat ke Registrasi. Tombol Login ("Masuk ke Akunmu") berada di bagian ajakan (CTA) di bawah slider, berdampingan dengan tombol Daftar. Registrasi memicu email verifikasi lewat Web Mailer (Firebase Authentication). Setelah klik link verifikasi, pengguna diarahkan ke halaman Login. |
 
 ## **3.2 Main Dashboard (Setelah Login)**
 
