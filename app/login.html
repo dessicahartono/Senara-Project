@@ -70,7 +70,7 @@
           </div>
         </div>
 
-        <form class="form" id="login-form" novalidate>
+        <form class="form" id="login-form" action="actions/login.php" method="POST" novalidate>
           <div class="field">
             <label class="field__label" for="email-input">
               <span>Alamat Email</span>
@@ -124,6 +124,8 @@
           </svg>
           <span>Lanjutkan dengan Google</span>
         </button>
+        
+        <p class="text-body-sm text-muted hidden" id="google-status" role="status" aria-live="polite"></p>
 
         <p class="auth-card__switch text-body-sm text-muted">
           Belum punya akun Senara?

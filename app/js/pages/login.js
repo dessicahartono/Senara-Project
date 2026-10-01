@@ -1,14 +1,8 @@
 import { ROUTES } from "../config.js";
 import { initFormHelpers, setFieldError, isValidEmail } from "../components/form.js";
-import { showToast } from "../components/toast.js";
-import {
-  login,
-  loginWithGoogle,
-  resendVerificationEmail,
-  sendPasswordReset,
-  AUTH_ERRORS,
-} from "../services/authService.js";
-import { $, show, hide, shake, withLoading } from "../utils/dom.js";
+// Dinonaktifkan: authService.js masih memakai mockStore, bukan Firebase/PHP.
+// import { login, loginWithGoogle, resendVerificationEmail, sendPasswordReset, AUTH_ERRORS } from "../services/authService.js";
+import { $, show, hide, shake } from "../utils/dom.js";
 
 initFormHelpers();
 
@@ -16,7 +10,6 @@ const form = $("#login-form");
 const card = $(".auth-card");
 const emailInput = $("#email-input");
 const passwordInput = $("#password-input");
-const submitBtn = $("#btn-submit");
 
 const el = {
   banners: $("#banners"),
@@ -78,7 +71,7 @@ function updateBannerContainer() {
   show(el.banners, anyVisible);
 }
 
-/** Validasi sederhana sebelum memanggil service. */
+/** Validasi sederhana sebelum form dikirim ke PHP. */
 function validate() {
   const email = emailInput.value.trim();
   const password = passwordInput.value;
@@ -97,37 +90,25 @@ function validate() {
   return valid;
 }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// Submit valid dibiarkan berjalan normal ke action PHP (method POST).
+// preventDefault hanya dipakai saat input tidak valid agar browser tidak mengirimkannya.
+form.addEventListener("submit", (e) => {
   setState("normal");
-  el.emailError.textContent = "Email belum terdaftar. Periksa kembali atau daftar akun baru.";
 
   if (!validate()) {
-    shake(card);
-    return;
-  }
-
-  try {
-    await withLoading(
-      submitBtn,
-      () => login(emailInput.value, passwordInput.value),
-      "Memasuki Ruang..."
-    );
-    window.location.href = ROUTES.dashboard;
-  } catch (err) {
-    const stateByCode = {
-      [AUTH_ERRORS.INVALID_CREDENTIAL]: "invalid",
-      [AUTH_ERRORS.INVALID_EMAIL]: "invalidemail",
-      [AUTH_ERRORS.TOO_MANY_REQUESTS]: "toomany",
-      [AUTH_ERRORS.USER_NOT_FOUND]: "notfound",
-      [AUTH_ERRORS.WRONG_PASSWORD]: "wrongpw",
-      [AUTH_ERRORS.EMAIL_NOT_VERIFIED]: "unverified",
-    };
-    setState(stateByCode[err.code] ?? "normal");
-    if (!stateByCode[err.code]) showToast("Terjadi kendala. Coba lagi sebentar.", { type: "error" });
+    e.preventDefault();
     shake(card);
   }
 });
+
+/* Handler login lama dinonaktifkan
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await login(emailInput.value, passwordInput.value);
+  window.location.href = ROUTES.dashboard;
+});
+*/
 
 // Hapus tanda error begitu pengguna mulai mengetik ulang
 emailInput.addEventListener("input", () => {
@@ -139,37 +120,59 @@ passwordInput.addEventListener("input", () => {
   el.emailGroup.classList.remove("is-error"); // sisa tanda dari state "invalid"
 });
 
+// Google login 
+const googleButton = $("#btn-google");
+const googleStatus = $("#google-status");
+
+googleButton.addEventListener("click", async () => {
+  googleButton.disabled = true;
+  googleStatus.classList.remove("hidden");
+  googleStatus.textContent = "Menghubungkan ke Google...";
+
+  try {
+    const configResponse = await fetch("actions/firebase_web_config.php");
+    const firebaseConfig = await configResponse.json();
+    if (!configResponse.ok) {
+      throw new Error(firebaseConfig.message || "Konfigurasi Firebase Web belum tersedia.");
+    }
+
+    const [{ initializeApp }, { getAuth, GoogleAuthProvider, signInWithPopup }] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"),
+    ]);
+
+    const auth = getAuth(initializeApp(firebaseConfig));
+    const result = await signInWithPopup(auth, new GoogleAuthProvider());
+    googleStatus.textContent = "Memverifikasi akun...";
+
+    const formData = new FormData();
+    formData.append("idToken", await result.user.getIdToken());
+
+    const verifyResponse = await fetch("actions/google_login.php", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+    const verification = await verifyResponse.json();
+    if (!verifyResponse.ok || !verification.success) {
+      throw new Error(verification.message || "Verifikasi akun gagal.");
+    }
+
+    window.location.href = ROUTES.dashboard;
+  } catch (error) {
+    googleStatus.textContent = error.message || "Google sign-in gagal. Coba lagi.";
+    googleButton.disabled = false;
+  }
+});
+
+// Dinonaktifkan: tombol-tombol ini masih memanggil implementasi mock.
+/*
 $("#btn-resend").addEventListener("click", async (e) => {
   await withLoading(e.currentTarget, () => resendVerificationEmail(), "Mengirim...");
-  show(el.resent);
-  updateBannerContainer();
-  setTimeout(() => {
-    hide(el.resent);
-    updateBannerContainer();
-  }, 4500);
 });
 
 $("#btn-forgot").addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  if (!isValidEmail(email)) {
-    el.emailError.textContent = "Isi email kamu dulu untuk menerima tautan atur ulang.";
-    setFieldError(el.emailGroup, el.emailError, true);
-    emailInput.focus();
-    return;
-  }
-  await sendPasswordReset(email);
-  showToast(`Tautan atur ulang kata sandi dikirim ke ${email}`, { icon: "mail" });
+  await sendPasswordReset(emailInput.value.trim());
 });
 
-$("#btn-google").addEventListener("click", async (e) => {
-  await withLoading(e.currentTarget, () => loginWithGoogle(), "Menghubungkan...");
-  window.location.href = ROUTES.dashboard;
-});
-
-console.info(
-  "[Senara demo] Akun contoh:\n" +
-    "  seno.refleksi@gmail.com / senara123 → berhasil\n" +
-    "  belum.verifikasi@senara.id / senara123 → belum verifikasi\n" +
-    '  email lain / kata sandi lain → "Email atau kata sandi salah"\n' +
-    "  5x gagal berturut-turut → terlalu banyak percobaan (muat ulang halaman untuk reset)"
-);
+*/
