@@ -147,7 +147,7 @@ googleButton.addEventListener("click", async () => {
   googleStatus.textContent = "Menghubungkan ke Google...";
 
   try {
-    const configResponse = await fetch("actions/firebase_web_config.php");
+    const configResponse = await fetch("actions/get_firebase_web_config.php");
     const firebaseConfig = await configResponse.json();
 
     if (!configResponse.ok) {
