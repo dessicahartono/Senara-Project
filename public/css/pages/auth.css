@@ -187,14 +187,6 @@
   margin-top: 0;
 }
 
-.register__terms {
-  padding-top: var(--space-sm);
-}
-
-.register__terms .field__error {
-  margin-top: var(--space-sm);
-}
-
 .register__submit {
   margin-top: 0.75rem;
   letter-spacing: 0.025em;

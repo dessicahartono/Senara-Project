@@ -26,7 +26,6 @@ const email = {
 };
 const password = { input: $("#password"), meter: $("#strength"), label: $("#strength-label") };
 const confirm = { input: $("#confirm-password"), mismatch: $("#password-mismatch") };
-const terms = { input: $("#terms"), error: $("#terms-error") };
 
 /* ---------- Nama ---------- */
 function checkName({ showError }) {
@@ -102,8 +101,6 @@ password.input.addEventListener("input", () => {
 });
 confirm.input.addEventListener("input", () => checkMatch({ showError: true }));
 
-terms.input.addEventListener("change", () => hide(terms.error));
-
 /* ---------- Validasi sebelum POST ke PHP ---------- */
 form.addEventListener("submit", (e) => {
   const nameOk = checkName({ showError: true });
@@ -112,14 +109,12 @@ form.addEventListener("submit", (e) => {
   password.input.classList.toggle("is-error", !passwordOk);
   if (!passwordOk) updateStrength();
   const matchOk = checkMatch({ showError: true });
-  const termsOk = terms.input.checked;
-  show(terms.error, !termsOk);
 
-  if (!(nameOk && emailOk && passwordOk && matchOk && termsOk)) {
+  if (!(nameOk && emailOk && passwordOk && matchOk)) {
     // Hanya hentikan submit saat tidak valid; data valid dikirim ke actions/register.php.
     e.preventDefault();
     shake(card);
-    form.querySelector(".is-error, #terms:not(:checked)")?.focus();
+    form.querySelector(".is-error")?.focus();
   }
 });
 

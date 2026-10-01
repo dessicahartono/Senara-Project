@@ -163,8 +163,6 @@ Berikut input form registrasi yang paling ideal beserta fungsinya.
 
 ## **4.2 Elemen Tambahan pada Form**
 
-> • **Checkbox Syarat & Ketentuan (opsional):** contoh teks "Saya menyetujui Syarat & Ketentuan Senara."
->
 > • **Tombol Submit:** "Mulai Bersama Senara".
 >
 > • **Link Switch:** "Sudah punya akun? Login di sini".
