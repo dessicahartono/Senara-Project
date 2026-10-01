@@ -37,7 +37,7 @@ Requirements:
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Database**         | Firebase Realtime Database                                                                                                                                                                                       |
 | **Autentikasi**      | Firebase Auth: login dengan Email & Password, ditambah Login with Google. Login email hanya berhasil jika email sudah diverifikasi.                                                                              |
-| **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerification) setelah registrasi. Welcome Email: backend Node.js lewat API email HTTPS (Brevo atau Resend); lihat 8.3 untuk alasan tidak memakai SMTP Gmail. |
+| **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerification) setelah registrasi. Welcome Email: backend PHP lewat API email HTTPS (Brevo atau Resend); lihat 8.3 untuk alasan tidak memakai SMTP Gmail. |
 | **Penyimpanan Foto** | Firebase Storage (gratis hingga 5 GB); URL foto disimpan di Realtime Database                                                                                                                                    |
 | **Chatbot AI**       | Gemini API (dipilih karena gratis)                                                                                                                                                                               |
 | **Hosting / Deploy** | Render (paket gratis)                                                                                                                                                                                            |
@@ -62,7 +62,7 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 
 > • Menampilkan pesan afirmasi harian secara otomatis.
 >
-> • Tersedia 365 afirmasi berbeda yang dihasilkan AI. Kalimat afirmasi ini disimpan sebagai dataset 365 kalimat afirmasi di Firebase Realtime Database. Setiap kali halaman dimuat atau di-refresh, frontend memilih satu nomor acak dari 1 sampai 365 lalu mengambil kalimat pada nomor itu, dengan syarat tidak sama dengan afirmasi yang terakhir tampil.
+> • Tersedia 365 afirmasi berbeda yang dihasilkan AI. Kalimat afirmasi ini disimpan sebagai dataset 365 kalimat afirmasi di Firebase Realtime Database. Setiap kali halaman dimuat atau di-refresh, frontend meminta afirmasi ke endpoint PHP; backend memilih satu nomor acak dari 1 sampai 365 lalu mengambil kalimat pada nomor itu, dengan syarat tidak sama dengan afirmasi yang terakhir tampil.
 >
 > • Afirmasi hanya untuk dibaca dan dibagikan (tombol Bagikan); pengguna tidak menyimpan afirmasi ke akunnya.
 
@@ -72,7 +72,7 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 >
 > • System prompt Gemini diatur agar Nomi berkarakter sebagai pendengar yang hangat, ramah, dan menenangkan.
 >
-> • Riwayat percakapan disimpan di Realtime Database (chats/{uid}). Frontend menulis pesan pengguna dan balasan Nomi setelah balasan diterima dari backend, sehingga Security Rules per uid tetap berlaku.
+> • Riwayat percakapan disimpan di Realtime Database (chats/{uid}). Backend PHP menyimpan pesan pengguna dan balasan Nomi setelah balasan diterima dari Gemini, hanya ke path milik uid yang sedang login.
 >
 > • Pengguna dapat menghapus satu pesan atau membersihkan seluruh riwayat percakapan (Delete).
 
@@ -169,7 +169,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 |--------------------------------|-------------|--------------------------------------------------------------------------------------------------------|
 | **Nama Lengkap**               | Bisa diubah | Nama depannya dipakai untuk sapaan di Homepage dan Profile ("Hi, Seno").                               |
 | **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri.                                                                 |
-| **Foto Profil (Avatar)**       | Bisa diubah | Foto diunggah lewat PhotoService (dikompres, disimpan di Storage); URL disimpan di users/{uid}/avatar. |
+| **Foto Profil (Avatar)**       | Bisa diubah | Foto diunggah lewat PhotoService (dikompres, disimpan di Storage); URL disimpan di users/{uid}/photoUrl. |
 | **Alamat Email**               | Read-only   | Menampilkan email terdaftar dari Firebase Auth.                                                        |
 | **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
 
@@ -201,7 +201,7 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 | **Read 3**          | Profile: membaca data diri dan statistik                   | users/{uid}                                                      |
 | **Update 1**        | Edit jurnal (catatan, foto)                                | journals/{uid}/{dateKey}: note, photoUrl, updatedAt              |
 | **Update 2**        | Simpan Perubahan profil (nama lengkap, bio)                | users/{uid}                                                      |
-| **Update 3**        | Ganti foto profil (avatar)                                 | users/{uid}/avatar                                               |
+| **Update 3**        | Ganti foto profil (avatar)                                 | users/{uid}/photoUrl                                             |
 | **Delete 1**        | Hapus jurnal di panel detail, termasuk foto di Storage     | journals, journalDates, dan stats                                |
 | **Delete 2**        | Hapus satu pesan atau bersihkan riwayat chat Nomi          | chats/{uid}                                                      |
 | **Delete 3**        | Hapus akun beserta seluruh datanya                         | users, journals, journalDates, chats, Storage, Firebase Auth     |
@@ -246,7 +246,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **U2**  | Ganti foto jurnal (foto lama di Storage dihapus)             | Storage dan journals/{uid}/{dateKey}: photoUrl          | journalService.saveJournal      | Update 1         |
 | **U3**  | Hapus foto dari jurnal tanpa menghapus jurnalnya             | Storage dan journals/{uid}/{dateKey}: photoUrl = null   | journalService.saveJournal (removePhoto) | -       |
 | **U4**  | Simpan perubahan profil (nama lengkap, bio)                  | users/{uid}: name, bio                                  | userService.updateProfile       | Update 2         |
-| **U5**  | Ganti foto profil (avatar)                                   | Storage dan users/{uid}/avatar                          | userService.updateProfilePhoto  | Update 3         |
+| **U5**  | Ganti foto profil (avatar)                                   | Storage dan users/{uid}/photoUrl                        | userService.updateProfilePhoto  | Update 3         |
 | **U6**  | Hitung ulang streak setelah jurnal dibuat atau dihapus       | users/{uid}/stats: streak, lastCheckIn                  | journalService (saat simpan/hapus) | -             |
 
 **Delete**
@@ -280,10 +280,10 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 
 | **No** | **Alur** | **Penjelasan** |
 |---|---|---|
-| **1** | Login dan registrasi | Frontend memanggil Firebase Authentication lewat SDK (email dan password, atau Google). Authentication mengembalikan ID Token yang dipakai untuk akses berikutnya. |
-| **2** | Baca dan tulis data | Frontend membaca dan menulis profil, jurnal, afirmasi, dan riwayat chat langsung ke Realtime Database. Security Rules memastikan pengguna hanya bisa mengakses datanya sendiri. |
+| **1** | Login dan registrasi | Registrasi dan login email dikirim lewat form ke backend PHP, yang memanggil Firebase Authentication lewat Admin SDK. Login Google dilakukan frontend lewat Firebase SDK, lalu ID Token dikirim ke backend PHP untuk diverifikasi. Setelah berhasil, backend menyimpan uid di session. |
+| **2** | Baca dan tulis data | Frontend memanggil endpoint backend PHP; backend membaca dan menulis profil, jurnal, afirmasi, dan riwayat chat di Realtime Database lewat Admin SDK, hanya pada path milik uid yang sedang login. Security Rules menolak semua akses langsung dari browser (Bagian 11.9). |
 | **3** | Upload foto | Foto dikompres di browser, lalu diunggah ke firebase storage. URL hasil upload disimpan ke Realtime Database pada field photoUrl. |
-| **4** | Panggilan ke backend | Untuk chat Nomi dan pengiriman email, frontend memanggil endpoint backend di Render lewat HTTPS dan menyertakan ID Token. |
+| **4** | Panggilan ke backend | Semua akses data, chat Nomi, dan pengiriman email lewat endpoint backend PHP di Render (HTTPS). Setelah login, backend menyimpan uid di session. |
 | **5** | Verifikasi token | Middleware backend memeriksa keaslian ID Token lewat Firebase Admin SDK sebelum memproses permintaan. |
 | **6** | Chat Nomi | Backend mengirim pesan pengguna dan system prompt Nomi ke Gemini API, lalu meneruskan jawabannya ke frontend. |
 | **7** | Web Mailer | Email verifikasi (syarat wajib, lewat Firebase): setelah register, frontend memanggil sendEmailVerification() dari Firebase Authentication dengan continueUrl ke halaman Login. Setelah pengguna klik link, ia diarahkan ke halaman Login.<br>Aturan login: berhasil hanya jika emailVerified bernilai true (akun Google dianggap sudah terverifikasi). Jika belum, tampilkan pesan, tombol "Kirim ulang email verifikasi", lalu sign out.<br>Welcome Email: frontend memanggil endpoint backend dengan ID Token; backend mengirim email lewat API email HTTPS (lihat 8.3). Registrasi tidak menunggu email ini selesai.<br>Error handling saat login: Email Enumeration Protection diaktifkan di Firebase Console, sehingga akun tidak ditemukan dan password salah sama-sama dikembalikan sebagai auth/invalid-credential dan ditampilkan dengan satu pesan "Email atau kata sandi salah". Error lain yang ditangani: format email tidak valid (auth/invalid-email), email belum diverifikasi, dan terlalu banyak percobaan (auth/too-many-requests). |
@@ -296,9 +296,9 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 | **Firebase Authentication** | Registrasi, login email dan password, login Google, email verifikasi, reset password               | Firebase Auth                                          |
 | **Realtime Database**       | Profil, jurnal, afirmasi, riwayat chat                                                             | Firebase Realtime Database                             |
 | **Cloud Storage**           | File foto jurnal (yang sudah dikompres)                                                            | Firebase Storage                                       |
-| **Backend**                 | Endpoint chat dan email, verifikasi token, menyimpan rahasia (API key Gemini, kunci layanan email) | Node.js + Express di Render (paket gratis)             |
+| **Backend**                 | Endpoint data (CRUD), chat, dan email, verifikasi token, menyimpan rahasia (service account Firebase, API key Gemini, kunci layanan email) | PHP + kreait/firebase-php di Render (paket gratis) |
 | **Gemini API**              | Mesin chatbot Nomi, dan pembuat afirmasi baru bila dibutuhkan                                      | Google Gemini API                                      |
-| **Layanan Email**           | Mengirim Welcome Email (email verifikasi dikirim langsung oleh Firebase Auth)                      | Brevo atau Resend lewat HTTPS API dari backend Node.js |
+| **Layanan Email**           | Mengirim Welcome Email (email verifikasi dikirim langsung oleh Firebase Auth)                      | Brevo atau Resend lewat HTTPS API dari backend PHP     |
 
 Render juga menyajikan file frontend (static), jadi seluruh aplikasi cukup di-deploy dari satu tempat.
 
@@ -306,7 +306,7 @@ Render juga menyajikan file frontend (static), jadi seluruh aplikasi cukup di-de
 
 > • **Frontend:** web biasa (HTML, CSS, JavaScript) yang memakai Firebase SDK. Framework belum ditentukan.
 >
-> • **Backend:** Node.js dengan Express di Render paket gratis. Diperlukan untuk Web Mailer dan untuk memanggil Gemini API dengan aman.
+> • **Backend:** PHP (endpoint di public/actions, konfigurasi di config/) dengan Firebase Admin SDK kreait/firebase-php, di Render paket gratis. Menangani seluruh akses Realtime Database, Web Mailer, dan pemanggilan Gemini API dengan aman.
 
 # **8. Alasan Memilih Arsitektur Ini**
 
@@ -320,7 +320,7 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 >
 > • Backend tipis tetap perlu untuk dua hal. Pertama, API key Gemini harus rahasia; kalau dipanggil dari browser, key bisa dilihat siapa saja lewat kode atau tab jaringan. Kedua, pengiriman Welcome Email butuh server karena kunci layanan email tidak boleh ada di frontend.
 >
-> • **Keamanan berlapis.** Security Rules membatasi akses data per pengguna. Backend memverifikasi ID Token, sehingga endpoint chat dan email tidak bisa dipakai orang yang belum login, dan kuota Gemini tidak terkuras oleh pihak luar.
+> • **Keamanan berlapis.** Security Rules menolak akses langsung dari browser, dan backend hanya mengakses data milik uid yang sedang login. Backend memverifikasi ID Token, sehingga endpoint chat dan email tidak bisa dipakai orang yang belum login, dan kuota Gemini tidak terkuras oleh pihak luar.
 >
 > • **Biaya rendah.** Semua layanan punya free tier, sejalan dengan keputusan memakai Gemini karena gratis. Batasnya bisa berubah, jadi cek halaman harga terbaru sebelum rilis.
 
@@ -338,7 +338,7 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 >
 > • Realtime Database tidak mendukung join dan query kompleks. Karena itu struktur datanya dirancang khusus (Bagian 10) dan dioptimasi (Bagian 11).
 >
-> • Karena tim memakai Render paket gratis, layanan bisa "tidur" saat lama tidak dipakai, sehingga permintaan pertama ke backend (chat Nomi atau email) terasa lambat beberapa detik. Bagian lain tidak terpengaruh karena langsung ke Firebase. Frontend sebaiknya tidak menunggu pengiriman Welcome Email agar registrasi tetap terasa cepat.
+> • Karena tim memakai Render paket gratis, layanan bisa "tidur" saat lama tidak dipakai, sehingga permintaan pertama ke backend (chat Nomi atau email) terasa lambat beberapa detik. Karena semua akses data juga lewat backend, jeda ini bisa terasa di halaman mana pun setelah layanan tidur. Frontend sebaiknya tidak menunggu pengiriman Welcome Email agar registrasi tetap terasa cepat.
 
 Pengiriman email: paket gratis Render diketahui memblokir port SMTP keluar (25, 465, 587), sehingga Nodemailer dengan Gmail berisiko gagal dari sana (cek dokumentasi Render terbaru). Karena itu Welcome Email dikirim lewat API email berbasis HTTPS seperti Brevo atau Resend, yang memiliki kuota gratis (cek batas terbaru). Email verifikasi tidak terpengaruh karena dikirim oleh Firebase.
 
@@ -357,19 +357,19 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 | **User**        | Data akun dan profil pengguna             | uid berasal dari Firebase Auth dan menjadi kunci utama. name (nama lengkap) dan bio bisa diubah; email dan createdAt hanya dibaca.                                                                                                        |
 | **UserStats**   | Ringkasan aktivitas untuk halaman Profile | Berisi streak dan tanggal jurnal terakhir (lastCheckIn). Disimpan agar Profile tidak menghitung ulang dari semua jurnal.                                                                                                    |
 | **Journal**     | Satu momen precious                       | dateKey berformat yyyy-mm-dd dan menjadi kunci data (satu jurnal per tanggal untuk setiap pengguna). photoUrl adalah URL dari Storage; storagePath dipakai untuk menghapus file. note berisi catatan momen tersebut. |
-| **ChatMessage** | Satu pesan dalam percakapan dengan Nomi   | role bernilai user atau nomi.                                                                                                                                                                                                  |
+| **ChatMessage** | Satu pesan dalam percakapan dengan Nomi   | sender bernilai user atau nomi.                                                                                                                                                                                                  |
 | **Affirmation** | Satu kalimat afirmasi                     | index bernilai 1 sampai 365 dan menjadi kunci data; afirmasi yang tampil dipilih acak dari index ini setiap halaman dimuat.                                                                                                     |
 
 ## **9.2 Kelas Layanan dan Pendukung**
 
 | **Kelas**              | **Tanggung jawab**                                                                                                                                                      | **Berjalan di**              |
 |------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
-| **AuthService**        | Registrasi, login email dan Google, logout, reset password, mengambil pengguna aktif                                                                                    | Frontend                     |
-| **ProfileService**     | Membaca dan memperbarui profil, membaca statistik                                                                                                                       | Frontend                     |
-| **JournalService**     | Create, Read (per bulan atau per tanggal), Update, dan Delete jurnal. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit, bukan membuat jurnal kedua. | Frontend                     |
-| **PhotoService**       | Mengompres, mengunggah, dan menghapus foto di Storage                                                                                                                   | Frontend                     |
-| **AffirmationService** | Mengambil satu afirmasi acak setiap halaman dimuat, tidak sama dengan afirmasi yang terakhir tampil                                                                     | Frontend                     |
-| **ChatService**        | Mengirim pesan ke backend dan membaca riwayat chat                                                                                                                      | Frontend (memanggil backend) |
+| **AuthService**        | Registrasi, login email dan Google, logout, reset password, mengambil pengguna aktif                                                                                    | Frontend + backend PHP |
+| **ProfileService**     | Membaca dan memperbarui profil, membaca statistik                                                                                                                       | Frontend → backend PHP |
+| **JournalService**     | Create, Read (per bulan atau per tanggal), Update, dan Delete jurnal. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit, bukan membuat jurnal kedua. | Frontend → backend PHP |
+| **PhotoService**       | Mengompres, mengunggah, dan menghapus foto di Storage                                                                                                                   | Frontend |
+| **AffirmationService** | Mengambil satu afirmasi acak setiap halaman dimuat, tidak sama dengan afirmasi yang terakhir tampil                                                                     | Frontend → backend PHP |
+| **ChatService**        | Mengirim pesan ke backend dan membaca riwayat chat                                                                                                                      | Frontend → backend PHP |
 | **MailerService**      | Mengirim Welcome Email                                                                                                                                                  | Backend                      |
 | **GeminiClient**       | Memanggil Gemini API dengan system prompt Nomi dan beberapa pesan terakhir                                                                                              | Backend                      |
 
@@ -449,7 +449,7 @@ Realtime Database mengunduh seluruh isi sebuah node yang dibaca, dan tidak punya
 
 ## **11.1 Struktur datar dan dipisah per pengguna**
 
-Jurnal, profil, dan chat ditaruh di node terpisah, bukan bersarang di dalam users. Dengan begitu membaca profil tidak ikut menarik ratusan jurnal. Path per uid juga membuat Security Rules sederhana.
+Jurnal, profil, dan chat ditaruh di node terpisah, bukan bersarang di dalam users. Dengan begitu membaca profil tidak ikut menarik ratusan jurnal. Path per uid juga membuat pengecekan akses di backend sederhana.
 
 ## **11.2 Kunci tanggal dan query per bulan**
 
@@ -469,11 +469,11 @@ Database hanya menyimpan photoUrl berupa teks. Foto dikompres dulu di frontend (
 
 ## **11.6 Afirmasi: baca satu node acak**
 
-Setiap kali halaman dimuat, frontend memilih nomor acak 1 sampai 365 lalu mengambil hanya satu node affirmations/{nomor} dengan get() (bukan listener realtime), bukan seluruh 365 kalimat. Nomor afirmasi terakhir disimpan di sessionStorage supaya refresh berikutnya tidak menampilkan kalimat yang sama. Setiap refresh berarti satu kali baca, tetapi ukurannya hanya satu kalimat pendek, dan cara ini tidak memakai kuota Gemini sama sekali.
+Setiap kali halaman dimuat, frontend memanggil endpoint afirmasi dan mengirim nomor afirmasi terakhir (disimpan di sessionStorage). Backend memilih nomor acak 1 sampai 365 yang berbeda dari nomor itu, lalu hanya mengambil satu node affirmations/{nomor}, bukan seluruh 365 kalimat. Setiap refresh berarti satu kali baca, tetapi ukurannya hanya satu kalimat pendek, dan cara ini tidak memakai kuota Gemini sama sekali.
 
-## **11.7 Pakai get() dan listener dengan tepat**
+## **11.7 Baca sekali per permintaan**
 
-Listener realtime (onValue) terus menerima pembaruan. Pakai hanya untuk data yang perlu tampil langsung, seperti percakapan chat yang sedang terbuka, dan lepaskan listener (off) saat pengguna pindah halaman. Untuk data statis, pakai get().
+Backend PHP membaca data sekali per permintaan (getValue / getSnapshot), bukan lewat listener realtime. Halaman chat menampilkan balasan Nomi dari respons endpoint, sehingga listener tidak diperlukan.
 
 ## **11.8 Batasi jumlah data yang dibaca**
 
@@ -517,7 +517,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 | **Foto di Storage + kompres**             | Ukuran database kecil, penyimpanan foto hemat       |
 | **Afirmasi 1 node acak**                  | Satu baca kecil per muat halaman, tanpa kuota Gemini |
 | **limitToLast dan pesan Gemini terbatas** | Bandwidth dan token                                 |
-| **Security Rules + validate**             | Mencegah data sampah dan akses lintas pengguna      |
+| **Rules tolak semua + validasi di PHP**   | Mencegah data sampah dan akses lintas pengguna      |
 
 # **12. Keputusan dan Catatan untuk Tim**
 
@@ -569,7 +569,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 
 ## **13.1 Font**
 
-UI memakai tiga font teks dan satu font ikon, semuanya dari Google Fonts. Font teks didefinisikan sebagai variabel di app/css/variables.css.
+UI memakai tiga font teks dan satu font ikon, semuanya dari Google Fonts. Font teks didefinisikan sebagai variabel di public/css/variables.css.
 
 | **Font**                      | **Variabel**   | **Dipakai untuk**                                                              |
 | ----------------------------- | -------------- | ------------------------------------------------------------------------------ |
@@ -590,4 +590,4 @@ UI memakai tiga font teks dan satu font ikon, semuanya dari Google Fonts. Font t
 >
 > • Menu di sidebar dan bottom nav hanya berupa teks, tanpa emoji atau ikon.
 >
-> • Daftar menu diatur di satu tempat, yaitu app/js/components/app-shell.js.
+> • Daftar menu diatur di satu tempat, yaitu public/js/components/app-shell.js.
