@@ -26,8 +26,7 @@ export function mountSiteHeader({ active, variant = "default" } = {}) {
 
   const links = NAV_ITEMS.map(
     (item) => `
-      <a class="site-nav__link${item.key === active ? " is-active" : ""}" href="${item.href}"
-        ${item.key === active ? 'aria-current="page"' : ""}>${item.label}</a>`
+      <a class="site-nav__link" href="${item.href}" data-nav="${item.key}">${item.label}</a>`
   ).join("");
 
   header.innerHTML = `
@@ -48,4 +47,16 @@ export function mountSiteHeader({ active, variant = "default" } = {}) {
         </a>
       </div>
     </div>`;
+
+  setActiveNav(active);
+}
+
+/** Tandai menu header yang aktif, misalnya saat pengguna berpindah slide atau bagian di landing page. */
+export function setActiveNav(key) {
+  document.querySelectorAll("#site-header [data-nav]").forEach((link) => {
+    const isActive = link.dataset.nav === key;
+    link.classList.toggle("is-active", isActive);
+    if (isActive) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  });
 }

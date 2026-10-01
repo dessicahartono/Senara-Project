@@ -309,15 +309,17 @@
 
 .site-header__login {
   padding: var(--space-sm) 0.75rem;
+  border-radius: var(--radius-full);
   font-size: var(--text-body-sm);
   line-height: var(--lh-body-sm);
   font-weight: 600;
   color: var(--color-on-surface-variant);
-  transition: color var(--duration) var(--ease);
+  transition: all var(--duration) var(--ease);
 }
 
 .site-header__login:hover {
   color: var(--color-ink);
+  background: rgb(var(--rgb-black) / 0.05);
 }
 
 .site-header__cta {
@@ -432,8 +434,19 @@
   background: rgb(var(--rgb-secondary-fixed) / 0.5);
 }
 
+.site-header--landing .site-header__login {
+  padding-inline: 1.25rem;
+}
+
 .site-header--landing .site-header__login:hover {
   color: var(--color-secondary);
+  background: rgb(var(--rgb-surface-container-high) / 0.5);
+}
+
+/* Saat ditekan: pill ungu yang sama dengan menu aktif */
+.site-header--landing .site-header__login:active {
+  color: var(--color-secondary);
+  background: rgb(var(--rgb-secondary-fixed) / 0.5);
 }
 
 /* Bar atas kosong di login & cek email (tanpa isi, tinggi 0) */

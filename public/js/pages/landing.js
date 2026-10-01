@@ -1,4 +1,4 @@
-import { mountSiteHeader } from "../components/site-header.js";
+import { mountSiteHeader, setActiveNav } from "../components/site-header.js";
 import { getRandomAffirmation } from "../services/affirmationService.js";
 import { $, $$ } from "../utils/dom.js";
 
@@ -14,8 +14,16 @@ const prevBtn = $("#btn-prev");
 const nextBtn = $("#btn-next");
 const SWIPE_THRESHOLD = 40;
 const compactQuery = window.matchMedia("(max-width: 1023px)");
+const affirmationSlide = slides.indexOf($("#slide-afirmasi"));
 
 let current = 0;
+let featuresInView = false;
+
+/** Menu header aktif mengikuti bagian yang sedang dilihat. */
+function updateActiveNav() {
+  if (featuresInView) setActiveNav("features");
+  else setActiveNav(current === affirmationSlide ? "affirmation" : "home");
+}
 
 function goTo(index) {
   current = Math.max(0, Math.min(slides.length - 1, index));
@@ -38,6 +46,7 @@ function goTo(index) {
   prevBtn.disabled = current === 0;
   nextBtn.disabled = current === slides.length - 1;
   fitHeight();
+  updateActiveNav();
 }
 
 /** Di layar kecil, tinggi slider mengikuti slide aktif agar tidak ada ruang kosong. */
@@ -124,8 +133,6 @@ slider.addEventListener("wheel", (e) => {
 
 /* ---------- Afirmasi ---------- */
 
-const affirmationSlide = slides.indexOf($("#slide-afirmasi"));
-
 async function loadAffirmation() {
   const text = $("#landing-affirmation");
   try {
@@ -137,12 +144,34 @@ async function loadAffirmation() {
   fitHeight();
 }
 
-/** Link "Afirmasi Harian" di header (index.html#afirmasi) langsung membuka slide afirmasi. */
+function openAffirmationSlide() {
+  goTo(affirmationSlide);
+  $("#afirmasi").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** Datang dari halaman lain lewat index.html#afirmasi. */
 function openSlideFromHash() {
   if (window.location.hash === "#afirmasi") goTo(affirmationSlide);
 }
 
-window.addEventListener("hashchange", openSlideFromHash);
+// Klik "Afirmasi Harian" saat sudah di landing page: hash bisa saja tidak berubah
+// (misalnya klik kedua), jadi slide dibuka langsung tanpa menunggu hashchange.
+document.addEventListener("click", (e) => {
+  const link = e.target.closest('a[href$="#afirmasi"]');
+  if (!link) return;
+  e.preventDefault();
+  history.replaceState(null, "", "#afirmasi");
+  openAffirmationSlide();
+});
+
+// Menu "Fitur" aktif selama bagian fitur melewati tengah layar (tetap berlaku jika bagian itu lebih tinggi dari layar)
+new IntersectionObserver(
+  ([entry]) => {
+    featuresInView = entry.isIntersecting;
+    updateActiveNav();
+  },
+  { rootMargin: "-50% 0px -50% 0px" }
+).observe($("#fitur"));
 
 goTo(0);
 openSlideFromHash();
