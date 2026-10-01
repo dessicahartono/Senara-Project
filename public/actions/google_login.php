@@ -20,10 +20,22 @@ if (!is_string($idToken) || $idToken === '') {
 
 try {
     require_once __DIR__ . '/../../config/firebase_config.php';
+    require_once __DIR__ . '/../../src/users.php';
     $verifiedToken = $auth->verifyIdToken($idToken);
     $claims = $verifiedToken->claims();
     $uid = $claims->get('sub');
     $email = $claims->get('email');
+    $name = $claims->get('name');
+    $picture = $claims->get('picture');
+
+    // Login Google pertama kali: buat profil (PRD 6.1 C2). Login berikutnya tidak mengubah profil.
+    createUserProfileIfMissing(
+        $database,
+        $uid,
+        is_string($name) && $name !== '' ? $name : (is_string($email) ? strtok($email, '@') : ''),
+        is_string($email) ? $email : '',
+        is_string($picture) ? $picture : null
+    );
 
     session_regenerate_id(true);
     $_SESSION['firebase_uid'] = $uid;

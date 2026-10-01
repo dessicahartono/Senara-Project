@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 // session_start() tidak diperlukan karena tahap ini hanya membuat akun, belum membuat session login.
 require_once __DIR__ . '/../../config/firebase_config.php';
+require_once __DIR__ . '/../../src/users.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -31,6 +32,14 @@ try {
         'email' => $email,
         'password' => $password,
     ]);
+
+    try {
+        createUserProfileIfMissing($database, $user->uid, $name, $email);
+    } catch (Throwable $profileError) {
+        // Batalkan akun Auth agar tidak ada akun tanpa profil di database.
+        $auth->deleteUser($user->uid);
+        throw $profileError;
+    }
 
     /*
      * Dinonaktifkan sementara: pengguna meminta proses create account saja,
