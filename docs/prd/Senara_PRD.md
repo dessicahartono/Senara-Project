@@ -481,12 +481,26 @@ Baca riwayat chat dengan limitToLast (misalnya 50 pesan). Untuk Gemini, kirim ha
 
 ## **11.9 Security Rules dan validasi**
 
-Rules membatasi akses per uid dan memvalidasi data supaya tidak ada data sampah atau akses lintas pengguna. Contoh rancangan aturan:
+Backend PHP memakai service account (Admin SDK), sehingga tidak terkena Security Rules. Karena browser tidak pernah mengakses database secara langsung, rules cukup menolak semua akses dari klien:
 
-| {<br>"rules": {<br>"users": { "$uid": { ".read": "auth.uid === $uid", ".write": "auth.uid === $uid" } },<br>"journalDates": { "$uid": { ".read": "auth.uid === $uid", ".write": "auth.uid === $uid" } },<br>"chats": { "$uid": { ".read": "auth.uid === $uid", ".write": "auth.uid === $uid" } },<br>"journals": {<br>"$uid": {<br>".read": "auth.uid === $uid",<br>".write": "auth.uid === $uid",<br>"$date": {<br>".validate": "*d**a**t**e*.*m**a**t**c**h**e**s*(/[0 − 9]4 − [0 − 9]2 − [0 − 9]2/)",<br>"note": { ".validate": "newData.isString() && newData.val().length <= 2000" }<br>}<br>}<br>},<br>"affirmations": { ".read": true, ".write": false }<br>}<br>} |
-|---|
+```json
+{
+  "rules": {
+    ".read": false,
+    ".write": false
+  }
+}
+```
 
-Afirmasi dibuat terbuka untuk dibaca karena landing page menampilkan preview afirmasi sebelum login. Isinya tidak sensitif, dan pengguna tidak bisa mengubahnya (".write": false). Dataset 365 afirmasi diisi sekali lewat Firebase Console atau skrip admin.
+Dengan rules ini, data hanya bisa dibaca dan ditulis lewat endpoint PHP. Pembatasan per pengguna dan validasi dipindahkan ke backend:
+
+> • **Akses per uid:** setiap endpoint mengambil uid dari session login (hasil verifikasi Firebase Auth), bukan dari input browser, lalu hanya membaca atau menulis path milik uid tersebut.
+>
+> • **Validasi data:** sebelum menulis, PHP memeriksa dateKey berformat yyyy-mm-dd dan tanggalnya valid, note berupa string maksimal 2000 karakter, sender bernilai "user" atau "nomi", dan field lain sesuai tipe di Bagian 10.
+>
+> • **Afirmasi:** dibaca lewat endpoint PHP, termasuk untuk preview di landing page, sehingga node affirmations juga tidak perlu dibuka untuk umum. Dataset 365 afirmasi diisi sekali lewat Firebase Console atau skrip admin.
+
+Service account (firebase_credentials.json) memiliki akses penuh ke database, jadi file ini wajib berada di luar folder public dan tidak boleh masuk ke git.
 
 ## **11.10 Pantau batas free tier**
 
