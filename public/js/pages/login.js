@@ -1,7 +1,6 @@
 import { ROUTES } from "../config.js";
 import { initFormHelpers, setFieldError, isValidEmail } from "../components/form.js";
-// Dinonaktifkan: authService.js masih memakai mockStore, bukan Firebase/PHP.
-// import { login, loginWithGoogle, resendVerificationEmail, sendPasswordReset, AUTH_ERRORS } from "../services/authService.js";
+import { signInWithGoogle } from "../services/googleAuth.js";
 import { $, show, hide, shake } from "../utils/dom.js";
 
 initFormHelpers();
@@ -146,15 +145,6 @@ form.addEventListener("submit", (e) => {
   }
 });
 
-/* Handler login lama dinonaktifkan
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  await login(emailInput.value, passwordInput.value);
-  window.location.href = ROUTES.dashboard;
-});
-*/
-
 // Hapus tanda error begitu pengguna mulai mengetik ulang
 emailInput.addEventListener("input", () => {
   setFieldError(el.emailGroup, el.emailError, false);
@@ -175,34 +165,7 @@ googleButton.addEventListener("click", async () => {
   googleStatus.textContent = "Menghubungkan ke Google...";
 
   try {
-    const configResponse = await fetch("actions/get_firebase_web_config.php");
-    const firebaseConfig = await configResponse.json();
-    if (!configResponse.ok) {
-      throw new Error(firebaseConfig.message || "Konfigurasi Firebase Web belum tersedia.");
-    }
-
-    const [{ initializeApp }, { getAuth, GoogleAuthProvider, signInWithPopup }] = await Promise.all([
-      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js"),
-      import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"),
-    ]);
-
-    const auth = getAuth(initializeApp(firebaseConfig));
-    const result = await signInWithPopup(auth, new GoogleAuthProvider());
-    googleStatus.textContent = "Memverifikasi akun...";
-
-    const formData = new FormData();
-    formData.append("idToken", await result.user.getIdToken());
-
-    const verifyResponse = await fetch("actions/google_login.php", {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin",
-    });
-    const verification = await verifyResponse.json();
-    if (!verifyResponse.ok || !verification.success) {
-      throw new Error(verification.message || "Verifikasi akun gagal.");
-    }
-
+    await signInWithGoogle();
     window.location.href = ROUTES.dashboard;
   } catch (error) {
     googleStatus.textContent = error.message || "Google sign-in gagal. Coba lagi.";
@@ -210,10 +173,4 @@ googleButton.addEventListener("click", async () => {
   }
 });
 
-// Dinonaktifkan: tombol ini masih memanggil implementasi mock.
-/*
-$("#btn-forgot").addEventListener("click", async () => {
-  await sendPasswordReset(emailInput.value.trim());
-});
-
-*/
+// TODO: tombol "Lupa kata sandi?" belum tersambung (butuh endpoint reset yang menerima email tanpa login).

@@ -10,7 +10,7 @@
  */
 import { ROUTES, ASSETS, APP_NAME } from "../config.js";
 import { getProfile } from "../services/userService.js";
-import { logout, isLoggedIn } from "../services/authService.js";
+import { logout } from "../services/authService.js";
 import { escapeHtml, icon } from "../utils/dom.js";
 
 // Tombol Back setelah logout bisa menampilkan halaman dari cache browser → muat ulang agar dicek lagi
@@ -81,13 +81,17 @@ function bottomNavMarkup(active) {
  * @returns {Promise<object>} profil pengguna (agar halaman tidak perlu memanggil ulang)
  */
 export async function mountAppShell({ active }) {
-  // Halaman dalam hanya untuk pengguna yang sudah masuk
-  if (!(await isLoggedIn())) {
-    window.location.replace(ROUTES.login);
-    return new Promise(() => {}); // hentikan inisialisasi halaman
+  // Halaman dalam hanya untuk pengguna yang sudah masuk: profile.php menjawab 401 jika belum login
+  let user;
+  try {
+    user = await getProfile();
+  } catch (error) {
+    if (error.status === 401) {
+      window.location.replace(ROUTES.login);
+      return new Promise(() => {}); // hentikan inisialisasi halaman
+    }
+    throw error;
   }
-
-  const user = await getProfile();
 
   const sidebar = document.getElementById("sidebar");
   const bottomNav = document.getElementById("bottom-nav");
@@ -99,7 +103,11 @@ export async function mountAppShell({ active }) {
   }
 
   sidebar?.querySelector('[data-action="logout"]')?.addEventListener("click", async () => {
-    await logout();
+    try {
+      await logout();
+    } catch {
+      // Tetap keluar dari halaman; session yang tersisa akan ditolak saat masuk lagi lewat form login.
+    }
     window.location.href = ROUTES.login;
   });
 

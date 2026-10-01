@@ -4,6 +4,7 @@
 declare(strict_types=1);
 
 use Kreait\Firebase\Auth\SignIn\FailedToSignIn;
+use Kreait\Firebase\Exception\InvalidArgumentException;
 
 session_start();
 
@@ -48,6 +49,9 @@ try {
         redirectWithError('invalidemail');
     }
     // Akun tidak ditemukan dan password salah sengaja disamakan (Email Enumeration Protection, PRD 12.1).
+    redirectWithError('invalid');
+} catch (InvalidArgumentException) {
+    // Kata sandi kurang dari 6 karakter ditolak SDK sebelum dikirim ke Firebase: pasti salah.
     redirectWithError('invalid');
 } catch (Throwable $error) {
     // Detail disimpan di server log; jangan tampilkan pesan internal Firebase ke pengguna.

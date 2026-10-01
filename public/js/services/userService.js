@@ -1,49 +1,52 @@
 /**
- * Profil pengguna.
- * Sekarang: data contoh. Nanti: Firestore (koleksi `users/{uid}`) + Firebase Storage (foto).
+ * Profil pengguna lewat endpoint PHP (users/{uid} di Realtime Database).
  */
-import { getState, updateState, delay, serviceError } from "./mockStore.js";
+
+async function request(url, options = {}) {
+  const response = await fetch(url, { credentials: "same-origin", cache: "no-store", ...options });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) {
+    const error = new Error(result.message || "Permintaan gagal. Coba lagi beberapa saat lagi.");
+    error.status = response.status;
+    throw error;
+  }
+  return result;
+}
+
+/** Profil dipakai app-shell dan halaman Profil; satu permintaan cukup untuk satu halaman. */
+let profilePromise = null;
 
 export async function getProfile() {
-  await delay(150);
-  return getState().user;
+  profilePromise ??= request("actions/profile.php").then((result) => result.profile);
+  try {
+    return await profilePromise;
+  } catch (error) {
+    profilePromise = null;
+    throw error;
+  }
 }
 
 export async function updateProfile({ name, bio }) {
-  await delay(700);
-  return updateState((s) => {
-    if (name !== undefined) s.user.name = name.trim();
-    if (bio !== undefined) s.user.bio = bio.trim();
-  }).user;
+  const body = new FormData();
+  body.append("name", name.trim());
+  body.append("bio", bio.trim());
+  const { profile } = await request("actions/profile.php", { method: "POST", body });
+  profilePromise = Promise.resolve(profile);
+  return profile;
 }
 
-/** Sekarang foto disimpan sebagai data URL; nanti diunggah ke Storage. */
-export async function updateProfilePhoto(file) {
-  const photoUrl = await readAsDataUrl(file);
-  await delay(500);
-  return updateState((s) => {
-    s.user.photoUrl = photoUrl;
-  }).user;
+/** Upload foto profil menunggu keputusan penyimpanan foto (Firebase Storage belum aktif). */
+export async function updateProfilePhoto() {
+  throw new Error("Ganti foto profil belum tersedia.");
 }
 
-export async function deleteAccount(password) {
-  await delay(900);
-  const { user, accounts } = getState();
-  const account = accounts.find((a) => a.email === user.email);
-  if (!account || account.password !== password) {
-    throw serviceError("auth/wrong-password", "Kata sandi tidak cocok.");
-  }
-  updateState((s) => {
-    s.session = null;
-  });
-  return true;
-}
-
-function readAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
+/**
+ * Hapus akun beserta seluruh datanya.
+ * @param {{password?: string, idToken?: string}} confirmation kata sandi (akun email) atau ID token Google baru
+ */
+export async function deleteAccount({ password, idToken }) {
+  const body = new FormData();
+  if (password) body.append("password", password);
+  if (idToken) body.append("idToken", idToken);
+  await request("actions/delete_account.php", { method: "POST", body });
 }

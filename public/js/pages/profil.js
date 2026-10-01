@@ -7,6 +7,7 @@ import { updateProfile, updateProfilePhoto, deleteAccount } from "../services/us
 import { compressPhoto } from "../services/photoService.js";
 import { logout, sendPasswordReset } from "../services/authService.js";
 import { getStreak } from "../services/journalService.js";
+import { getGoogleIdToken } from "../services/googleAuth.js";
 import { $, $$, show, hide, escapeHtml, withLoading } from "../utils/dom.js";
 import { formatDate, initials, firstName } from "../utils/format.js";
 
@@ -33,6 +34,8 @@ const el = {
   deleteModal: $("#delete-modal"),
   deleteForm: $("#delete-form"),
   deletePassword: $("#delete-password"),
+  deletePasswordLabel: $("label[for='delete-password']"),
+  deletePasswordWrap: $("#delete-password").closest(".input-wrap"),
   deleteError: $("#delete-error"),
   deleteErrorText: $("#delete-error-text"),
 };
@@ -55,7 +58,7 @@ function renderForm() {
   updateBioCounter();
   el.email.textContent = user.email;
   show(el.emailVerified, user.emailVerified);
-  el.memberSince.textContent = `Bagian dari Senara sejak ${formatDate(user.joinedAt)}`;
+  el.memberSince.textContent = `Bagian dari Senara sejak ${formatDate(user.createdAt)}`;
 }
 
 function updateBioCounter() {
@@ -126,11 +129,16 @@ el.form.addEventListener("submit", async (e) => {
     return;
   }
 
-  user = await withLoading(
-    el.saveBtn,
-    () => updateProfile({ name, bio: el.bioInput.value }),
-    "Menyimpan..."
-  );
+  try {
+    user = await withLoading(
+      el.saveBtn,
+      () => updateProfile({ name, bio: el.bioInput.value }),
+      "Menyimpan..."
+    );
+  } catch (err) {
+    showToast(err.message, { type: "error" });
+    return;
+  }
   renderBanner();
   refreshShellUser(user);
 
@@ -141,21 +149,32 @@ el.form.addEventListener("submit", async (e) => {
 /* ---------- Pengaturan akun ---------- */
 
 $("#btn-change-pwd").addEventListener("click", async (e) => {
-  await withLoading(e.currentTarget, () => sendPasswordReset(user.email), "Mengirim...");
-  $("#pwd-notice-email").textContent = user.email;
-  show(el.pwdNotice);
+  try {
+    const { email } = await withLoading(e.currentTarget, () => sendPasswordReset(), "Mengirim...");
+    $("#pwd-notice-email").textContent = email;
+    show(el.pwdNotice);
+  } catch (err) {
+    showToast(err.message, { type: "error" });
+  }
 });
 
 $("#btn-close-notice").addEventListener("click", () => hide(el.pwdNotice));
 
 $("#btn-logout").addEventListener("click", async () => {
-  await logout();
-  window.location.href = ROUTES.login;
+  try {
+    await logout();
+    window.location.href = ROUTES.login;
+  } catch (err) {
+    showToast(err.message, { type: "error" });
+  }
 });
 
 $("#btn-open-delete").addEventListener("click", () => {
   el.deletePassword.value = "";
   hide(el.deleteError);
+  // Akun Google tidak punya kata sandi; konfirmasinya lewat login Google ulang saat tombol Hapus ditekan.
+  show(el.deletePasswordLabel, user.hasPassword);
+  show(el.deletePasswordWrap, user.hasPassword);
   openModal(el.deleteModal);
 });
 
@@ -164,7 +183,7 @@ el.deletePassword.addEventListener("input", () => hide(el.deleteError));
 el.deleteForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const password = el.deletePassword.value;
-  if (!password) {
+  if (user.hasPassword && !password) {
     el.deleteErrorText.textContent = "Masukkan kata sandi terlebih dahulu.";
     show(el.deleteError);
     el.deletePassword.focus();
@@ -172,13 +191,18 @@ el.deleteForm.addEventListener("submit", async (e) => {
   }
 
   try {
-    await withLoading($("#btn-confirm-delete"), () => deleteAccount(password), "Menghapus...");
+    await withLoading(
+      $("#btn-confirm-delete"),
+      async () =>
+        deleteAccount(user.hasPassword ? { password } : { idToken: await getGoogleIdToken() }),
+      "Menghapus..."
+    );
     closeModal(el.deleteModal);
     window.location.href = ROUTES.home;
   } catch (err) {
-    el.deleteErrorText.textContent = err.message || "Kata sandi tidak cocok.";
+    el.deleteErrorText.textContent = err.message || "Akun gagal dihapus. Coba lagi.";
     show(el.deleteError);
-    el.deletePassword.focus();
+    if (user.hasPassword) el.deletePassword.focus();
   }
 });
 

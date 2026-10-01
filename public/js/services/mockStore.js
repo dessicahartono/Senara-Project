@@ -7,15 +7,12 @@
  */
 import * as mock from "../data/mock.js";
 
-const STORAGE_KEY = "senara:mock:v1";
+const STORAGE_KEY = "senara:mock:v2";
 
 function initialState() {
   return structuredClone({
-    user: mock.currentUser,
-    accounts: mock.accounts,
     journals: mock.journals,
     chatMessages: mock.chatMessages,
-    session: { email: mock.currentUser.email },
   });
 }
 

@@ -26,28 +26,6 @@ function stamp(n, hh, mm) {
 
 const IMG = "assets/images/mock/";
 
-export const currentUser = {
-  id: "u_seno",
-  name: "Seno Prasetyo",
-  email: "seno.refleksi@gmail.com",
-  emailVerified: true,
-  bio: "Menemukan ketenangan di setiap tarikan napas dan cangkir teh hangat.",
-  photoUrl: null,
-  joinedAt: stamp(62, 9, 0),
-};
-
-/**
- * Akun demo untuk mencoba semua state halaman login.
- * - seno.refleksi@gmail.com / senara123  → berhasil
- * - belum.verifikasi@senara.id / senara123 → email belum diverifikasi
- * - email lain / password salah           → "Email atau kata sandi salah" (auth/invalid-credential)
- * - salah 5x berturut-turut                → terlalu banyak percobaan (auth/too-many-requests)
- */
-export const accounts = [
-  { email: "seno.refleksi@gmail.com", password: "senara123", emailVerified: true },
-  { email: "belum.verifikasi@senara.id", password: "senara123", emailVerified: false },
-];
-
 export const affirmations = [
   {
     id: "af_01",

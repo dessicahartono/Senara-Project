@@ -1,8 +1,7 @@
 import { ROUTES } from "../config.js";
 import { mountSiteHeader } from "../components/site-header.js";
 import { initFormHelpers, isValidEmail } from "../components/form.js";
-// Comment out service ini karena masih menggunakan mock, bukan endpoint PHP/Firebase.
-// import { register, loginWithGoogle, AUTH_ERRORS } from "../services/authService.js";
+import { signInWithGoogle } from "../services/googleAuth.js";
 import { $, show, hide, shake } from "../utils/dom.js";
 
 mountSiteHeader();
@@ -124,19 +123,6 @@ form.addEventListener("submit", (e) => {
   }
 });
 
-/*
- Handler registrasi lama dinonaktifkan
- 
-form.addEventListener("submit", async (e) => {
-   e.preventDefault();
-   await register({
-     name: name.input.value.trim(),
-     email: email.input.value,
-     password: password.input.value,
-   });
-   window.location.href = ROUTES.checkEmail;
- });
- */
 
 const googleButton = $("#btn-google");
 const googleStatus = $("#google-status");
@@ -147,37 +133,7 @@ googleButton.addEventListener("click", async () => {
   googleStatus.textContent = "Menghubungkan ke Google...";
 
   try {
-    const configResponse = await fetch("actions/get_firebase_web_config.php");
-    const firebaseConfig = await configResponse.json();
-
-    if (!configResponse.ok) {
-      throw new Error(firebaseConfig.message || "Konfigurasi Firebase belum tersedia.");
-    }
-
-    const [{ initializeApp }, { getAuth, GoogleAuthProvider, signInWithPopup }] =
-      await Promise.all([
-        import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js"),
-        import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"),
-      ]);
-
-    const auth = getAuth(initializeApp(firebaseConfig));
-    const result = await signInWithPopup(auth, new GoogleAuthProvider());
-
-    googleStatus.textContent = "Memverifikasi akun...";
-    const formData = new FormData();
-    formData.append("idToken", await result.user.getIdToken());
-
-    const response = await fetch("actions/google_login.php", {
-      method: "POST",
-      body: formData,
-      credentials: "same-origin",
-    });
-    const verification = await response.json();
-
-    if (!response.ok || !verification.success) {
-      throw new Error(verification.message || "Verifikasi akun gagal.");
-    }
-
+    await signInWithGoogle();
     window.location.href = ROUTES.dashboard;
   } catch (error) {
     googleStatus.textContent = error.message || "Google sign-in gagal. Coba lagi.";
