@@ -1,6 +1,10 @@
 <?php
-// Fungsi: membaca (GET) dan memperbarui nama/bio (POST) profil pengguna yang sedang login.
-// PRD 6: Read 3 (users/{uid}) dan Update 2 (users/{uid}: name, bio).
+/**
+ * Profil pengguna yang sedang login.
+ *
+ * GET  - membaca profil (users/{uid}).
+ * POST - memperbarui nama dan bio.
+ */
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../src/session.php';
@@ -17,13 +21,7 @@ if ($method !== 'GET' && $method !== 'POST') {
 }
 
 try {
-    // Akun yang dibuat sebelum profil disimpan di database belum punya users/{uid}; buatkan dari data Auth.
-    if (!$database->getReference('users/' . $uid)->getSnapshot()->exists()) {
-        $account = $auth->getUser($uid);
-        $accountEmail = (string) ($account->email ?? '');
-        $accountName = (string) ($account->displayName ?: strtok($accountEmail, '@'));
-        createUserProfileIfMissing($database, $uid, $accountName, $accountEmail, $account->photoUrl);
-    }
+    ensureUserProfile($auth, $database, $uid);
 
     if ($method === 'POST') {
         $name = trim((string) ($_POST['name'] ?? ''));

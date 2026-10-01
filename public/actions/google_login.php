@@ -1,4 +1,7 @@
 <?php
+/**
+ * Login dengan Google: memverifikasi ID token dari browser lalu membuat session.
+ */
 declare(strict_types=1);
 
 session_start();
@@ -28,8 +31,7 @@ try {
     $name = $claims->get('name');
     $picture = $claims->get('picture');
 
-    // Login Google pertama kali: buat profil (PRD 6.1 C2). Login berikutnya tidak mengubah profil.
-    // Akun Google dianggap sudah terverifikasi.
+    // Profil hanya dibuat saat login pertama. Akun Google tidak perlu verifikasi email.
     $email = is_string($email) ? $email : '';
     $name = is_string($name) && $name !== '' ? $name : strtok($email, '@');
     createUserProfileIfMissing($database, $uid, $name, $email, is_string($picture) ? $picture : null);

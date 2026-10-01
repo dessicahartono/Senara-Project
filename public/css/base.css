@@ -34,7 +34,7 @@ body {
   color: var(--color-on-secondary-fixed);
 }
 
-/* Desain Stitch menyembunyikan scrollbar */
+/* Scrollbar disembunyikan */
 ::-webkit-scrollbar {
   display: none;
 }

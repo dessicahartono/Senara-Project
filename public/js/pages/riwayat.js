@@ -158,6 +158,12 @@ function renderDetail() {
   }
 }
 
+/** Tampilkan error hapus jurnal lalu lempar ulang agar dialog konfirmasi tetap terbuka. */
+function showDeleteError(err) {
+  showToast(err.message || "Gagal menghapus jurnal. Coba lagi.", { type: "error" });
+  throw err;
+}
+
 $("#memory-delete").addEventListener("click", async () => {
   const journal = state.journals.get(state.selected);
   if (!journal) return;
@@ -168,7 +174,7 @@ $("#memory-delete").addEventListener("click", async () => {
     message:
       "Jurnal momen ini akan dihapus permanen dari ruang tenangmu. Tindakan ini tidak dapat dibatalkan.",
     confirmText: "Ya, Hapus",
-    onConfirm: () => deleteJournal(journal.id),
+    onConfirm: () => deleteJournal(journal.id).catch(showDeleteError),
   });
   if (!deleted) return;
 

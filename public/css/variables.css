@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Design tokens Senara — diambil langsung dari tailwind.config desain Stitch.
-   Semua warna/ukuran di CSS lain WAJIB memakai variabel di sini.
+   Design tokens Senara.
+   Warna dan ukuran di file CSS lain memakai variabel dari sini.
    ========================================================================== */
 
 :root {
@@ -56,7 +56,7 @@
   --color-inverse-surface: #31302d;
   --color-inverse-on-surface: #f4f0eb;
 
-  /* ---------- Warna header publik (dipakai Stitch di luar palet) ---------- */
+  /* ---------- Warna header publik (di luar palet utama) ---------- */
   --color-ink: #3b2d26;
   --color-ink-muted: #736a62;
   --color-sand: #f3ede6;
@@ -145,8 +145,8 @@
   --app-header-height: 4rem;
   --site-header-height: 5rem;
   --bottom-nav-height: 4rem;
-  --content-max: 72rem;   /* max-w-6xl */
-  --site-max: 80rem;      /* max-w-7xl */
+  --content-max: 72rem;
+  --site-max: 80rem;
 
   /* ---------- Gerak ---------- */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);

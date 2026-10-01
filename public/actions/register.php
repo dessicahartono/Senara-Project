@@ -1,6 +1,10 @@
 <?php
-// Fungsi: membuat akun Firebase dan profil users/{uid} dari POST form, mengirim email verifikasi,
-// lalu mengarahkan pengguna ke halaman Cek Email.
+/**
+ * Registrasi akun email.
+ *
+ * Membuat akun Firebase Auth dan profil users/{uid}, mengirim email verifikasi,
+ * lalu mengarahkan ke halaman Cek Email.
+ */
 declare(strict_types=1);
 
 session_start();
@@ -20,7 +24,7 @@ $email = trim((string) ($_POST['email'] ?? ''));
 $password = (string) ($_POST['password'] ?? '');
 $confirmPassword = (string) ($_POST['confirmPassword'] ?? '');
 
-// Validasi server wajib dilakukan karena validasi JavaScript dapat dilewati.
+// Validasi ulang di server karena validasi JavaScript bisa dilewati.
 if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 6) {
     http_response_code(400);
     exit('Nama, format email, atau kata sandi tidak valid. <a href="../registrasi.html">Kembali</a>');
@@ -36,19 +40,19 @@ try {
     try {
         createUserProfileIfMissing($database, $user->uid, $name, $email);
     } catch (Throwable $profileError) {
-        // Batalkan akun Auth agar tidak ada akun tanpa profil di database.
+        // Hapus lagi akun Auth-nya agar tidak ada akun tanpa profil.
         $auth->deleteUser($user->uid);
         throw $profileError;
     }
 } catch (Throwable $error) {
-    // Detail disimpan di server log; jangan tampilkan pesan internal Firebase ke pengguna.
+    // Detail error hanya dicatat di log, tidak ditampilkan ke pengguna.
     error_log('Firebase registration failed: ' . $error->getMessage());
     http_response_code(400);
     exit('Registrasi gagal. Periksa email dan kata sandi, lalu coba lagi. <a href="../registrasi.html">Kembali</a>');
 }
 
-// Akun sudah jadi. Kegagalan kirim email verifikasi tidak membatalkan registrasi,
-// karena email bisa dikirim ulang dari halaman Cek Email.
+// Gagal mengirim email verifikasi tidak membatalkan registrasi;
+// email bisa dikirim ulang dari halaman Cek Email.
 session_regenerate_id(true);
 rememberPendingVerification($user->uid, $email);
 $verificationSent = sendVerificationEmail($auth, $email);

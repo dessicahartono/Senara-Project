@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Kreait\Firebase\Contract\Auth;
 
-/** Jeda minimal (detik) antar pengiriman ulang email verifikasi, sama dengan hitungan mundur di cek-email.js. */
+/** Jeda minimal (detik) antar pengiriman ulang email verifikasi; samakan dengan COOLDOWN_SECONDS di cek-email.js. */
 const VERIFICATION_RESEND_COOLDOWN = 60;
 
 /** URL absolut ke halaman di folder public, misalnya appUrl('login.html?verified=1'). */
@@ -11,15 +11,15 @@ function appUrl(string $path): string
 {
     $https = ($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off';
     $scheme = $https || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' ? 'https' : 'http';
-    // Endpoint berada di public/actions, jadi folder public adalah satu tingkat di atasnya.
+    // Endpoint ada di public/actions, jadi folder public satu tingkat di atasnya.
     $base = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
     return $scheme . '://' . $_SERVER['HTTP_HOST'] . $base . '/' . ltrim($path, '/');
 }
 
 /**
- * Meminta Firebase mengirim email verifikasi (PRD 7.2 no. 7).
- * Link di email mengarahkan kembali ke halaman login. Domain aplikasi harus terdaftar
- * di Firebase Console > Authentication > Settings > Authorized domains.
+ * Meminta Firebase mengirim email verifikasi. Link di email mengarah kembali ke halaman login.
+ *
+ * Domain aplikasi harus terdaftar di Firebase Console > Authentication > Settings > Authorized domains.
  */
 function sendVerificationEmail(Auth $auth, string $email): bool
 {
@@ -33,7 +33,7 @@ function sendVerificationEmail(Auth $auth, string $email): bool
     }
 }
 
-/** Menyimpan akun yang menunggu verifikasi agar tombol "Kirim ulang" tahu email tujuannya. */
+/** Simpan akun yang menunggu verifikasi untuk dipakai resend_verification.php. */
 function rememberPendingVerification(string $uid, string $email): void
 {
     $_SESSION['pending_verification_uid'] = $uid;

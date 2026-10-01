@@ -1,6 +1,7 @@
 <?php
-// Fungsi: meminta Firebase mengirim email atur ulang kata sandi ke akun yang sedang login
-// (tombol "Ubah kata sandi" di halaman Profil).
+/**
+ * Mengirim email atur ulang kata sandi ke akun yang sedang login (tombol "Ubah kata sandi" di Profil).
+ */
 declare(strict_types=1);
 
 session_start();
@@ -13,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Email diambil dari session agar endpoint ini tidak bisa dipakai mengirim email ke alamat sembarang.
+// Alamat email sengaja tidak diterima dari browser agar endpoint ini
+// tidak bisa dipakai mengirim email ke sembarang alamat.
 $email = $_SESSION['firebase_email'] ?? '';
 if (empty($_SESSION['firebase_uid']) || !is_string($email) || $email === '') {
     http_response_code(401);

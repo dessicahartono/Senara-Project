@@ -117,7 +117,7 @@
   color: var(--color-on-surface);
 }
 
-/* ---------- Header atas app (bar kosong, sesuai Stitch) ---------- */
+/* ---------- Header atas app (bar kosong) ---------- */
 .app-header {
   position: fixed;
   top: 0;
@@ -152,7 +152,7 @@
 }
 
 .container--narrow {
-  max-width: 48rem; /* max-w-3xl */
+  max-width: 48rem;
 }
 
 /* ---------- Bottom nav (mobile, <768px) ---------- */
@@ -436,7 +436,7 @@
   color: var(--color-secondary);
 }
 
-/* Bar atas kosong di login & cek email (sesuai Stitch: tanpa isi, tinggi 0) */
+/* Bar atas kosong di login & cek email (tanpa isi, tinggi 0) */
 .top-bar {
   position: fixed;
   top: 0;

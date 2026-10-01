@@ -2,3 +2,4 @@ firebase_credentials.json
 /firebase_web_config.php
 /vendor
 /cloudinary_config.php
+/gemini_config.php

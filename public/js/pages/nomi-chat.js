@@ -11,7 +11,7 @@ import {
   clearMessages,
 } from "../services/chatService.js";
 import { $, escapeHtml, icon } from "../utils/dom.js";
-import { toISODate, formatTime, formatRelativeDay, formatDate } from "../utils/format.js";
+import { toISODate, formatTime, formatRelativeDay, formatDate, firstName } from "../utils/format.js";
 
 const stream = $("#chat-stream");
 const form = $("#chat-form");
@@ -21,6 +21,15 @@ const sendBtn = $("#send-btn");
 let messages = [];
 let quickPrompts = [];
 let isWaiting = false;
+
+/** Sapaan Nomi saat riwayat kosong. Hanya tampil di layar, tidak disimpan ke database. */
+const WELCOME_ID = "welcome";
+const welcomeMessage = (name) => ({
+  id: WELCOME_ID,
+  sender: "nomi",
+  text: `Halo ${name}, selamat datang di ruang teduh ini. Bagaimana harimu terasa sejauh ini? Kalau ada yang ingin kamu ceritakan, aku di sini untuk mendengarkan.`,
+  createdAt: new Date().toISOString(),
+});
 
 /* ---------- Markup ---------- */
 
@@ -127,7 +136,15 @@ async function submitMessage(text) {
   if (!value || isWaiting) return;
 
   input.value = "";
-  const sent = await sendMessage(value);
+  let sent;
+  try {
+    sent = await sendMessage(value);
+  } catch (err) {
+    input.value = value;
+    showToast(err.message || "Pesan gagal dikirim. Coba lagi.", { type: "error" });
+    return;
+  }
+  messages = messages.filter((m) => m.id !== WELCOME_ID);
   messages.push(sent);
   isWaiting = true;
   sendBtn.disabled = true;
@@ -136,8 +153,8 @@ async function submitMessage(text) {
   try {
     const reply = await getNomiReply();
     messages.push(reply);
-  } catch {
-    showToast("Nomi sedang tidak bisa membalas. Coba lagi sebentar.", { type: "error" });
+  } catch (err) {
+    showToast(err.message || "Nomi sedang tidak bisa membalas. Coba lagi sebentar.", { type: "error" });
   } finally {
     isWaiting = false;
     sendBtn.disabled = false;
@@ -173,7 +190,14 @@ stream.addEventListener("click", async (e) => {
   const del = e.target.closest('[data-action="delete"]');
   if (del) {
     const id = del.closest(".message").dataset.id;
-    await deleteMessage(id);
+    if (id !== WELCOME_ID) {
+      try {
+        await deleteMessage(id);
+      } catch (err) {
+        showToast(err.message || "Pesan gagal dihapus. Coba lagi.", { type: "error" });
+        return;
+      }
+    }
     messages = messages.filter((m) => m.id !== id);
     render();
   }
@@ -209,7 +233,11 @@ $("#btn-clear").addEventListener("click", async () => {
     message:
       "Seluruh pesan dengan Nomi akan dihapus dari layar ini untuk memberi ruang awal yang segar. Tindakan ini tidak dapat dibatalkan.",
     confirmText: "Bersihkan Riwayat",
-    onConfirm: () => clearMessages(),
+    onConfirm: () =>
+      clearMessages().catch((err) => {
+        showToast(err.message || "Riwayat gagal dibersihkan. Coba lagi.", { type: "error" });
+        throw err;
+      }),
   });
   if (!cleared) return;
   messages = [];
@@ -252,12 +280,15 @@ breatheModal.addEventListener("modal:closed", () => clearInterval(breatheTimer))
 /* ---------- Mulai ---------- */
 
 async function init() {
-  const [, list, prompts] = await Promise.all([
+  const [user, list, prompts] = await Promise.all([
     mountAppShell({ active: "chat" }),
-    getMessages(),
+    getMessages().catch((err) => {
+      showToast(err.message || "Riwayat chat gagal dimuat.", { type: "error" });
+      return [];
+    }),
     getQuickPrompts(),
   ]);
-  messages = list;
+  messages = list.length ? list : [welcomeMessage(firstName(user.name))];
   quickPrompts = prompts;
   render();
 }

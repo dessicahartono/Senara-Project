@@ -1,9 +1,9 @@
 /**
  * Kerangka halaman app: sidebar (desktop) dan bottom nav (mobile).
- * Cukup satu tempat untuk menu — halaman hanya menaruh placeholder:
+ * Menu didefinisikan di sini; halaman cukup menyediakan placeholder:
  *
  *   <aside id="sidebar" class="sidebar"></aside>
- *   <header class="app-header"></header>   ← bar kosong sesuai Stitch
+ *   <header class="app-header"></header>
  *   <nav id="bottom-nav" class="bottom-nav"></nav>
  *
  * lalu memanggil mountAppShell({ active: "journal" }).
@@ -13,7 +13,7 @@ import { getProfile } from "../services/userService.js";
 import { logout } from "../services/authService.js";
 import { escapeHtml, icon } from "../utils/dom.js";
 
-// Tombol Back setelah logout bisa menampilkan halaman dari cache browser → muat ulang agar dicek lagi
+// Halaman dari back/forward cache dimuat ulang agar status login dicek lagi (misalnya setelah logout).
 window.addEventListener("pageshow", (e) => {
   if (e.persisted) window.location.reload();
 });
@@ -42,7 +42,7 @@ function avatarMarkup(user, sizeClass = "") {
 }
 
 function sidebarMarkup(active, user) {
-  // Profil tidak masuk daftar menu sidebar: kartu nama pengguna di bawah sudah menuju ke sana
+  // Profil tidak ada di menu sidebar karena sudah bisa dibuka dari kartu nama pengguna di bawah.
   const links = NAV_ITEMS.filter((item) => item.key !== "profile").map(
     (item) => `
       <a class="sidebar__link${item.key === active ? " is-active" : ""}" href="${item.href}"
@@ -78,10 +78,10 @@ function bottomNavMarkup(active) {
 
 /**
  * @param {{active: "dashboard"|"chat"|"journal"|"history"|"profile"}} options
- * @returns {Promise<object>} profil pengguna (agar halaman tidak perlu memanggil ulang)
+ * @returns {Promise<object>} profil pengguna
  */
 export async function mountAppShell({ active }) {
-  // Halaman dalam hanya untuk pengguna yang sudah masuk: profile.php menjawab 401 jika belum login
+  // profile.php menjawab 401 jika belum login
   let user;
   try {
     user = await getProfile();
@@ -106,7 +106,7 @@ export async function mountAppShell({ active }) {
     try {
       await logout();
     } catch {
-      // Tetap keluar dari halaman; session yang tersisa akan ditolak saat masuk lagi lewat form login.
+      // Tetap arahkan ke halaman login walaupun logout di server gagal.
     }
     window.location.href = ROUTES.login;
   });

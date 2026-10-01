@@ -11,7 +11,8 @@ let affirmation = null;
 async function init() {
   const [user, randomAffirmation, streak] = await Promise.all([
     mountAppShell({ active: "dashboard" }),
-    getRandomAffirmation(),
+    // Afirmasi yang gagal dimuat tidak boleh menghalangi bagian dashboard lainnya
+    getRandomAffirmation().catch(() => null),
     getStreak(),
   ]);
 
@@ -19,7 +20,12 @@ async function init() {
   $("#today-date").textContent = formatDateLong(new Date());
 
   affirmation = randomAffirmation;
-  $("#affirmation-text").textContent = `« ${affirmation.text} »`;
+  if (affirmation) {
+    $("#affirmation-text").textContent = `« ${affirmation.text} »`;
+  } else {
+    $("#affirmation-text").textContent = "Afirmasi belum bisa dimuat. Coba muat ulang halaman sebentar lagi.";
+    shareBtn.disabled = true;
+  }
 
   renderStreak(streak);
 }

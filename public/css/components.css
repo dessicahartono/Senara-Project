@@ -829,7 +829,7 @@ button.input-wrap__icon:hover {
   color: var(--color-on-primary-fixed);
 }
 
-/* Nomi: gambar berlatar krem, ditampilkan utuh seperti di Stitch */
+/* Nomi: gambar berlatar krem, ditampilkan utuh */
 .avatar--nomi {
   background: var(--color-surface-container-low);
 }

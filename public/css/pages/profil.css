@@ -2,7 +2,7 @@
    Profil
    ========================================================================== */
 
-/* Stitch: halaman profil tanpa padding samping di main, padding ada di kontainer */
+/* Halaman profil: padding samping ada di kontainer, bukan di main */
 .profile-main {
   padding-inline: 0;
 }

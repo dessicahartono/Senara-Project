@@ -13,7 +13,7 @@ async function request(url, options = {}) {
   return result;
 }
 
-/** Profil dipakai app-shell dan halaman Profil; satu permintaan cukup untuk satu halaman. */
+/** Profil di-cache per halaman karena dipakai app-shell dan halaman Profil sekaligus. */
 let profilePromise = null;
 
 export async function getProfile() {
@@ -35,9 +35,13 @@ export async function updateProfile({ name, bio }) {
   return profile;
 }
 
-/** Upload foto profil menunggu keputusan penyimpanan foto (Firebase Storage belum aktif). */
-export async function updateProfilePhoto() {
-  throw new Error("Ganti foto profil belum tersedia.");
+/** Ganti foto profil. File sebaiknya sudah dikompres dengan photoService.compressPhoto(). */
+export async function updateProfilePhoto(file) {
+  const body = new FormData();
+  body.append("photo", file);
+  const { profile } = await request("actions/profile_photo.php", { method: "POST", body });
+  profilePromise = Promise.resolve(profile);
+  return profile;
 }
 
 /**

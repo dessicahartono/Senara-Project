@@ -28,7 +28,7 @@ const el = {
 
 /**
  * State tampilan: "normal" | "invalid" | "invalidemail" | "toomany" | "unverified" | "server" | "verified"
- * + "notfound" | "wrongpw" (desain Stitch; hanya terpakai bila Email Enumeration Protection mati)
+ * + "notfound" | "wrongpw" (hanya terpakai bila Email Enumeration Protection dimatikan)
  */
 function setState(state) {
   hide(el.unverified);
@@ -155,7 +155,7 @@ passwordInput.addEventListener("input", () => {
   el.emailGroup.classList.remove("is-error"); // sisa tanda dari state "invalid"
 });
 
-// Google login 
+// Login Google
 const googleButton = $("#btn-google");
 const googleStatus = $("#google-status");
 

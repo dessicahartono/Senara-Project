@@ -1,4 +1,8 @@
 <?php
+/**
+ * Mengirim konfigurasi Firebase Web ke browser untuk login Google.
+ * Nilainya dibaca dari firebase_web_config.php di root project.
+ */
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');

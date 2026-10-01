@@ -3,7 +3,7 @@ import { mountAppShell } from "../components/app-shell.js";
 import { confirmDialog } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 import {
-  getJournals,
+  getLatestJournal,
   getJournalByDate,
   saveJournal,
   deleteJournal,
@@ -136,7 +136,7 @@ el.modeNew.addEventListener("click", () => loadDate(toISODate(new Date())));
 
 el.modeEdit.addEventListener("click", async () => {
   if (state.journal) return;
-  const [latest] = await getJournals();
+  const latest = await getLatestJournal();
   if (!latest) {
     showToast("Belum ada jurnal untuk disunting.", { type: "info" });
     return;
@@ -189,7 +189,7 @@ async function acceptPhoto(file) {
     return;
   }
 
-  // Kompres otomatis di browser sebelum disimpan (PRD 3.2c)
+  // Kompres di browser sebelum disimpan
   el.submitBtn.disabled = true;
   try {
     state.photoFile = await compressPhoto(file);
@@ -241,6 +241,12 @@ el.note.addEventListener("input", () => {
 
 el.cancelBtn.addEventListener("click", () => loadDate(state.date));
 
+/** Tampilkan error hapus jurnal lalu lempar ulang agar dialog konfirmasi tetap terbuka. */
+function showDeleteError(err) {
+  showToast(err.message || "Gagal menghapus jurnal. Coba lagi.", { type: "error" });
+  throw err;
+}
+
 el.deleteBtn.addEventListener("click", async () => {
   const deleted = await confirmDialog({
     icon: "delete_forever",
@@ -248,7 +254,7 @@ el.deleteBtn.addEventListener("click", async () => {
     message:
       "Jurnal momen ini akan dihapus permanen dari ruang tenangmu. Tindakan ini tidak dapat dibatalkan.",
     confirmText: "Ya, Hapus",
-    onConfirm: () => deleteJournal(state.journal.id),
+    onConfirm: () => deleteJournal(state.journal.id).catch(showDeleteError),
   });
   if (!deleted) return;
   showToast("Jurnal berhasil dihapus.");
@@ -283,8 +289,8 @@ el.form.addEventListener("submit", async (e) => {
     state.removePhoto = false;
     renderAll();
     showToast(wasEditing ? "Jurnal berhasil diperbarui." : "Momenmu tersimpan dengan aman.");
-  } catch {
-    showToast("Gagal menyimpan jurnal. Coba lagi.", { type: "error" });
+  } catch (err) {
+    showToast(err.message || "Gagal menyimpan jurnal. Coba lagi.", { type: "error" });
   }
 });
 

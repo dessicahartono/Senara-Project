@@ -1,59 +1,52 @@
 /**
- * Percakapan dengan Nomi.
- * Sekarang: balasan contoh bergiliran. Nanti: Firestore (riwayat) + API/Cloud Function (balasan AI).
+ * Percakapan dengan Nomi lewat endpoint PHP. Balasan Nomi dibuat oleh Gemini di backend.
  */
-import { getState, updateState, delay, makeId, staticData } from "./mockStore.js";
 
+/** Pertanyaan cepat di bawah balasan Nomi terakhir. */
+const QUICK_PROMPTS = ["Tenggat waktu pekerjaan", "Rasa cemas berlebih", "Hanya ingin didengar"];
+
+async function request(url, options = {}) {
+  const response = await fetch(url, { credentials: "same-origin", cache: "no-store", ...options });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) {
+    const error = new Error(result.message || "Permintaan gagal. Coba lagi beberapa saat lagi.");
+    error.status = response.status;
+    throw error;
+  }
+  return result;
+}
+
+function post(url, fields) {
+  const body = new FormData();
+  Object.entries(fields).forEach(([key, value]) => body.append(key, value));
+  return request(url, { method: "POST", body });
+}
+
+/** Pesan-pesan terakhir, urut dari yang terlama. */
 export async function getMessages() {
-  await delay(250);
-  return getState().chatMessages;
+  const { messages } = await request("actions/chat.php");
+  return messages;
 }
 
 export async function getQuickPrompts() {
-  return staticData.chatQuickPrompts;
+  return QUICK_PROMPTS;
 }
 
 /** Simpan pesan pengguna. Balasan Nomi diambil terpisah lewat getNomiReply(). */
 export async function sendMessage(text) {
-  await delay(150);
-  const message = {
-    id: makeId("msg"),
-    sender: "user",
-    text: text.trim(),
-    createdAt: new Date().toISOString(),
-  };
-  updateState((s) => {
-    s.chatMessages.push(message);
-  });
+  const { message } = await post("actions/chat.php", { text: text.trim() });
   return message;
 }
 
 export async function getNomiReply() {
-  await delay(1400);
-  const replies = staticData.nomiReplies;
-  const userCount = getState().chatMessages.filter((m) => m.sender === "user").length;
-  const reply = {
-    id: makeId("msg"),
-    sender: "nomi",
-    text: replies[userCount % replies.length],
-    createdAt: new Date().toISOString(),
-  };
-  updateState((s) => {
-    s.chatMessages.push(reply);
-  });
-  return reply;
+  const { message } = await post("actions/nomi_reply.php", {});
+  return message;
 }
 
 export async function deleteMessage(id) {
-  await delay(150);
-  updateState((s) => {
-    s.chatMessages = s.chatMessages.filter((m) => m.id !== id);
-  });
+  await post("actions/delete_chat.php", { id });
 }
 
 export async function clearMessages() {
-  await delay(400);
-  updateState((s) => {
-    s.chatMessages = [];
-  });
+  await post("actions/delete_chat.php", { all: "1" });
 }

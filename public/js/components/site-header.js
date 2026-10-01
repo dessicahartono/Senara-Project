@@ -1,6 +1,6 @@
 /**
  * Header halaman publik yang punya navigasi (landing & registrasi).
- * Login & cek email memakai bar kosong <header class="top-bar"> sesuai Stitch.
+ * Login & cek email memakai bar kosong <header class="top-bar">.
  * Placeholder di HTML:
  *   <header id="site-header" class="site-header"></header>
  */
@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 
 /**
  * @param {{active?: "home"|"affirmation"|"features", variant?: "default"|"landing"}} options
- *   variant "landing": emblem bulat + nama serif (gaya header landing page di Stitch)
+ *   variant "landing": emblem bulat + nama serif untuk landing page
  */
 export function mountSiteHeader({ active, variant = "default" } = {}) {
   const header = document.getElementById("site-header");

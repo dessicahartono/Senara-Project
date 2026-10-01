@@ -11,7 +11,7 @@ import { getGoogleIdToken } from "../services/googleAuth.js";
 import { $, $$, show, hide, escapeHtml, withLoading } from "../utils/dom.js";
 import { formatDate, initials, firstName } from "../utils/format.js";
 
-const MAX_AVATAR_SIZE = 3 * 1024 * 1024; // 3 MB, sesuai pesan di desain Stitch
+const MAX_AVATAR_SIZE = 3 * 1024 * 1024; // 3 MB
 
 initFormHelpers();
 

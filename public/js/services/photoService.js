@@ -1,10 +1,7 @@
 /**
- * Foto (jurnal & avatar).
- * Sekarang: hanya kompres di browser. Nanti: unggah & hapus di Firebase Storage.
+ * Kompres foto (jurnal & avatar) di browser sebelum dikirim ke backend.
  */
-import { serviceError } from "./mockStore.js";
-
-/** Pengaturan kompres sesuai PRD 3.2c. */
+/** Pengaturan kompres foto. */
 const MAX_WIDTH = 1080;
 const QUALITY = 0.8;
 
@@ -19,7 +16,7 @@ export async function compressPhoto(file) {
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch {
-    throw serviceError("photo/unsupported-format", "Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.");
+    throw new Error("Format foto tidak didukung. Gunakan JPG, PNG, atau WebP.");
   }
 
   const scale = Math.min(1, MAX_WIDTH / bitmap.width);
@@ -37,7 +34,7 @@ export async function compressPhoto(file) {
   // Browser yang belum bisa membuat WebP (mis. Safari lama) diam-diam mengembalikan PNG
   let blob = await toBlob(canvas, "image/webp");
   if (blob?.type !== "image/webp") blob = await toBlob(canvas, "image/jpeg");
-  if (!blob) throw serviceError("photo/compress-failed", "Foto gagal diproses. Coba foto lain.");
+  if (!blob) throw new Error("Foto gagal diproses. Coba foto lain.");
 
   const ext = blob.type === "image/webp" ? "webp" : "jpg";
   const baseName = file.name.replace(/\.[^.]+$/, "") || "foto";

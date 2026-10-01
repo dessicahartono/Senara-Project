@@ -1,6 +1,9 @@
 <?php
-// Fungsi: menghapus akun yang sedang login beserta seluruh datanya (PRD 6 Delete 3).
-// Wajib konfirmasi ulang: kata sandi untuk akun email, atau login Google baru (idToken) untuk akun Google.
+/**
+ * Menghapus akun yang sedang login beserta seluruh datanya.
+ *
+ * Akun email dikonfirmasi ulang dengan kata sandi, akun Google dengan ID token dari login Google yang baru.
+ */
 declare(strict_types=1);
 
 use Kreait\Firebase\Auth\SignIn\FailedToSignIn;
@@ -17,8 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/../../config/firebase_config.php';
 require_once __DIR__ . '/../../src/users.php';
+require_once __DIR__ . '/../../src/cloudinary.php';
 
-/** Login Google untuk konfirmasi harus baru saja dilakukan. */
+/** Batas umur login Google (detik) yang masih diterima sebagai konfirmasi. */
 const GOOGLE_REAUTH_MAX_AGE = 300;
 
 try {
@@ -38,7 +42,7 @@ if (in_array('password', $providers, true)) {
     try {
         $auth->signInWithEmailAndPassword((string) $account->email, $password);
     } catch (FailedToSignIn | InvalidArgumentException) {
-        // InvalidArgumentException: kata sandi kurang dari 6 karakter ditolak SDK sebelum dikirim ke Firebase.
+        // SDK menolak kata sandi kurang dari 6 karakter dengan InvalidArgumentException.
         jsonResponse(['success' => false, 'message' => 'Kata sandi tidak cocok.'], 403);
     }
 } else {
@@ -55,8 +59,14 @@ if (in_array('password', $providers, true)) {
 }
 
 try {
-    // Data dihapus lebih dulu: jika penghapusan akun Auth gagal, pengguna masih bisa login dan mencoba lagi.
-    // TODO: hapus juga foto di Storage setelah upload foto tersedia.
+    // Gagal menghapus foto tidak membatalkan penghapusan akun; cukup dicatat di log.
+    cloudinaryDestroyUserPhotos($uid);
+} catch (Throwable $error) {
+    error_log('Delete account photos failed: ' . $error->getMessage());
+}
+
+try {
+    // Data dihapus sebelum akun Auth agar pengguna masih bisa login dan mengulang jika langkah berikutnya gagal.
     deleteUserData($database, $uid);
     $auth->deleteUser($uid);
 } catch (Throwable $error) {

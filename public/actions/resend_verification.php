@@ -1,6 +1,10 @@
 <?php
-// Fungsi: mengirim ulang email verifikasi untuk akun yang tersimpan di session
-// (diisi oleh register.php atau login.php saat email belum diverifikasi).
+/**
+ * Mengirim ulang email verifikasi.
+ *
+ * Alamat tujuan diambil dari session yang diisi register.php atau login.php
+ * saat email belum diverifikasi.
+ */
 declare(strict_types=1);
 
 session_start();
@@ -16,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/../../config/firebase_config.php';
 require_once __DIR__ . '/../../src/verification.php';
 
-// Email tujuan diambil dari session, bukan dari input browser, agar endpoint ini
-// tidak bisa dipakai untuk mengirim email ke alamat sembarang.
+// Alamat email sengaja tidak diterima dari browser agar endpoint ini
+// tidak bisa dipakai mengirim email ke sembarang alamat.
 $email = $_SESSION['pending_verification_email'] ?? '';
 if (!is_string($email) || $email === '') {
     http_response_code(400);

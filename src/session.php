@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 /**
- * Untuk endpoint JSON yang wajib login: mengembalikan uid dari session,
- * atau langsung menjawab 401 jika belum login. uid tidak pernah diambil dari input browser.
+ * Mengembalikan uid pengguna yang sedang login, atau langsung menjawab 401 jika belum login.
+ * uid selalu diambil dari session, tidak pernah dari input browser.
  */
 function requireLoginUid(): string
 {

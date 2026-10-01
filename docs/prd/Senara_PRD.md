@@ -38,7 +38,7 @@ Requirements:
 | **Database**         | Firebase Realtime Database                                                                                                                                                                                       |
 | **Autentikasi**      | Firebase Auth: login dengan Email & Password, ditambah Login with Google. Login email hanya berhasil jika email sudah diverifikasi.                                                                              |
 | **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerification) setelah registrasi. Tidak ada email lain selain verifikasi. |
-| **Penyimpanan Foto** | Firebase Storage (gratis hingga 5 GB); URL foto disimpan di Realtime Database                                                                                                                                    |
+| **Penyimpanan Foto** | Cloudinary (paket gratis); backend PHP mengunggah foto, URL foto disimpan di Realtime Database                                                                                                                  |
 | **Chatbot AI**       | Gemini API (dipilih karena gratis)                                                                                                                                                                               |
 | **Hosting / Deploy** | Render (paket gratis)                                                                                                                                                                                            |
 
@@ -84,9 +84,11 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 >
 > • Satu tanggal hanya bisa memiliki satu jurnal. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit.
 
-### **Penyimpanan Foto Jurnal (Firebase Storage)**
+### **Penyimpanan Foto (Cloudinary)**
 
-Karena Firebase sudah dipakai untuk Auth dan Realtime Database, Firebase Storage adalah pilihan utama yang paling pas dan sangat direkomendasikan untuk menyimpan foto. Kapasitas free tier gratis hingga 5 GB, sangat cukup untuk proyek tugas. Catatan: Firebase dapat mewajibkan paket Blaze (kartu kredit) untuk Storage pada project baru, jadi cek dulu di Firebase Console. Jika tidak memungkinkan, ganti dengan layanan gratis lain seperti Cloudinary; rancangan tidak berubah karena database hanya menyimpan URL.
+Foto jurnal dan foto profil disimpan di Cloudinary. Firebase Storage tidak dipakai karena project Firebase baru wajib memakai paket Blaze (kartu kredit) untuk Storage. Cloudinary punya paket gratis tanpa kartu kredit, dan rancangan database tidak berubah karena database hanya menyimpan URL foto.
+
+Kredensial Cloudinary (cloud name, API key, API secret) disimpan di cloudinary_config.php di root project, di luar folder public dan tidak masuk git. Karena API secret tidak boleh ada di browser, unggahan selalu lewat backend PHP.
 
 **Alur kerja upload foto:**
 
@@ -94,11 +96,20 @@ Karena Firebase sudah dipakai untuk Auth dan Realtime Database, Firebase Storage
 >
 > 2\. Frontend otomatis mengecilkan dan mengompres foto di browser pengguna sesuai pengaturan di tabel bawah. Pengguna tidak perlu melakukan apa-apa.
 >
-> 3\. Frontend mengunggah foto yang sudah dikompres ke Firebase Storage, dengan metadata cacheControl agar browser menyimpan foto dan detail jurnal di Log History terbuka lebih cepat.
+> 3\. Frontend mengirim foto yang sudah dikompres ke endpoint PHP. Backend memeriksa isi file (harus JPG, PNG, atau WebP), lalu mengunggahnya ke Cloudinary dengan permintaan bertanda tangan (signed upload).
 >
-> 4\. Firebase Storage mengembalikan URL gambar, contoh: https://firebasestorage.googleapis.com/.../photo.jpg
+> 4\. Cloudinary mengembalikan URL gambar, contoh: https://res.cloudinary.com/{cloud_name}/image/upload/v123/senara/journals/{uid}/2026-09-29.webp. Nomor versi di URL berubah setiap foto diganti, sehingga browser tidak menampilkan foto lama dari cache.
 >
-> 5\. URL gambar yang berupa teks ini disimpan ke Firebase Realtime Database pada field photoUrl.
+> 5\. Backend menyimpan URL tersebut ke Firebase Realtime Database pada field photoUrl.
+
+**Lokasi file di Cloudinary:**
+
+| **Foto**     | **public_id**                     | **Keterangan**                                                                 |
+|--------------|-----------------------------------|--------------------------------------------------------------------------------|
+| Foto profil  | senara/avatars/{uid}              | Dipotong menjadi persegi 400 × 400 px oleh Cloudinary saat diunggah.           |
+| Foto jurnal  | senara/journals/{uid}/{dateKey}   | Satu foto per jurnal, mengikuti aturan satu jurnal per tanggal.                |
+
+Karena public_id ditentukan dari uid dan tanggal, foto baru selalu menimpa foto lama di lokasi yang sama. Tidak ada file lama yang tertinggal, dan database tidak perlu menyimpan path file.
 
 **Pengaturan kompres foto (di frontend):**
 
@@ -110,7 +121,7 @@ Karena Firebase sudah dipakai untuk Auth dan Realtime Database, Firebase Storage
 | **Target ukuran akhir**         | 200 sampai 400 KB     | Foto HP sekitar 5 MB turun ke kisaran ini.                                                                                     |
 | **Batas file sebelum kompresi** | 10 MB                 | File di atas batas ditolak.                                                                                                    |
 
-Dengan rata-rata 300 KB per foto, kuota 5 GB muat sekitar 17.000 foto. Jika foto butuh detail tinggi (misalnya tulisan atau dokumen), lebar 1080 px bisa terasa kurang, tetapi untuk momen sehari-hari di Senara pengaturan ini sudah cukup.
+Dengan rata-rata 300 KB per foto, kuota penyimpanan paket gratis Cloudinary sudah lebih dari cukup untuk proyek tugas (cek batas terbaru di halaman harga Cloudinary). Jika foto butuh detail tinggi (misalnya tulisan atau dokumen), lebar 1080 px bisa terasa kurang, tetapi untuk momen sehari-hari di Senara pengaturan ini sudah cukup.
 
 ### **d. Log History (Tampilan Kalender ala Instagram Archive)**
 
@@ -169,7 +180,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 |--------------------------------|-------------|--------------------------------------------------------------------------------------------------------|
 | **Nama Lengkap**               | Bisa diubah | Nama depannya dipakai untuk sapaan di Homepage dan Profile ("Hi, Seno").                               |
 | **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri.                                                                 |
-| **Foto Profil (Avatar)**       | Bisa diubah | Foto diunggah lewat PhotoService (dikompres, disimpan di Storage); URL disimpan di users/{uid}/photoUrl. |
+| **Foto Profil (Avatar)**       | Bisa diubah | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. |
 | **Alamat Email**               | Read-only   | Menampilkan email terdaftar dari Firebase Auth.                                                        |
 | **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
 
@@ -187,7 +198,7 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 >
 > • **Logout:** keluar dari sesi aplikasi.
 >
-> • **Hapus Akun**: menghapus profil, jurnal, penanda tanggal, riwayat chat, foto di Storage, lalu akun Firebase Auth. Firebase meminta login ulang sebelum akun dihapus, jadi tampilkan konfirmasi dan minta password (atau login Google) lagi.
+> • **Hapus Akun**: menghapus profil, jurnal, penanda tanggal, riwayat chat, foto di Cloudinary, lalu akun Firebase Auth. Firebase meminta login ulang sebelum akun dihapus, jadi tampilkan konfirmasi dan minta password (atau login Google) lagi.
 
 # **6. Pemetaan CRUD**
 
@@ -202,15 +213,15 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 | **Update 1**        | Edit jurnal (catatan, foto)                                | journals/{uid}/{dateKey}: note, photoUrl, updatedAt              |
 | **Update 2**        | Simpan Perubahan profil (nama lengkap, bio)                | users/{uid}                                                      |
 | **Update 3**        | Ganti foto profil (avatar)                                 | users/{uid}/photoUrl                                             |
-| **Delete 1**        | Hapus jurnal di panel detail, termasuk foto di Storage     | journals, journalDates, dan stats                                |
+| **Delete 1**        | Hapus jurnal di panel detail, termasuk foto di Cloudinary  | journals, journalDates, dan stats                                |
 | **Delete 2**        | Hapus satu pesan atau bersihkan riwayat chat Nomi          | chats/{uid}                                                      |
-| **Delete 3**        | Hapus akun beserta seluruh datanya                         | users, journals, journalDates, chats, Storage, Firebase Auth     |
+| **Delete 3**        | Hapus akun beserta seluruh datanya                         | users, journals, journalDates, chats, Cloudinary, Firebase Auth  |
 
 Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya terhubung ke Firebase Realtime Database. Pembacaan tambahan seperti afirmasi harian dan riwayat chat tidak dihitung dalam 12 fungsi ini. Daftar lengkap semua operasi yang berjalan di website ada di 6.1.
 
 ## **6.1 Daftar Lengkap Operasi CRUD**
 
-Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Storage. Totalnya 26 operasi: 6 Create, 10 Read, 6 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 26 operasi: 6 Create, 10 Read, 6 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
 
 **Create**
 
@@ -219,7 +230,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **C1**  | Registrasi email: membuat profil pengguna                    | users/{uid}: name, email, createdAt, stats awal         | authService.register            | Create 1         |
 | **C2**  | Login Google pertama kali: membuat profil jika belum ada     | users/{uid}                                             | authService.loginWithGoogle     | -                |
 | **C3**  | Menyimpan jurnal baru                                        | journals/{uid}/{dateKey} dan journalDates/{uid}/{dateKey} | journalService.saveJournal    | Create 2         |
-| **C4**  | Mengunggah foto jurnal                                       | Storage, lalu photoUrl dan storagePath di jurnal        | journalService.saveJournal      | -                |
+| **C4**  | Mengunggah foto jurnal                                       | Cloudinary, lalu photoUrl di jurnal                     | journalService.saveJournal      | -                |
 | **C5**  | Menyimpan pesan pengguna di chat Nomi                        | chats/{uid}/{messageId}                                 | chatService.sendMessage         | Create 3         |
 | **C6**  | Menyimpan balasan Nomi                                       | chats/{uid}/{messageId}                                 | chatService.getNomiReply        | Create 3         |
 
@@ -243,20 +254,20 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
 | ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
 | **U1**  | Edit catatan jurnal                                          | journals/{uid}/{dateKey}: note, updatedAt               | journalService.saveJournal      | Update 1         |
-| **U2**  | Ganti foto jurnal (foto lama di Storage dihapus)             | Storage dan journals/{uid}/{dateKey}: photoUrl          | journalService.saveJournal      | Update 1         |
-| **U3**  | Hapus foto dari jurnal tanpa menghapus jurnalnya             | Storage dan journals/{uid}/{dateKey}: photoUrl = null   | journalService.saveJournal (removePhoto) | -       |
+| **U2**  | Ganti foto jurnal (foto lama ditimpa di Cloudinary)          | Cloudinary dan journals/{uid}/{dateKey}: photoUrl       | journalService.saveJournal      | Update 1         |
+| **U3**  | Hapus foto dari jurnal tanpa menghapus jurnalnya             | Cloudinary dan journals/{uid}/{dateKey}: photoUrl = null | journalService.saveJournal (removePhoto) | -       |
 | **U4**  | Simpan perubahan profil (nama lengkap, bio)                  | users/{uid}: name, bio                                  | userService.updateProfile       | Update 2         |
-| **U5**  | Ganti foto profil (avatar)                                   | Storage dan users/{uid}/photoUrl                        | userService.updateProfilePhoto  | Update 3         |
+| **U5**  | Ganti foto profil (avatar)                                   | Cloudinary dan users/{uid}/photoUrl                     | userService.updateProfilePhoto  | Update 3         |
 | **U6**  | Hitung ulang streak setelah jurnal dibuat atau dihapus       | users/{uid}/stats: streak, lastCheckIn                  | journalService (saat simpan/hapus) | -             |
 
 **Delete**
 
 | **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
 | ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
-| **D1**  | Hapus jurnal beserta fotonya (dari Journaling dan Log History) | journals, journalDates, Storage, dan stats            | journalService.deleteJournal    | Delete 1         |
+| **D1**  | Hapus jurnal beserta fotonya (dari Journaling dan Log History) | journals, journalDates, Cloudinary, dan stats         | journalService.deleteJournal    | Delete 1         |
 | **D2**  | Hapus satu pesan chat                                        | chats/{uid}/{messageId}                                 | chatService.deleteMessage       | Delete 2         |
 | **D3**  | Bersihkan seluruh riwayat chat                               | chats/{uid}                                             | chatService.clearMessages       | Delete 2         |
-| **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, Storage, Firebase Auth | userService.deleteAccount  | Delete 3         |
+| **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, Cloudinary, Firebase Auth | userService.deleteAccount  | Delete 3         |
 
 **Tidak dihitung sebagai CRUD database**
 
@@ -282,7 +293,7 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 |---|---|---|
 | **1** | Login dan registrasi | Registrasi dan login email dikirim lewat form ke backend PHP, yang memanggil Firebase Authentication lewat Admin SDK. Login Google dilakukan frontend lewat Firebase SDK, lalu ID Token dikirim ke backend PHP untuk diverifikasi. Setelah berhasil, backend menyimpan uid di session. |
 | **2** | Baca dan tulis data | Frontend memanggil endpoint backend PHP; backend membaca dan menulis profil, jurnal, afirmasi, dan riwayat chat di Realtime Database lewat Admin SDK, hanya pada path milik uid yang sedang login. Security Rules menolak semua akses langsung dari browser (Bagian 11.9). |
-| **3** | Upload foto | Foto dikompres di browser, lalu diunggah ke firebase storage. URL hasil upload disimpan ke Realtime Database pada field photoUrl. |
+| **3** | Upload foto | Foto dikompres di browser, lalu dikirim ke backend PHP yang mengunggahnya ke Cloudinary. URL hasil upload disimpan ke Realtime Database pada field photoUrl. |
 | **4** | Panggilan ke backend | Semua akses data, chat Nomi, dan pengiriman email lewat endpoint backend PHP di Render (HTTPS). Setelah login, backend menyimpan uid di session. |
 | **5** | Verifikasi token | Middleware backend memeriksa keaslian ID Token lewat Firebase Admin SDK sebelum memproses permintaan. |
 | **6** | Chat Nomi | Backend mengirim pesan pengguna dan system prompt Nomi ke Gemini API, lalu meneruskan jawabannya ke frontend. |
@@ -295,7 +306,7 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 | **Frontend Web**            | Landing page (slider 3 slide), dashboard 5 menu, kompres foto sebelum upload                       | HTML, CSS, JavaScript, Firebase SDK                    |
 | **Firebase Authentication** | Registrasi, login email dan password, login Google, email verifikasi, reset password               | Firebase Auth                                          |
 | **Realtime Database**       | Profil, jurnal, afirmasi, riwayat chat                                                             | Firebase Realtime Database                             |
-| **Cloud Storage**           | File foto jurnal (yang sudah dikompres)                                                            | Firebase Storage                                       |
+| **Penyimpanan Foto**        | File foto jurnal dan foto profil (yang sudah dikompres)                                            | Cloudinary (paket gratis)                              |
 | **Backend**                 | Endpoint auth, data (CRUD), dan chat, verifikasi token, pengiriman email verifikasi, menyimpan rahasia (service account Firebase, API key Gemini) | PHP + kreait/firebase-php di Render (paket gratis) |
 | **Gemini API**              | Mesin chatbot Nomi, dan pembuat afirmasi baru bila dibutuhkan                                      | Google Gemini API                                      |
 
@@ -333,7 +344,7 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 
 ## **8.3 Konsekuensi yang Perlu Diketahui**
 
-> • Frontend dan backend di-deploy di satu tempat, yaitu Render. Firebase hanya dipakai sebagai layanan backend (Auth, Realtime Database, Storage), bukan hosting. Karena satu origin, CORS cukup dibatasi ke domain Render Senara.
+> • Frontend dan backend di-deploy di satu tempat, yaitu Render. Firebase hanya dipakai sebagai layanan backend (Auth dan Realtime Database), bukan hosting; foto disimpan di Cloudinary. Karena satu origin, CORS cukup dibatasi ke domain Render Senara.
 >
 > • Realtime Database tidak mendukung join dan query kompleks. Karena itu struktur datanya dirancang khusus (Bagian 10) dan dioptimasi (Bagian 11).
 >
@@ -355,7 +366,7 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 |-----------------|-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **User**        | Data akun dan profil pengguna             | uid berasal dari Firebase Auth dan menjadi kunci utama. name (nama lengkap) dan bio bisa diubah; email dan createdAt hanya dibaca.                                                                                                        |
 | **UserStats**   | Ringkasan aktivitas untuk halaman Profile | Berisi streak dan tanggal jurnal terakhir (lastCheckIn). Disimpan agar Profile tidak menghitung ulang dari semua jurnal.                                                                                                    |
-| **Journal**     | Satu momen precious                       | dateKey berformat yyyy-mm-dd dan menjadi kunci data (satu jurnal per tanggal untuk setiap pengguna). photoUrl adalah URL dari Storage; storagePath dipakai untuk menghapus file. note berisi catatan momen tersebut. |
+| **Journal**     | Satu momen precious                       | dateKey berformat yyyy-mm-dd dan menjadi kunci data (satu jurnal per tanggal untuk setiap pengguna). photoUrl adalah URL dari Cloudinary; lokasi filenya ditentukan dari uid dan dateKey, sehingga tidak perlu disimpan. note berisi catatan momen tersebut. |
 | **ChatMessage** | Satu pesan dalam percakapan dengan Nomi   | sender bernilai user atau nomi.                                                                                                                                                                                                  |
 | **Affirmation** | Satu kalimat afirmasi                     | index bernilai 1 sampai 365 dan menjadi kunci data; afirmasi yang tampil dipilih acak dari index ini setiap halaman dimuat.                                                                                                     |
 
@@ -366,7 +377,7 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 | **AuthService**        | Registrasi, login email dan Google, logout, reset password, mengambil pengguna aktif                                                                                    | Frontend + backend PHP |
 | **ProfileService**     | Membaca dan memperbarui profil, membaca statistik                                                                                                                       | Frontend → backend PHP |
 | **JournalService**     | Create, Read (per bulan atau per tanggal), Update, dan Delete jurnal. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit, bukan membuat jurnal kedua. | Frontend → backend PHP |
-| **PhotoService**       | Mengompres, mengunggah, dan menghapus foto di Storage                                                                                                                   | Frontend |
+| **PhotoService**       | Mengompres foto di browser sebelum dikirim ke backend; backend yang mengunggah dan menghapus foto di Cloudinary                                                         | Frontend → backend PHP |
 | **AffirmationService** | Mengambil satu afirmasi acak setiap halaman dimuat, tidak sama dengan afirmasi yang terakhir tampil                                                                     | Frontend → backend PHP |
 | **ChatService**        | Mengirim pesan ke backend dan membaca riwayat chat                                                                                                                      | Frontend → backend PHP |
 | **GeminiClient**       | Memanggil Gemini API dengan system prompt Nomi dan beberapa pesan terakhir                                                                                              | Backend                      |
@@ -381,7 +392,7 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 >
 > • AuthService memanggil endpoint registrasi di backend PHP, yang mengirim email verifikasi lewat Firebase Authentication.
 >
-> • **JournalService memakai PhotoService:** foto dikompres dan diunggah dulu, baru URL-nya disimpan. Saat jurnal dihapus atau fotonya diganti, file lama dihapus lewat PhotoService.remove.
+> • **JournalService memakai PhotoService:** foto dikompres dan diunggah dulu, baru URL-nya disimpan. Saat fotonya diganti, file lama ditimpa di lokasi yang sama; saat jurnal dihapus, backend menghapus fotonya di Cloudinary.
 >
 > • **ChatService memakai GeminiClient:** secara teknis lewat HTTP ke backend, karena GeminiClient berjalan di server.
 
@@ -400,7 +411,7 @@ users
 journals
   {uid}
     {dateKey}                      contoh: 2026-09-29
-      note, photoUrl, storagePath, photoName, createdAt, updatedAt
+      note, photoUrl, photoName, createdAt, updatedAt
 journalDates
   {uid}
     {dateKey}: true
@@ -427,8 +438,7 @@ chats
 | **Field**                  | **Tipe dan isi**                                                                                         |
 |----------------------------|----------------------------------------------------------------------------------------------------------|
 | **name, email, bio**       | String. email disalin dari Firebase Auth saat registrasi dan hanya dibaca. bio boleh kosong.             |
-| **photoUrl**               | String URL dari Storage, atau null jika tidak ada foto. Dipakai untuk foto profil dan foto jurnal.       |
-| **storagePath**            | String path file di Storage, dipakai untuk menghapus file saat foto diganti atau jurnal dihapus.         |
+| **photoUrl**               | String URL dari Cloudinary, atau null jika tidak ada foto. Dipakai untuk foto profil dan foto jurnal. Foto profil akun Google memakai URL foto Google sampai pengguna menggantinya. |
 | **photoName**              | String nama file asli foto jurnal, ditampilkan di form edit.                                             |
 | **note**                   | String catatan jurnal, maksimal 2000 karakter.                                                           |
 | **sender**                 | "user" atau "nomi".                                                                                      |
@@ -461,9 +471,9 @@ Kalender hanya perlu tahu tanggal mana yang punya jurnal. Node journalDates meny
 
 Streak disimpan di users/{uid}/stats dan diperbarui saat jurnal dibuat atau dihapus (dengan transaction atau multi-path update). Halaman Profile cukup membaca satu node kecil, tidak perlu menghitung dari semua jurnal. Untuk streak, hitung ulang dari journalDates karena jurnal bisa diisi untuk tanggal yang sudah lewat.
 
-## **11.5 Foto di Storage, hanya URL di database**
+## **11.5 Foto di Cloudinary, hanya URL di database**
 
-Database hanya menyimpan photoUrl berupa teks. Foto dikompres dulu di frontend (Bagian 3.2c). Saat jurnal dihapus atau fotonya diganti, hapus juga file lamanya di Storage lewat storagePath.
+Database hanya menyimpan photoUrl berupa teks. Foto dikompres dulu di frontend (Bagian 3.2c). Lokasi file di Cloudinary ditentukan dari uid dan dateKey, jadi foto yang diganti langsung menimpa file lama, dan saat jurnal atau akun dihapus backend menghapus fotonya di lokasi yang sama.
 
 ## **11.6 Afirmasi: baca satu node acak**
 
@@ -512,7 +522,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 | **Kunci tanggal + query per bulan**       | Tidak mengunduh semua jurnal untuk membuka kalender |
 | **journalDates**                          | Kalender tampil tanpa membaca isi jurnal            |
 | **Streak tersimpan**                      | Profile tidak menghitung dari semua jurnal          |
-| **Foto di Storage + kompres**             | Ukuran database kecil, penyimpanan foto hemat       |
+| **Foto di Cloudinary + kompres**          | Ukuran database kecil, penyimpanan foto hemat       |
 | **Afirmasi 1 node acak**                  | Satu baca kecil per muat halaman, tanpa kuota Gemini |
 | **limitToLast dan pesan Gemini terbatas** | Bandwidth dan token                                 |
 | **Rules tolak semua + validasi di PHP**   | Mencegah data sampah dan akses lintas pengguna      |
@@ -521,7 +531,9 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 
 ## **12.1 Keputusan yang Ditetapkan**
 
-> • Deploy tunggal di Render; Firebase dipakai sebagai layanan backend (Auth, Realtime Database, Storage), bukan hosting.
+> • Deploy tunggal di Render; Firebase dipakai sebagai layanan backend (Auth dan Realtime Database), bukan hosting.
+>
+> • Foto jurnal dan foto profil disimpan di Cloudinary karena Firebase Storage pada project baru wajib paket Blaze.
 >
 > • Email verifikasi memakai Firebase Authentication (sendEmailVerification). Login email diblokir sampai email terverifikasi; login Google dianggap terverifikasi.
 >
@@ -543,8 +555,6 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 
 ## **12.2 Hal yang Dicek Sebelum Mulai Coding**
 
-> • Paket Firebase Storage: apakah project baru wajib Blaze. Jika ya dan tidak diinginkan, pakai Cloudinary atau layanan gratis lain.
->
 > • Pastikan Email Enumeration Protection sudah aktif di Firebase Console, karena pesan error login mengikuti pengaturan ini.
 >
 > • Batas free tier Gemini API dan Realtime Database.

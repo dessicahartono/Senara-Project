@@ -214,7 +214,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-xs);
-  border-radius: 0; /* sesuai Stitch: sel kalender bersudut tegas */
+  border-radius: 0; /* sel kalender bersudut tegas */
   color: var(--color-on-surface);
   transition: all var(--duration) var(--ease);
 }
