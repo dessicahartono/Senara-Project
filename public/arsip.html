@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Log History — Senara</title>
+  <title>Arsip — Senara</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/pages/riwayat.css">
+  <link rel="stylesheet" href="css/pages/arsip.css">
 </head>
 
 <body>
@@ -25,17 +25,17 @@
     <header class="app-header"></header>
 
     <main class="app-main">
-      <div class="container history">
-        <header class="history__head">
-          <h1 class="text-headline-lg">Log History</h1>
+      <div class="container archive">
+        <header class="archive__head">
+          <h1 class="text-headline-lg">Arsip</h1>
 
-          <div class="history__stats">
-            <span class="text-label-lg history__stats-count" id="stats-count">– Momen Tersimpan di Bulan Ini</span>
-            <span class="text-label-sm text-tertiary history__stats-rate" id="stats-rate">Konsistensi Refleksi –</span>
+          <div class="archive__stats">
+            <span class="text-label-lg archive__stats-count" id="stats-count">– Momen Tersimpan di Bulan Ini</span>
+            <span class="text-label-sm text-tertiary archive__stats-rate" id="stats-rate">Konsistensi Refleksi –</span>
           </div>
         </header>
 
-        <div class="history__grid">
+        <div class="archive__grid">
           <!-- Kalender -->
           <section class="calendar" aria-labelledby="calendar-title">
             <div class="calendar__bar">
@@ -69,12 +69,12 @@
                 <span><span class="calendar__legend-dot calendar__legend-dot--memory"></span> Momen Tercatat</span>
                 <span><span class="calendar__legend-dot calendar__legend-dot--selected"></span> Tanggal Dipilih</span>
               </div>
-              <span class="text-label-sm calendar__legend-hint">Ketuk tanggal untuk membuka lembaran</span>
+              <span class="text-label-sm calendar__legend-hint">Ketuk tanggal untuk melihat detail</span>
             </div>
           </section>
 
           <!-- Detail tanggal terpilih -->
-          <section class="history__detail" aria-live="polite">
+          <section class="archive__detail" aria-live="polite">
             <article class="memory hidden" id="memory-card">
               <div class="memory__author">
                 <span class="avatar avatar--md avatar--peach" id="memory-avatar">S</span>
@@ -94,7 +94,6 @@
               <div class="memory__body">
                 <div class="memory__heading">
                   <span class="text-headline-sm memory__date" id="memory-date"></span>
-                  <span class="icon icon--filled text-primary" aria-hidden="true">bookmark</span>
                 </div>
                 <div class="memory__note">
                   <span class="text-label-sm memory__note-label">Catatan</span>
@@ -137,7 +136,7 @@
 
   <nav id="bottom-nav" class="bottom-nav"></nav>
 
-  <script type="module" src="js/pages/riwayat.js"></script>
+  <script type="module" src="js/pages/arsip.js"></script>
 </body>
 
 </html>

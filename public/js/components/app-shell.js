@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { key: "dashboard", label: "Beranda", short: "Beranda", href: ROUTES.dashboard },
   { key: "chat", label: "Nomi (Chat)", short: "Nomi", href: ROUTES.chat },
   { key: "journal", label: "Journaling", short: "Journal", href: ROUTES.journal },
-  { key: "history", label: "Log History", short: "Riwayat", href: ROUTES.history },
+  { key: "archive", label: "Arsip", short: "Arsip", href: ROUTES.archive },
   { key: "profile", label: "Profil", short: "Profil", href: ROUTES.profile },
 ];
 
@@ -78,7 +78,7 @@ function bottomNavMarkup(active) {
 }
 
 /**
- * @param {{active: "dashboard"|"chat"|"journal"|"history"|"profile"}} options
+ * @param {{active: "dashboard"|"chat"|"journal"|"archive"|"profile"}} options
  * @returns {Promise<object>} profil pengguna
  */
 export async function mountAppShell({ active }) {

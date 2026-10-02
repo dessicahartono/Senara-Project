@@ -1,8 +1,8 @@
 /* ==========================================================================
-   Log History (riwayat)
+   Arsip
    ========================================================================== */
 
-.history {
+.archive {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
@@ -10,13 +10,13 @@
 }
 
 @media (min-width: 768px) {
-  .history {
+  .archive {
     padding: 2rem 1.5rem;
   }
 }
 
 /* ---------- Judul + ringkasan ---------- */
-.history__head {
+.archive__head {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -24,18 +24,18 @@
   padding-bottom: var(--space-sm);
 }
 
-.history__head h1 {
+.archive__head h1 {
   letter-spacing: -0.025em;
 }
 
 @media (min-width: 768px) {
-  .history__head {
+  .archive__head {
     flex-direction: row;
     align-items: center;
   }
 }
 
-.history__stats {
+.archive__stats {
   align-self: flex-start;
   display: flex;
   flex-direction: column;
@@ -49,22 +49,22 @@
 }
 
 @media (min-width: 768px) {
-  .history__stats {
+  .archive__stats {
     align-self: auto;
   }
 }
 
-.history__stats-count {
+.archive__stats-count {
   font-weight: 600;
   color: var(--color-on-surface);
 }
 
-.history__stats-rate {
+.archive__stats-rate {
   font-weight: 600;
 }
 
 /* ---------- Grid kalender + detail ---------- */
-.history__grid {
+.archive__grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-lg);
@@ -72,7 +72,7 @@
 }
 
 @media (min-width: 1024px) {
-  .history__grid {
+  .archive__grid {
     grid-template-columns: repeat(12, 1fr);
   }
 
@@ -80,7 +80,7 @@
     grid-column: span 7;
   }
 
-  .history__detail {
+  .archive__detail {
     grid-column: span 5;
   }
 }
@@ -335,7 +335,7 @@
 }
 
 /* ---------- Detail jurnal ---------- */
-.history__detail {
+.archive__detail {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);

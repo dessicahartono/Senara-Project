@@ -107,7 +107,7 @@ el.grid.addEventListener("click", (e) => {
 
   // Di mobile, detail berada di bawah kalender → gulir ke sana
   if (window.matchMedia("(max-width: 1023px)").matches) {
-    $(".history__detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    $(".archive__detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 });
 
@@ -185,7 +185,7 @@ $("#memory-delete").addEventListener("click", async () => {
 /* ---------- Mulai ---------- */
 
 async function init() {
-  state.user = await mountAppShell({ active: "history" });
+  state.user = await mountAppShell({ active: "archive" });
 
   // Pilih tanggal: ?date=… → hari ini bila ada jurnal → jurnal terbaru bulan ini → hari ini
   const requested = new URLSearchParams(window.location.search).get("date");

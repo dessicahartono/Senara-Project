@@ -57,7 +57,7 @@ Halaman awal berupa slider geser dengan 4 slide untuk menarik perhatian pengunju
 
 ## **3.2 Main Dashboard (Setelah Login)**
 
-Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu utama. Semua halaman di ruang utama (Dashboard, Nomi, Journaling, Log History, Profile) hanya bisa dibuka oleh pengguna yang sudah login; pengunjung yang belum login atau sudah logout diarahkan ke halaman Login.
+Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu utama. Semua halaman di ruang utama (Dashboard, Nomi, Journaling, Arsip, Profile) hanya bisa dibuka oleh pengguna yang sudah login; pengunjung yang belum login atau sudah logout diarahkan ke halaman Login.
 
 ### **a. Daily Affirmation (Header / Banner Homepage)**
 
@@ -76,6 +76,8 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 > • Riwayat percakapan disimpan di Realtime Database (chats/{uid}). Backend PHP menyimpan pesan pengguna dan balasan Nomi setelah balasan diterima dari Gemini, hanya ke path milik uid yang sedang login.
 >
 > • Pengguna dapat menghapus satu pesan atau membersihkan seluruh riwayat percakapan (Delete).
+>
+> • **Mode Tenang (latihan napas).** Dibuka dari menu opsi (⋯) di pojok kanan atas room chat. Muncul pop-up berisi lingkaran animasi yang memandu napas dalam satu putaran berulang, masing-masing 3 detik: "Tarik Napas...", "Tahan Sejenak...", "Hembuskan Perlahan...", lalu "Rileks...". Animasi lingkaran mengikuti setiap fase. Tombol Selesai menutup pop-up dan menghentikan timer. Fitur ini menjadi tempat pengguna mempraktikkan latihan napas yang kadang disarankan Nomi. Berjalan sepenuhnya di browser, tanpa menyimpan data ke database dan tanpa memanggil Gemini.
 >
 > • **Memuat riwayat secara bertahap.** Seluruh riwayat tetap tersimpan di chats/{uid}, tetapi tidak dimuat sekaligus. Saat halaman Nomi dibuka, endpoint chat.php hanya mengirim pesan 3 hari terakhir. Bila 3 hari terakhir berisi kurang dari 20 pesan (misalnya pengguna lama tidak chat), yang dikirim adalah 20 pesan terakhir, sehingga ruang chat tidak pernah kosong selama masih ada riwayat. Jumlahnya dibatasi paling banyak 200 pesan sebagai pengaman.
 >
@@ -132,7 +134,7 @@ Karena public_id ditentukan dari uid dan tanggal, foto baru selalu menimpa foto 
 
 Dengan rata-rata 300 KB per foto, kuota penyimpanan paket gratis Cloudinary sudah lebih dari cukup untuk proyek tugas (cek batas terbaru di halaman harga Cloudinary). Jika foto butuh detail tinggi (misalnya tulisan atau dokumen), lebar 1080 px bisa terasa kurang, tetapi untuk momen sehari-hari di Senara pengaturan ini sudah cukup.
 
-### **d. Log History (Tampilan Kalender ala Instagram Archive)**
+### **d. Arsip (Tampilan Kalender ala Instagram Archive)**
 
 > • **Tampilan:** grid kalender bulanan yang bersih, tanpa foto di dalam kotak tanggal.
 >
@@ -186,7 +188,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 | **Field**                      | **Akses**   | **Keterangan**                                                                                         |
 |--------------------------------|-------------|--------------------------------------------------------------------------------------------------------|
 | **Nama Lengkap**               | Bisa diubah | Nama depannya dipakai untuk sapaan di Homepage dan Profile ("Hi, Seno").                               |
-| **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri (maks. 160 karakter). Tidak ada kolom bio di form; bio ditulis dan diedit langsung di banner profil lewat ikon pena (draw), lalu Simpan/Enter untuk menyimpan, Batal/Esc untuk membatalkan. |
+| **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri (maks. 160 karakter). Tidak ada kolom bio di form; bio ditulis dan diedit langsung di banner profil lewat ikon pena (edit, sama dengan ikon di kolom Nama Lengkap), lalu Simpan/Enter untuk menyimpan, Batal/Esc untuk membatalkan. |
 | **Foto Profil (Avatar)**       | Bisa diubah | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. |
 | **Alamat Email**               | Read-only   | Menampilkan email terdaftar dari Firebase Auth.                                                        |
 | **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
@@ -214,8 +216,8 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 | **Create 1**        | Registrasi: membuat profil pengguna                        | users/{uid}: name, email, createdAt, stats awal                  |
 | **Create 2**        | Journaling: menyimpan jurnal baru                          | journals/{uid}/{dateKey} dan journalDates/{uid}/{dateKey}        |
 | **Create 3**        | Chat Nomi: menyimpan pesan pengguna dan balasan Nomi       | chats/{uid}/{messageId}                                          |
-| **Read 1**          | Log History: membuka jurnal pada tanggal terpilih (panel detail) | journals/{uid}/{dateKey}                                         |
-| **Read 2**          | Log History: menampilkan kalender bulanan                  | journalDates/{uid}, query per bulan                              |
+| **Read 1**          | Arsip: membuka jurnal pada tanggal terpilih (panel detail) | journals/{uid}/{dateKey}                                         |
+| **Read 2**          | Arsip: menampilkan kalender bulanan                  | journalDates/{uid}, query per bulan                              |
 | **Read 3**          | Profile: membaca data diri dan statistik                   | users/{uid}                                                      |
 | **Update 1**        | Edit jurnal (catatan, foto)                                | journals/{uid}/{dateKey}: note, photoUrl, updatedAt              |
 | **Update 2**        | Simpan Perubahan profil (nama lengkap, bio)                | users/{uid}                                                      |
@@ -251,9 +253,9 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **R4**  | Dashboard: streak dan status 5 hari terakhir                 | users/{uid}/stats dan journalDates/{uid}                | journalService.getStreak        | -                |
 | **R5**  | Journaling: membuka jurnal pada tanggal tertentu             | journals/{uid}/{dateKey}                                | journalService.getJournalByDate | -                |
 | **R6**  | Journaling: mode Sunting mencari jurnal terakhir             | journals/{uid}, limitToLast(1)                          | journalService.getJournals      | -                |
-| **R7**  | Log History: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournals      | Read 2           |
-| **R8**  | Log History: ringkasan bulan (jumlah momen, konsistensi %)   | journalDates/{uid}, query per bulan                     | journalService.getMonthSummary  | -                |
-| **R9**  | Log History: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournals      | Read 1           |
+| **R7**  | Arsip: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournals      | Read 2           |
+| **R8**  | Arsip: ringkasan bulan (jumlah momen, konsistensi %)   | journalDates/{uid}, query per bulan                     | journalService.getMonthSummary  | -                |
+| **R9**  | Arsip: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournals      | Read 1           |
 | **R10** | Chat Nomi: memuat riwayat percakapan (3 hari terakhir, minimal 20 pesan) | chats/{uid}, orderByKey().startAt(), limitToLast | chatService.getMessages | -          |
 | **R11** | Chat Nomi: memuat 30 pesan lama saat menggulir ke atas       | chats/{uid}, orderByKey().endAt(id), limitToLast(31)    | chatService.getOlderMessages    | -                |
 
@@ -272,7 +274,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 | **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
 | ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
-| **D1**  | Hapus jurnal beserta fotonya (dari Journaling dan Log History) | journals, journalDates, Cloudinary, dan stats         | journalService.deleteJournal    | Delete 1         |
+| **D1**  | Hapus jurnal beserta fotonya (dari Journaling dan Arsip) | journals, journalDates, Cloudinary, dan stats         | journalService.deleteJournal    | Delete 1         |
 | **D2**  | Hapus satu pesan chat                                        | chats/{uid}/{messageId}                                 | chatService.deleteMessage       | Delete 2         |
 | **D3**  | Bersihkan seluruh riwayat chat                               | chats/{uid}                                             | chatService.clearMessages       | Delete 2         |
 | **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, Cloudinary, Firebase Auth | userService.deleteAccount  | Delete 3         |
@@ -281,7 +283,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 > • Operasi Firebase Auth: login email, login Google, logout, cek dan kirim ulang email verifikasi, reset password, dan login ulang sebelum hapus akun.
 >
-> • Data statis di frontend: pertanyaan pemantik jurnal (journalService.getRandomPrompt) dan tombol pertanyaan cepat di chat Nomi (chatService.getQuickPrompts).
+> • Data statis di frontend: pertanyaan pemantik jurnal (journalService.getRandomPrompt), tombol pertanyaan cepat di chat Nomi (chatService.getQuickPrompts), dan langkah latihan napas Mode Tenang di chat Nomi.
 
 **B. RANCANGAN TEKNIS**
 
@@ -436,7 +438,7 @@ chats
 | **Path**                         | **Isi**                                               | **Kapan dibaca**                               |
 |----------------------------------|-------------------------------------------------------|------------------------------------------------|
 | **users/{uid}**                  | Profil dan statistik ringkas                          | Saat login dan membuka Profile                 |
-| **journals/{uid}/{dateKey}**     | Isi lengkap jurnal pada tanggal itu (dengan photoUrl) | Saat pengguna mengklik tanggal di Log History  |
+| **journals/{uid}/{dateKey}**     | Isi lengkap jurnal pada tanggal itu (dengan photoUrl) | Saat pengguna mengklik tanggal di Arsip  |
 | **journalDates/{uid}/{dateKey}** | Penanda tanggal yang punya jurnal (bernilai true)     | Saat membuka kalender bulanan                  |
 | **affirmations/{1..365}**        | Kalimat afirmasi                                      | Satu node acak setiap halaman dimuat           |
 | **chats/{uid}/{messageId}**      | Riwayat percakapan dengan Nomi                        | Saat membuka halaman chat (3 hari terakhir, minimal 20 pesan) dan saat menggulir ke atas (30 pesan per muat) |
@@ -573,7 +575,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 
 > • 29 Sep sampai 5 Okt: setup Firebase dan Render, registrasi, login, verifikasi email, halaman Profile.
 >
-> • 6 sampai 12 Okt: Journaling dan foto, Log History, afirmasi harian, landing page.
+> • 6 sampai 12 Okt: Journaling dan foto, Arsip, afirmasi harian, landing page.
 >
 > • 13 sampai 17 Okt: Nomi (backend dan chat), hapus akun, Security Rules.
 >
@@ -598,9 +600,9 @@ UI memakai tiga font teks dan satu font ikon, semuanya dari Google Fonts. Font t
 
 ## **13.2 Navigasi**
 
-> • Desktop/tablet (lebar layar 768px ke atas): sidebar kiri berisi menu Beranda, Nomi (Chat), Journaling, dan Log History. Halaman Profil dibuka lewat kartu nama pengguna di kiri bawah sidebar (tidak ada menu Profil terpisah agar tidak dobel).
+> • Desktop/tablet (lebar layar 768px ke atas): sidebar kiri berisi menu Beranda, Nomi (Chat), Journaling, dan Arsip. Halaman Profil dibuka lewat kartu nama pengguna di kiri bawah sidebar (tidak ada menu Profil terpisah agar tidak dobel).
 >
-> • Mobile (lebar layar di bawah 768px): sidebar disembunyikan dan diganti bottom nav di bagian bawah layar dengan label pendek Beranda, Nomi, Journal, Riwayat, dan Profil.
+> • Mobile (lebar layar di bawah 768px): sidebar disembunyikan dan diganti bottom nav di bagian bawah layar dengan label pendek Beranda, Nomi, Journal, Arsip, dan Profil.
 >
 > • Menu di sidebar dan bottom nav hanya berupa teks, tanpa emoji atau ikon.
 >

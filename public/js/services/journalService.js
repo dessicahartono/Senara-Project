@@ -16,7 +16,7 @@ async function request(url, options = {}) {
 
 const monthKey = (year, month) => `${year}-${String(month + 1).padStart(2, "0")}`;
 
-/** Daftar jurnal per bulan di-cache karena riwayat memanggil getJournals dan getMonthSummary bersamaan. */
+/** Daftar jurnal per bulan di-cache karena halaman arsip memanggil getJournals dan getMonthSummary bersamaan. */
 const monthCache = new Map();
 
 /** Jurnal pada satu bulan (month 0-11), terbaru dulu. */
@@ -71,7 +71,7 @@ export async function getStreak() {
   return streak;
 }
 
-/** Ringkasan bulan untuk halaman riwayat. */
+/** Ringkasan bulan untuk halaman arsip. */
 export async function getMonthSummary(year, month) {
   const list = await getJournals({ year, month });
   const now = new Date();

@@ -14,7 +14,7 @@ export const ROUTES = {
   dashboard: "dashboard.html",
   chat: "nomi-chat.html",
   journal: "journaling.html",
-  history: "riwayat.html",
+  archive: "arsip.html",
   profile: "profil.html",
 };
 
