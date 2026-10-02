@@ -2,7 +2,7 @@ import { ROUTES } from "../config.js";
 import { mountAppShell } from "../components/app-shell.js";
 import { confirmDialog } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
-import { getJournals, getMonthSummary, deleteJournal } from "../services/journalService.js";
+import { getJournalDates, getJournalByDate, getMonthSummary, deleteJournal } from "../services/journalService.js";
 import { $, show, hide } from "../utils/dom.js";
 import {
   toISODate,
@@ -22,7 +22,9 @@ const state = {
   year: today.getFullYear(),
   month: today.getMonth(), // 0-11
   selected: todayISO,
-  journals: new Map(), // date → jurnal untuk bulan yang tampil
+  dates: new Set(), // tanggal yang punya jurnal di bulan yang tampil
+  details: new Map(), // date → Promise jurnal; isi jurnal dibaca per tanggal saat diklik
+  journal: null, // jurnal yang sedang tampil di panel detail
   user: null,
 };
 
@@ -40,17 +42,27 @@ const el = {
 /* ---------- Data ---------- */
 
 async function loadMonth() {
-  const [list, summary] = await Promise.all([
-    getJournals({ year: state.year, month: state.month }),
+  const [dates, summary] = await Promise.all([
+    getJournalDates({ year: state.year, month: state.month }),
     getMonthSummary(state.year, state.month),
   ]);
-  state.journals = new Map(list.map((j) => [j.date, j]));
+  state.dates = new Set(dates);
 
   el.statsCount.textContent = `${summary.count} Momen Tersimpan di Bulan Ini`;
   el.statsRate.textContent = `Konsistensi Refleksi ${summary.consistency}%`;
 
   renderCalendar();
-  renderDetail();
+  await renderDetail();
+}
+
+/** Isi jurnal pada satu tanggal, di-cache agar tanggal yang diklik ulang tidak dibaca lagi. */
+function loadJournal(date) {
+  if (!state.details.has(date)) {
+    const promise = getJournalByDate(date);
+    state.details.set(date, promise);
+    promise.catch(() => state.details.delete(date));
+  }
+  return state.details.get(date);
 }
 
 /* ---------- Kalender ---------- */
@@ -74,11 +86,11 @@ function renderCalendar() {
   for (let day = 1; day <= daysInMonth; day++) {
     const iso = toISODate(new Date(state.year, state.month, day));
     const classes = ["calendar__day"];
-    if (state.journals.has(iso)) classes.push("calendar__day--memory");
+    if (state.dates.has(iso)) classes.push("calendar__day--memory");
     if (iso === todayISO) classes.push("calendar__day--today");
     if (iso === state.selected) classes.push("is-selected");
     const isFuture = iso > todayISO;
-    const label = `${formatDateLong(iso)}${state.journals.has(iso) ? ", ada jurnal" : ""}`;
+    const label = `${formatDateLong(iso)}${state.dates.has(iso) ? ", ada jurnal" : ""}`;
 
     cells.push(`
       <button class="${classes.join(" ")}" type="button" data-date="${iso}"
@@ -129,8 +141,32 @@ $("#btn-this-month").addEventListener("click", () => {
 
 /* ---------- Detail ---------- */
 
-function renderDetail() {
-  const journal = state.journals.get(state.selected);
+/** Nomor permintaan detail terakhir, agar hasil yang terlambat tidak menimpa tanggal yang baru dipilih. */
+let detailRequest = 0;
+
+async function renderDetail() {
+  const date = state.selected;
+  const request = ++detailRequest;
+  let journal = null;
+
+  if (state.dates.has(date)) {
+    // Sembunyikan detail lama selama jurnal tanggal ini belum pernah dibaca
+    if (!state.details.has(date)) {
+      hide(el.memory);
+      hide(el.empty);
+    }
+    try {
+      journal = await loadJournal(date);
+    } catch (err) {
+      if (request === detailRequest) {
+        showToast(err.message || "Jurnal gagal dimuat. Coba lagi.", { type: "error" });
+      }
+      return;
+    }
+    if (request !== detailRequest) return;
+  }
+
+  state.journal = journal;
   show(el.memory, Boolean(journal));
   show(el.empty, !journal);
 
@@ -165,7 +201,7 @@ function showDeleteError(err) {
 }
 
 $("#memory-delete").addEventListener("click", async () => {
-  const journal = state.journals.get(state.selected);
+  const journal = state.journal;
   if (!journal) return;
 
   const deleted = await confirmDialog({
@@ -178,6 +214,7 @@ $("#memory-delete").addEventListener("click", async () => {
   });
   if (!deleted) return;
 
+  state.details.delete(journal.date);
   showToast("Jurnal berhasil dihapus.");
   loadMonth();
 });
@@ -195,9 +232,9 @@ async function init() {
     state.month = d.getMonth();
     state.selected = requested;
   } else {
-    const [latest] = await getJournals({ year: state.year, month: state.month });
-    const todayJournal = latest?.date === todayISO;
-    state.selected = todayJournal || !latest ? todayISO : latest.date;
+    // Tanggal urut terbaru dulu dan tanggal mendatang tidak bisa diisi, jadi yang pertama adalah hari ini bila ada.
+    const [latest] = await getJournalDates({ year: state.year, month: state.month });
+    state.selected = latest ?? todayISO;
   }
 
   await loadMonth();

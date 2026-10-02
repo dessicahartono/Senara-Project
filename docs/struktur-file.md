@@ -47,7 +47,7 @@ File di sini tidak dipanggil langsung oleh browser. Isinya fungsi yang dipakai u
 | `profile_photo.php` | Mengganti foto profil (upload ke Cloudinary, lalu menyimpan URL-nya) atau menghapusnya (`remove=1`). **(Update, Delete)** |
 | `change_email.php` | Mengganti email dengan verifikasi ulang (wajib memasukkan kata sandi). **(Update)** |
 | `delete_account.php` | Menghapus akun beserta semua data dan fotonya. Wajib konfirmasi kata sandi atau login Google ulang. **(Delete)** |
-| `journals.php` | GET: jurnal per bulan, per tanggal, atau yang terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. **(Create, Read, Update)** |
+| `journals.php` | GET: tanggal yang punya jurnal per bulan (dari `journalDates`), isi jurnal per tanggal, atau jurnal terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. **(Create, Read, Update)** |
 | `delete_journal.php` | Menghapus jurnal di satu tanggal beserta fotonya di Cloudinary. **(Delete)** |
 | `streak.php` | Menghitung streak dan status 5 hari terakhir untuk dashboard. |
 | `chat.php` | GET: riwayat chat, termasuk `?before=` untuk memuat pesan lama. POST: menyimpan pesan pengguna. **(Create, Read)** |
@@ -88,7 +88,7 @@ Satu file untuk tiap halaman HTML, berisi logika interaksi halaman itu.
 | `dashboard.js` | Sapaan, afirmasi, dan tampilan streak. |
 | `nomi-chat.js` | Menampilkan chat, memuat pesan lama saat scroll ke atas, mengirim dan menghapus pesan, serta animasi napas Mode Tenang. |
 | `journaling.js` | Form jurnal, kompres foto, mode edit otomatis, dan hapus jurnal. |
-| `arsip.js` | Render kalender, detail jurnal, ringkasan bulan, edit dan hapus. |
+| `arsip.js` | Render kalender dari daftar tanggal ber-jurnal, membaca detail jurnal per tanggal saat diklik, ringkasan bulan, edit dan hapus. |
 | `profil.js` | Edit nama dan bio, ganti dan hapus foto, ganti email, reset kata sandi, dan hapus akun. |
 
 ### `services/`

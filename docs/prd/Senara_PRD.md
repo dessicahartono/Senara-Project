@@ -1,6 +1,6 @@
 **SENARA**
 
-PODUCT REQUIREMENT DOCUMENT
+PRODUCT REQUIREMENT DOCUMENT
 
 Rencana Pengembangan dan Rancangan Teknis Website Afirmasi & Jurnal Harian
 
@@ -37,7 +37,7 @@ Requirements:
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Database**         | Firebase Realtime Database                                                                                                                                                                                       |
 | **Autentikasi**      | Firebase Auth: login dengan Email & Password, ditambah Login with Google. Login email hanya berhasil jika email sudah diverifikasi.                                                                              |
-| **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerification) setelah registrasi. Tidak ada email lain selain verifikasi. |
+| **Email**            | Verifikasi email: Firebase Authentication (sendEmailVerificationLink) setelah registrasi. Tidak ada email lain selain verifikasi. |
 | **Penyimpanan Foto** | Cloudinary (paket gratis); backend PHP mengunggah foto, URL foto disimpan di Realtime Database                                                                                                                  |
 | **Chatbot AI**       | Gemini API (dipilih karena gratis)                                                                                                                                                                               |
 | **Hosting / Deploy** | Render (paket gratis)                                                                                                                                                                                            |
@@ -177,7 +177,7 @@ Berikut input form registrasi yang paling ideal beserta fungsinya.
 
 > • **Tombol Submit:** "Mulai Bersama Senara".
 >
-> • **Link Switch:** "Sudah punya akun? Login di sini".
+> • **Link Switch:** "Sudah punya akun Senara? Masuk di sini".
 >
 > • **Login with Google:** tombol alternatif selain email dan password.
 
@@ -193,7 +193,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 | **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri (maks. 160 karakter). Tidak ada kolom bio di form; bio ditulis dan diedit langsung di banner profil lewat ikon pena (edit, sama dengan ikon di kolom Nama Lengkap), lalu Simpan/Enter untuk menyimpan, Batal/Esc untuk membatalkan. |
 | **Foto Profil (Avatar)**       | Bisa diubah dan dihapus | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. Foto juga bisa dihapus (lihat 5.3), sehingga avatar kembali menampilkan inisial nama. |
 | **Alamat Email**               | Bisa diganti (akun email) | Menampilkan email terdaftar dari Firebase Auth beserta status Terverifikasi. Akun email dan kata sandi bisa menggantinya lewat ikon pena (lihat 5.3); akun Google ditandai ikon gembok karena emailnya mengikuti akun Google. |
-| **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
+| **Tanggal Bergabung**          | Read-only   | Contoh: "Bagian dari Senara sejak 28 September 2026".                                                       |
 
 ## **5.2 Kartu Ringkasan Aktivitas (Statistik Refleksi)**
 
@@ -260,10 +260,10 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **R3**  | Dashboard: afirmasi acak                                     | affirmations/{n}                                        | affirmationService.getRandomAffirmation | -        |
 | **R4**  | Dashboard: streak dan status 5 hari terakhir                 | users/{uid}/stats dan journalDates/{uid}                | journalService.getStreak        | -                |
 | **R5**  | Journaling: membuka jurnal pada tanggal tertentu             | journals/{uid}/{dateKey}                                | journalService.getJournalByDate | -                |
-| **R6**  | Journaling: mode Sunting mencari jurnal terakhir             | journals/{uid}, limitToLast(1)                          | journalService.getJournals      | -                |
-| **R7**  | Arsip: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournals      | Read 2           |
+| **R6**  | Journaling: mode Sunting mencari jurnal terakhir             | journals/{uid}, limitToLast(1)                          | journalService.getLatestJournal | -                |
+| **R7**  | Arsip: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournalDates  | Read 2           |
 | **R8**  | Arsip: ringkasan bulan (jumlah momen, konsistensi %)   | journalDates/{uid}, query per bulan                     | journalService.getMonthSummary  | -                |
-| **R9**  | Arsip: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournals      | Read 1           |
+| **R9**  | Arsip: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournalByDate | Read 1           |
 | **R10** | Chat Nomi: memuat riwayat percakapan (3 hari terakhir, minimal 20 pesan) | chats/{uid}, orderByKey().startAt(), limitToLast | chatService.getMessages | -          |
 | **R11** | Chat Nomi: memuat 30 pesan lama saat menggulir ke atas       | chats/{uid}, orderByKey().endAt(id), limitToLast(31)    | chatService.getOlderMessages    | -                |
 
@@ -293,7 +293,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 > • Operasi Firebase Auth: login email, login Google, logout, cek dan kirim ulang email verifikasi, reset password, dan login ulang sebelum hapus akun.
 >
-> • Data statis di frontend: pertanyaan pemantik jurnal (journalService.getRandomPrompt), tombol pertanyaan cepat di chat Nomi (chatService.getQuickPrompts), dan langkah latihan napas Mode Tenang di chat Nomi.
+> • Data statis di frontend: tombol pertanyaan cepat di chat Nomi (chatService.getQuickPrompts) dan langkah latihan napas Mode Tenang di chat Nomi.
 
 **B. RANCANGAN TEKNIS**
 
@@ -301,9 +301,18 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 ## **7.1 Diagram Arsitektur**
 
-Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, ditambah satu backend tipis di Render. Angka pada panah menunjuk ke tabel alur data di bawah diagram.
+Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, ditambah satu backend PHP tipis di Render. Browser tidak mengakses Realtime Database secara langsung; semua data lewat backend. Angka pada panah menunjuk ke tabel alur data di bawah diagram.
 
-![image2.png](media/image2.png)
+```mermaid
+flowchart LR
+    U[Browser pengguna<br/>HTML, CSS, JavaScript] -->|4. HTTPS: halaman dan endpoint PHP| B[Backend PHP di Render<br/>kreait/firebase-php]
+    U -->|1. Popup login Google| A[Firebase Authentication]
+    B -->|1, 5. Admin SDK: login, verifikasi ID token Google| A
+    B -->|2. Admin SDK| D[(Firebase Realtime Database)]
+    B -->|3. Signed upload| C[Cloudinary]
+    B -->|6. System prompt + 10 pesan terakhir| G[Gemini API]
+    A -.->|7. Email verifikasi dan ganti email| U
+```
 
 *Gambar 1. Diagram arsitektur Senara*
 
@@ -315,26 +324,26 @@ Senara memakai arsitektur klien dengan Firebase sebagai Backend-as-a-Service, di
 | **2** | Baca dan tulis data | Frontend memanggil endpoint backend PHP; backend membaca dan menulis profil, jurnal, afirmasi, dan riwayat chat di Realtime Database lewat Admin SDK, hanya pada path milik uid yang sedang login. Security Rules menolak semua akses langsung dari browser (Bagian 11.9). |
 | **3** | Upload foto | Foto dikompres di browser, lalu dikirim ke backend PHP yang mengunggahnya ke Cloudinary. URL hasil upload disimpan ke Realtime Database pada field photoUrl. |
 | **4** | Panggilan ke backend | Semua akses data, chat Nomi, dan pengiriman email lewat endpoint backend PHP di Render (HTTPS). Setelah login, backend menyimpan uid di session. |
-| **5** | Verifikasi token | Middleware backend memeriksa keaslian ID Token lewat Firebase Admin SDK sebelum memproses permintaan. |
+| **5** | Verifikasi login | Setiap endpoint data dan chat mengambil uid dari session PHP (requireLoginUid) dan menolak permintaan tanpa session dengan 401. ID Token Google diverifikasi lewat Firebase Admin SDK (verifyIdToken) saat login Google dan saat konfirmasi hapus akun Google. |
 | **6** | Chat Nomi | Backend mengirim pesan pengguna dan system prompt Nomi ke Gemini API, lalu meneruskan jawabannya ke frontend. |
-| **7** | Web Mailer | Email verifikasi (syarat wajib, lewat Firebase): setelah register, backend PHP memanggil sendEmailVerificationLink() dari Firebase Authentication dengan continueUrl ke halaman Login, lalu pengguna diarahkan ke halaman Cek Email. Setelah pengguna klik link di email, ia diarahkan ke halaman Login. Email verifikasi bisa dikirim ulang dari halaman Cek Email atau banner login, dengan jeda 60 detik.<br>Aturan login: berhasil hanya jika emailVerified bernilai true (akun Google dianggap sudah terverifikasi). Jika belum, backend tidak membuat session login dan halaman Login menampilkan pesan beserta tombol "Kirim ulang email verifikasi".<br>Web Mailer hanya mengirim email verifikasi; tidak ada Welcome Email.<br>Error handling saat login: Email Enumeration Protection diaktifkan di Firebase Console, sehingga akun tidak ditemukan dan password salah sama-sama dikembalikan sebagai auth/invalid-credential dan ditampilkan dengan satu pesan "Email atau kata sandi salah". Error lain yang ditangani: format email tidak valid (auth/invalid-email), email belum diverifikasi, dan terlalu banyak percobaan (auth/too-many-requests). |
+| **7** | Web Mailer | Email verifikasi (syarat wajib, lewat Firebase): setelah register, backend PHP memanggil sendEmailVerificationLink() dari Firebase Authentication dengan continueUrl ke halaman Login, lalu pengguna diarahkan ke halaman Cek Email. Setelah pengguna klik link di email, ia diarahkan ke halaman Login. Email verifikasi bisa dikirim ulang dari halaman Cek Email atau banner login, dengan jeda 60 detik.<br>Aturan login: berhasil hanya jika emailVerified bernilai true (akun Google dianggap sudah terverifikasi). Jika belum, backend tidak membuat session login dan halaman Login menampilkan pesan beserta tombol "Kirim ulang email verifikasi".<br>Web Mailer hanya mengirim email verifikasi; tidak ada Welcome Email.<br>Error handling saat login: Email Enumeration Protection diaktifkan di Firebase Console, sehingga akun tidak ditemukan dan password salah sama-sama dikembalikan REST API Firebase Auth sebagai INVALID_LOGIN_CREDENTIALS dan ditampilkan dengan satu pesan "Email atau kata sandi salah". Error lain yang ditangani: format email tidak valid (INVALID_EMAIL), email belum diverifikasi (emailVerified bernilai false), dan terlalu banyak percobaan (TOO_MANY_ATTEMPTS_TRY_LATER). |
 
 ## **7.3 Komponen**
 
 | **Komponen**                | **Peran**                                                                                          | **Teknologi**                                          |
 |-----------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------|
-| **Frontend Web**            | Landing page (slider 3 slide), dashboard 5 menu, kompres foto sebelum upload                       | HTML, CSS, JavaScript, Firebase SDK                    |
+| **Frontend Web**            | Landing page (slider 4 slide), dashboard 5 menu, kompres foto sebelum upload                       | HTML, CSS, JavaScript (ES modules); Firebase SDK hanya untuk login Google |
 | **Firebase Authentication** | Registrasi, login email dan password, login Google, email verifikasi, reset password               | Firebase Auth                                          |
 | **Realtime Database**       | Profil, jurnal, afirmasi, riwayat chat                                                             | Firebase Realtime Database                             |
 | **Penyimpanan Foto**        | File foto jurnal dan foto profil (yang sudah dikompres)                                            | Cloudinary (paket gratis)                              |
-| **Backend**                 | Endpoint auth, data (CRUD), dan chat, verifikasi token, pengiriman email verifikasi, menyimpan rahasia (service account Firebase, API key Gemini) | PHP + kreait/firebase-php di Render (paket gratis) |
-| **Gemini API**              | Mesin chatbot Nomi, dan pembuat afirmasi baru bila dibutuhkan                                      | Google Gemini API                                      |
+| **Backend**                 | Endpoint auth, data (CRUD), dan chat, session login, verifikasi ID token Google, pengiriman email verifikasi, menyimpan rahasia (service account Firebase, API key Gemini, API secret Cloudinary) | PHP + kreait/firebase-php di Render (paket gratis) |
+| **Gemini API**              | Mesin chatbot Nomi                                                                                 | Google Gemini API                                      |
 
 Render juga menyajikan file frontend (static), jadi seluruh aplikasi cukup di-deploy dari satu tempat.
 
 ## **7.4 Asumsi dan Catatan Diagram**
 
-> • **Frontend:** web biasa (HTML, CSS, JavaScript) yang memakai Firebase SDK. Framework belum ditentukan.
+> • **Frontend:** web biasa (HTML, CSS, JavaScript ES modules) tanpa framework. Firebase SDK hanya dimuat untuk popup login Google; data lain selalu lewat endpoint PHP.
 >
 > • **Backend:** PHP (endpoint di public/actions, konfigurasi di config/) dengan Firebase Admin SDK kreait/firebase-php, di Render paket gratis. Menangani seluruh akses Realtime Database, pengiriman email verifikasi, dan pemanggilan Gemini API dengan aman.
 
@@ -346,11 +355,11 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 
 > • **Sesuai persyaratan proyek.** Firebase Auth, Realtime Database, Web Mailer, dan hosting di Render semuanya terpakai langsung tanpa komponen tambahan.
 >
-> • **Cepat dikerjakan oleh dua orang.** Autentikasi, database, dan penyimpanan file sudah dikelola Firebase, sehingga tim tidak perlu membangun dan memelihara server sendiri. Deadline 20 Oktober 2026 kira-kira tiga minggu dari sekarang.
+> • **Cepat dikerjakan oleh dua orang.** Autentikasi dan database dikelola Firebase, dan foto dikelola Cloudinary, sehingga tim tidak perlu membangun dan memelihara server database sendiri. Deadline proyek 20 Oktober 2026.
 >
-> • Backend tetap perlu karena service account Firebase dan API key Gemini harus rahasia; kalau dipakai dari browser, keduanya bisa dilihat siapa saja lewat kode atau tab jaringan.
+> • Backend tetap perlu karena service account Firebase, API key Gemini, dan API secret Cloudinary harus rahasia; kalau dipakai dari browser, semuanya bisa dilihat siapa saja lewat kode atau tab jaringan.
 >
-> • **Keamanan berlapis.** Security Rules menolak akses langsung dari browser, dan backend hanya mengakses data milik uid yang sedang login. Backend memverifikasi ID Token, sehingga endpoint data dan chat tidak bisa dipakai orang yang belum login, dan kuota Gemini tidak terkuras oleh pihak luar.
+> • **Keamanan berlapis.** Security Rules menolak akses langsung dari browser, dan backend hanya mengakses data milik uid yang sedang login. Endpoint data dan chat hanya melayani pengguna yang punya session login, sehingga tidak bisa dipakai orang yang belum login, dan kuota Gemini tidak terkuras oleh pihak luar.
 >
 > • **Biaya rendah.** Semua layanan punya free tier, sejalan dengan keputusan memakai Gemini karena gratis. Batasnya bisa berubah, jadi cek halaman harga terbaru sebelum rilis.
 
@@ -360,11 +369,11 @@ Pilihannya adalah klien + Firebase (BaaS) + backend tipis. Alasannya:
 |------------------------------------------------------------|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
 | **Semua langsung dari frontend, tanpa backend**            | Paling sederhana             | API key Gemini terekspos, dan akses database hanya dilindungi Security Rules di sisi klien.                                      |
 | **Backend penuh dengan database sendiri (misalnya MySQL)** | Kontrol penuh atas data      | Harus membangun autentikasi, upload file, dan hosting database sendiri. Bertentangan dengan persyaratan Firebase dan memakan waktu. |
-| **Firebase Cloud Functions sebagai backend**               | Terintegrasi dengan Firebase | Persyaratan menyebut hosting di Render. Cloud Functions juga umumnya membutuhkan paket berbayar; cek ketentuan terbaru.             |
+| **Firebase Cloud Functions sebagai backend**               | Terintegrasi dengan Firebase | Tim memilih Render sebagai hosting. Cloud Functions juga umumnya membutuhkan paket berbayar; cek ketentuan terbaru.             |
 
 ## **8.3 Konsekuensi yang Perlu Diketahui**
 
-> • Frontend dan backend di-deploy di satu tempat, yaitu Render. Firebase hanya dipakai sebagai layanan backend (Auth dan Realtime Database), bukan hosting; foto disimpan di Cloudinary. Karena satu origin, CORS cukup dibatasi ke domain Render Senara.
+> • Frontend dan backend di-deploy di satu tempat, yaitu Render. Firebase hanya dipakai sebagai layanan backend (Auth dan Realtime Database), bukan hosting; foto disimpan di Cloudinary. Karena frontend dan backend berada di satu origin, tidak perlu pengaturan CORS.
 >
 > • Realtime Database tidak mendukung join dan query kompleks. Karena itu struktur datanya dirancang khusus (Bagian 10) dan dioptimasi (Bagian 11).
 >
@@ -374,9 +383,95 @@ Pengiriman email: satu-satunya email adalah email verifikasi, yang dikirim oleh 
 
 # **9. Class Diagram**
 
-Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukung. Panah putus-putus menunjukkan dependency (kelas kiri memakai kelas yang ditunjuk).
+Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukung. Layanan di browser (public/js/services) memanggil endpoint PHP; logika backend bersama ada di src/. Panah putus-putus menunjukkan dependency (kelas kiri memakai kelas yang ditunjuk).
 
-![image1.png](media/image1.png)
+```mermaid
+classDiagram
+    direction LR
+    class User {
+        +String uid
+        +String name
+        +String email
+        +String bio
+        +String photoUrl
+        +String createdAt
+        +String pendingEmail
+    }
+    class UserStats {
+        +int streak
+        +String lastCheckIn
+    }
+    class Journal {
+        +String dateKey
+        +String note
+        +String photoUrl
+        +String photoName
+        +String createdAt
+        +String updatedAt
+    }
+    class ChatMessage {
+        +String messageId
+        +String sender
+        +String text
+        +String createdAt
+    }
+    class Affirmation {
+        +int index
+        +String text
+    }
+    class AuthService {
+        +register()
+        +login()
+        +signInWithGoogle()
+        +logout()
+        +sendPasswordReset()
+    }
+    class UserService {
+        +getProfile()
+        +updateProfile()
+        +updateProfilePhoto()
+        +removeProfilePhoto()
+        +changeEmail()
+        +deleteAccount()
+    }
+    class JournalService {
+        +saveJournal()
+        +getJournalByDate()
+        +getJournalDates()
+        +getLatestJournal()
+        +getMonthSummary()
+        +getStreak()
+        +deleteJournal()
+    }
+    class PhotoService {
+        +compressPhoto()
+    }
+    class AffirmationService {
+        +getRandomAffirmation()
+    }
+    class ChatService {
+        +getMessages()
+        +getOlderMessages()
+        +sendMessage()
+        +getNomiReply()
+        +deleteMessage()
+        +clearMessages()
+    }
+    class GeminiClient {
+        +generateNomiReply()
+    }
+
+    User "1" *-- "1" UserStats
+    User "1" -- "0..*" Journal
+    User "1" -- "0..*" ChatMessage
+    UserService ..> User
+    JournalService ..> Journal
+    JournalService ..> PhotoService
+    UserService ..> PhotoService
+    AffirmationService ..> Affirmation
+    ChatService ..> ChatMessage
+    ChatService ..> GeminiClient : lewat HTTP ke backend
+```
 
 *Gambar 2. Class diagram Senara*
 
@@ -384,7 +479,7 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 
 | **Kelas**       | **Peran**                                 | **Keterangan penting**                                                                                                                                                                                                         |
 |-----------------|-------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **User**        | Data akun dan profil pengguna             | uid berasal dari Firebase Auth dan menjadi kunci utama. name (nama lengkap) dan bio bisa diubah; email dan createdAt hanya dibaca.                                                                                                        |
+| **User**        | Data akun dan profil pengguna             | uid berasal dari Firebase Auth dan menjadi kunci utama. name (nama lengkap), bio, dan photoUrl bisa diubah; email bisa diganti lewat verifikasi ulang (khusus akun email dan kata sandi); createdAt hanya dibaca.                                                                                                        |
 | **UserStats**   | Ringkasan aktivitas untuk halaman Profile | Berisi streak dan tanggal jurnal terakhir (lastCheckIn). Disimpan agar Profile tidak menghitung ulang dari semua jurnal.                                                                                                    |
 | **Journal**     | Satu momen precious                       | dateKey berformat yyyy-mm-dd dan menjadi kunci data (satu jurnal per tanggal untuk setiap pengguna). photoUrl adalah URL dari Cloudinary; lokasi filenya ditentukan dari uid dan dateKey, sehingga tidak perlu disimpan. note berisi catatan momen tersebut. |
 | **ChatMessage** | Satu pesan dalam percakapan dengan Nomi   | sender bernilai user atau nomi.                                                                                                                                                                                                  |
@@ -394,13 +489,13 @@ Kelas dibagi menjadi tiga kelompok: model (data), layanan (logika), dan pendukun
 
 | **Kelas**              | **Tanggung jawab**                                                                                                                                                      | **Berjalan di**              |
 |------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
-| **AuthService**        | Registrasi, login email dan Google, logout, reset password, mengambil pengguna aktif                                                                                    | Frontend + backend PHP |
-| **ProfileService**     | Membaca dan memperbarui profil, membaca statistik                                                                                                                       | Frontend → backend PHP |
-| **JournalService**     | Create, Read (per bulan atau per tanggal), Update, dan Delete jurnal. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit, bukan membuat jurnal kedua. | Frontend → backend PHP |
+| **AuthService**        | Registrasi dan login email (form ke backend PHP), login Google (googleAuth.js), logout dan reset password (authService.js)                                                                                    | Frontend + backend PHP |
+| **UserService**        | Membaca dan memperbarui profil, ganti dan hapus foto profil, ganti email, hapus akun                                                                                                                       | Frontend → backend PHP |
+| **JournalService**     | Create, Read (tanggal ber-jurnal per bulan dari journalDates, isi jurnal per tanggal), Update, dan Delete jurnal, serta streak. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit, bukan membuat jurnal kedua. | Frontend → backend PHP |
 | **PhotoService**       | Mengompres foto di browser sebelum dikirim ke backend; backend yang mengunggah dan menghapus foto di Cloudinary                                                         | Frontend → backend PHP |
 | **AffirmationService** | Mengambil satu afirmasi acak setiap halaman dimuat, tidak sama dengan afirmasi yang terakhir tampil                                                                     | Frontend → backend PHP |
 | **ChatService**        | Mengirim pesan ke backend dan membaca riwayat chat                                                                                                                      | Frontend → backend PHP |
-| **GeminiClient**       | Memanggil Gemini API dengan system prompt Nomi dan beberapa pesan terakhir                                                                                              | Backend                      |
+| **GeminiClient**       | Memanggil Gemini API dengan system prompt Nomi dan 10 pesan terakhir (generateNomiReply di src/chat.php)                                                                                              | Backend                      |
 
 ## **9.3 Relasi Antar Kelas**
 
@@ -449,8 +544,8 @@ chats
 | **Path**                         | **Isi**                                               | **Kapan dibaca**                               |
 |----------------------------------|-------------------------------------------------------|------------------------------------------------|
 | **users/{uid}**                  | Profil dan statistik ringkas                          | Saat login dan membuka Profile                 |
-| **journals/{uid}/{dateKey}**     | Isi lengkap jurnal pada tanggal itu (dengan photoUrl) | Saat pengguna mengklik tanggal di Arsip  |
-| **journalDates/{uid}/{dateKey}** | Penanda tanggal yang punya jurnal (bernilai true)     | Saat membuka kalender bulanan                  |
+| **journals/{uid}/{dateKey}**     | Isi lengkap jurnal pada tanggal itu (dengan photoUrl) | Saat mengklik tanggal di Arsip atau membuka tanggal di Journaling |
+| **journalDates/{uid}/{dateKey}** | Penanda tanggal yang punya jurnal (bernilai true)     | Saat membuka kalender bulanan dan menghitung streak |
 | **affirmations/{1..365}**        | Kalimat afirmasi                                      | Satu node acak setiap halaman dimuat           |
 | **chats/{uid}/{messageId}**      | Riwayat percakapan dengan Nomi                        | Saat membuka halaman chat (3 hari terakhir, minimal 20 pesan) dan saat menggulir ke atas (30 pesan per muat) |
 
@@ -483,15 +578,15 @@ Jurnal, profil, dan chat ditaruh di node terpisah, bukan bersarang di dalam user
 
 ## **11.2 Kunci tanggal dan query per bulan**
 
-Karena jurnal memakai tanggal sebagai kunci, kalender bulan Oktober cukup mengambil jurnal dengan orderByKey lalu startAt("2026-10-01") dan endAt("2026-10-31"). Query berdasarkan kunci tidak membutuhkan .indexOn tambahan, dan Firebase hanya mengirim jurnal pada rentang itu, bukan semua jurnal.
+Karena jurnal dan penandanya memakai tanggal sebagai kunci, kalender bulan Oktober cukup mengambil journalDates/{uid} dengan orderByKey lalu startAt("2026-10-01") dan endAt("2026-10-31"). Query berdasarkan kunci tidak membutuhkan .indexOn tambahan, dan Firebase hanya mengirim tanggal pada rentang itu, bukan semua data.
 
 ## **11.3 Penanda kalender yang ringan**
 
-Kalender hanya perlu tahu tanggal mana yang punya jurnal. Node journalDates menyimpan penanda itu sebagai pasangan tanggal dan nilai true, jauh lebih kecil daripada jurnal lengkap. Karena jurnal dan penandanya ditulis di dua tempat, gunakan satu multi-path update supaya keduanya selalu konsisten. Jika tim menilai ukuran jurnal per bulan sudah cukup kecil, node ini bisa dihapus dan kalender langsung membaca jurnal per bulan seperti di 11.2.
+Kalender hanya perlu tahu tanggal mana yang punya jurnal. Node journalDates menyimpan penanda itu sebagai pasangan tanggal dan nilai true, jauh lebih kecil daripada jurnal lengkap. Kalender bulanan hanya membaca penanda ini; isi jurnal baru dibaca dari journals/{uid}/{dateKey} saat pengguna mengklik satu tanggal, lalu disimpan sementara di browser agar tanggal yang diklik ulang tidak dibaca lagi. Karena jurnal dan penandanya ditulis di dua tempat, keduanya ditulis dengan satu multi-path update supaya selalu konsisten.
 
 ## **11.4 Menyimpan ringkasan statistik**
 
-Streak disimpan di users/{uid}/stats dan diperbarui saat jurnal dibuat atau dihapus (dengan transaction atau multi-path update). Halaman Profile cukup membaca satu node kecil, tidak perlu menghitung dari semua jurnal. Untuk streak, hitung ulang dari journalDates karena jurnal bisa diisi untuk tanggal yang sudah lewat.
+Streak disimpan di users/{uid}/stats dan diperbarui setiap kali jurnal dibuat atau dihapus: setelah multi-path update jurnal dan penandanya, backend menghitung ulang streak lalu menulis stats. Halaman Profile cukup membaca satu node kecil, tidak perlu menghitung dari semua jurnal. Untuk streak, hitung ulang dari journalDates karena jurnal bisa diisi untuk tanggal yang sudah lewat.
 
 ## **11.5 Foto di Cloudinary, hanya URL di database**
 
@@ -507,7 +602,7 @@ Backend PHP membaca data sekali per permintaan (getValue / getSnapshot), bukan l
 
 ## **11.8 Batasi jumlah data yang dibaca**
 
-Riwayat chat dimuat bertahap: 3 hari terakhir (minimal 20 pesan) saat halaman dibuka, lalu 30 pesan lebih lama setiap kali pengguna menggulir ke atas (lihat Bagian 3.2 b). Untuk Gemini, kirim hanya beberapa pesan terakhir (misalnya 10) supaya hemat token dan kuota. Jurnal selalu dibaca per bulan, bukan sekaligus.
+Riwayat chat dimuat bertahap: 3 hari terakhir (minimal 20 pesan) saat halaman dibuka, lalu 30 pesan lebih lama setiap kali pengguna menggulir ke atas (lihat Bagian 3.2 b). Untuk Gemini, kirim hanya beberapa pesan terakhir (misalnya 10) supaya hemat token dan kuota. Kalender membaca penanda tanggal per bulan, dan isi jurnal dibaca per tanggal, bukan sekaligus.
 
 ## **11.9 Security Rules dan validasi**
 
@@ -557,7 +652,7 @@ Realtime Database punya batas penyimpanan, unduhan bulanan, dan koneksi bersamaa
 >
 > • Foto jurnal dan foto profil disimpan di Cloudinary karena Firebase Storage pada project baru wajib paket Blaze.
 >
-> • Email verifikasi memakai Firebase Authentication (sendEmailVerification). Login email diblokir sampai email terverifikasi; login Google dianggap terverifikasi.
+> • Email verifikasi memakai Firebase Authentication (sendEmailVerificationLink). Login email diblokir sampai email terverifikasi; login Google dianggap terverifikasi.
 >
 > • Tidak ada Welcome Email; Web Mailer hanya mengirim email verifikasi lewat Firebase Authentication.
 >

@@ -16,14 +16,14 @@ async function request(url, options = {}) {
 
 const monthKey = (year, month) => `${year}-${String(month + 1).padStart(2, "0")}`;
 
-/** Daftar jurnal per bulan di-cache karena halaman arsip memanggil getJournals dan getMonthSummary bersamaan. */
+/** Tanggal per bulan di-cache karena halaman arsip memanggil getJournalDates dan getMonthSummary bersamaan. */
 const monthCache = new Map();
 
-/** Jurnal pada satu bulan (month 0-11), terbaru dulu. */
-export async function getJournals({ year, month }) {
+/** Tanggal-tanggal yang punya jurnal pada satu bulan (month 0-11), terbaru dulu. Isi jurnal tidak ikut dibaca. */
+export async function getJournalDates({ year, month }) {
   const key = monthKey(year, month);
   if (!monthCache.has(key)) {
-    const promise = request(`actions/journals.php?month=${key}`).then((result) => result.journals);
+    const promise = request(`actions/journals.php?month=${key}`).then((result) => result.dates);
     monthCache.set(key, promise);
     promise.catch(() => monthCache.delete(key));
   }
@@ -73,12 +73,12 @@ export async function getStreak() {
 
 /** Ringkasan bulan untuk halaman arsip. */
 export async function getMonthSummary(year, month) {
-  const list = await getJournals({ year, month });
+  const dates = await getJournalDates({ year, month });
   const now = new Date();
   const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
   const daysElapsed = isCurrentMonth ? now.getDate() : new Date(year, month + 1, 0).getDate();
   return {
-    count: list.length,
-    consistency: daysElapsed ? Math.round((list.length / daysElapsed) * 100) : 0,
+    count: dates.length,
+    consistency: daysElapsed ? Math.round((dates.length / daysElapsed) * 100) : 0,
   };
 }

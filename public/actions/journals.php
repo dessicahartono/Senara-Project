@@ -2,7 +2,7 @@
 /**
  * Jurnal harian milik pengguna yang sedang login (satu jurnal per tanggal).
  *
- * GET ?month=yyyy-mm   - daftar jurnal pada bulan itu, terbaru dulu.
+ * GET ?month=yyyy-mm   - tanggal-tanggal yang punya jurnal pada bulan itu (dari journalDates), terbaru dulu.
  * GET ?date=yyyy-mm-dd - jurnal pada tanggal itu, atau null.
  * GET ?latest=1        - jurnal terbaru, atau null.
  * POST                 - buat atau perbarui jurnal: date, note, photo (file, opsional), removePhoto ("1").
@@ -30,9 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
                 jsonResponse(['success' => false, 'message' => 'Format bulan tidak valid.'], 400);
             }
-            // Kunci jurnal berupa tanggal, jadi satu bulan cukup diambil dengan rentang kunci.
-            $value = $journals->orderByKey()->startAt($month . '-01')->endAt($month . '-31')->getValue();
-            jsonResponse(['success' => true, 'journals' => formatJournalList($value)]);
+            // Kalender cukup membaca penanda journalDates, bukan isi jurnal. Kuncinya berupa tanggal,
+            // jadi satu bulan diambil dengan rentang kunci.
+            $value = $database->getReference('journalDates/' . $uid)
+                ->orderByKey()->startAt($month . '-01')->endAt($month . '-31')->getValue();
+            $dates = is_array($value) ? array_map('strval', array_keys($value)) : [];
+            rsort($dates, SORT_STRING);
+            jsonResponse(['success' => true, 'dates' => $dates]);
         }
 
         if (isset($_GET['date'])) {
