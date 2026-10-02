@@ -238,8 +238,8 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 | **No.** | **Operasi**                                                  | **Path / Tempat**                                       | **Fungsi di kode**              | **Fungsi Utama** |
 | ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
-| **C1**  | Registrasi email: membuat profil pengguna                    | users/{uid}: name, email, createdAt, stats awal         | authService.register            | Create 1         |
-| **C2**  | Login Google pertama kali: membuat profil jika belum ada     | users/{uid}                                             | authService.loginWithGoogle     | -                |
+| **C1**  | Registrasi email: membuat profil pengguna                    | users/{uid}: name, email, createdAt, stats awal         | form registrasi → actions/register.php | Create 1         |
+| **C2**  | Login Google pertama kali: membuat profil jika belum ada     | users/{uid}                                             | googleAuth.signInWithGoogle → actions/google_login.php | -                |
 | **C3**  | Menyimpan jurnal baru                                        | journals/{uid}/{dateKey} dan journalDates/{uid}/{dateKey} | journalService.saveJournal    | Create 2         |
 | **C4**  | Mengunggah foto jurnal                                       | Cloudinary, lalu photoUrl di jurnal                     | journalService.saveJournal      | -                |
 | **C5**  | Menyimpan pesan pengguna di chat Nomi                        | chats/{uid}/{messageId}                                 | chatService.sendMessage         | Create 3         |
