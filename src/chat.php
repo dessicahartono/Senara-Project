@@ -7,8 +7,17 @@ use Kreait\Firebase\Contract\Database;
 /** Batas panjang pesan pengguna; samakan dengan maxlength di nomi-chat.html. */
 const CHAT_MESSAGE_MAX = 1000;
 
-/** Jumlah pesan terakhir yang dimuat di halaman chat. */
-const CHAT_HISTORY_LIMIT = 50;
+/** Saat halaman chat dibuka, muat pesan dalam rentang hari terakhir ini. */
+const CHAT_RECENT_DAYS = 3;
+
+/** Jumlah pesan minimal saat halaman chat dibuka, dipakai bila 3 hari terakhir sepi. */
+const CHAT_MIN_MESSAGES = 20;
+
+/** Pengaman jumlah pesan saat halaman dibuka, untuk 3 hari yang sangat ramai. */
+const CHAT_RECENT_MAX = 200;
+
+/** Jumlah pesan lama yang dimuat setiap kali pengguna menggulir ke atas. */
+const CHAT_PAGE_SIZE = 30;
 
 /** Jumlah pesan terakhir yang dikirim ke Gemini sebagai konteks percakapan. */
 const NOMI_CONTEXT_MESSAGES = 10;
@@ -32,10 +41,9 @@ function formatMessage(string $id, array $data): array
     ];
 }
 
-/** Pesan terakhir milik pengguna, urut dari yang terlama. */
-function recentMessages(Database $database, string $uid, int $limit): array
+/** Ubah hasil query menjadi daftar pesan, urut dari yang terlama. */
+function toMessageList(mixed $value): array
 {
-    $value = $database->getReference('chats/' . $uid)->orderByKey()->limitToLast($limit)->getValue();
     if (!is_array($value)) {
         return [];
     }
@@ -48,6 +56,55 @@ function recentMessages(Database $database, string $uid, int $limit): array
         }
     }
     return $messages;
+}
+
+/**
+ * Awalan kunci push() untuk waktu tertentu. 8 karakter pertama kunci push() adalah waktu pembuatan
+ * dalam milidetik, sehingga semua pesan sejak waktu itu punya kunci >= awalan ini.
+ */
+function pushKeyPrefix(int $milliseconds): string
+{
+    $chars = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+    $prefix = '';
+    for ($i = 0; $i < 8; $i++) {
+        $prefix = $chars[$milliseconds % 64] . $prefix;
+        $milliseconds = intdiv($milliseconds, 64);
+    }
+    return $prefix;
+}
+
+/** Pesan terakhir milik pengguna, urut dari yang terlama. */
+function recentMessages(Database $database, string $uid, int $limit): array
+{
+    return toMessageList($database->getReference('chats/' . $uid)->orderByKey()->limitToLast($limit)->getValue());
+}
+
+/** Pesan untuk halaman chat: 3 hari terakhir, tetapi minimal CHAT_MIN_MESSAGES pesan. */
+function initialMessages(Database $database, string $uid): array
+{
+    $since = pushKeyPrefix((time() - CHAT_RECENT_DAYS * 86400) * 1000);
+    $messages = toMessageList(
+        $database->getReference('chats/' . $uid)->orderByKey()->startAt($since)->limitToLast(CHAT_RECENT_MAX)->getValue()
+    );
+    if (count($messages) < CHAT_MIN_MESSAGES) {
+        $messages = recentMessages($database, $uid, CHAT_MIN_MESSAGES);
+    }
+    return $messages;
+}
+
+/** Sampai $limit pesan sebelum pesan $beforeId, urut dari yang terlama. */
+function messagesBefore(Database $database, string $uid, string $beforeId, int $limit): array
+{
+    // endAt() ikut mengembalikan $beforeId sendiri, jadi minta satu lebih lalu buang.
+    $value = $database->getReference('chats/' . $uid)->orderByKey()->endAt($beforeId)->limitToLast($limit + 1)->getValue();
+    $messages = array_values(array_filter(toMessageList($value), fn (array $m) => $m['id'] !== $beforeId));
+    return array_slice($messages, -$limit);
+}
+
+/** Apakah masih ada pesan yang lebih lama dari $beforeId. */
+function hasMessagesBefore(Database $database, string $uid, string $beforeId): bool
+{
+    return messagesBefore($database, $uid, $beforeId, 1) !== [];
 }
 
 /** Simpan satu pesan di chats/{uid} dan kembalikan bentuk untuk frontend. */

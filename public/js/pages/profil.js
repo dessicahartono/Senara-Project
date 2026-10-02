@@ -19,6 +19,9 @@ const el = {
   avatar: $("#profile-avatar"),
   greeting: $("#profile-greeting"),
   bio: $("#profile-bio"),
+  bioView: $("#bio-view"),
+  bioEditor: $("#bio-editor"),
+  bioSave: $("#btn-save-bio"),
   photoInput: $("#photo-input"),
   form: $("#profile-form"),
   nameInput: $("#input-name"),
@@ -50,12 +53,12 @@ function renderBanner() {
     : escapeHtml(initials(user.name));
   el.greeting.textContent = `Hi, ${firstName(user.name)}`;
   el.bio.textContent = user.bio || "Belum ada bio. Tambahkan kutipan yang menggambarkan dirimu.";
+  $("#btn-edit-bio").setAttribute("aria-label", user.bio ? "Edit bio" : "Tulis bio");
+  $("#btn-edit-bio").title = user.bio ? "Edit bio" : "Tulis bio";
 }
 
 function renderForm() {
   el.nameInput.value = user.name;
-  el.bioInput.value = user.bio ?? "";
-  updateBioCounter();
   el.email.textContent = user.email;
   show(el.emailVerified, user.emailVerified);
   el.memberSince.textContent = `Bagian dari Senara sejak ${formatDate(user.createdAt)}`;
@@ -111,9 +114,60 @@ el.photoInput.addEventListener("change", async () => {
   showToast("Foto profil diperbarui.");
 });
 
+/* ---------- Bio (diedit langsung di banner) ---------- */
+
+function openBioEditor() {
+  el.bioInput.value = user.bio ?? "";
+  updateBioCounter();
+  hide(el.bioView);
+  show(el.bioEditor);
+  el.bioInput.focus();
+  el.bioInput.setSelectionRange(el.bioInput.value.length, el.bioInput.value.length);
+}
+
+function closeBioEditor() {
+  hide(el.bioEditor);
+  show(el.bioView);
+}
+
+$("#btn-edit-bio").addEventListener("click", openBioEditor);
+$("#btn-cancel-bio").addEventListener("click", closeBioEditor);
+el.bioInput.addEventListener("input", updateBioCounter);
+
+el.bioInput.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeBioEditor();
+  } else if (e.key === "Enter" && !e.shiftKey) {
+    // Enter menyimpan, Shift+Enter tetap membuat baris baru.
+    e.preventDefault();
+    el.bioEditor.requestSubmit();
+  }
+});
+
+el.bioEditor.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (el.bioSave.disabled) return;
+  const bio = el.bioInput.value.trim();
+  if (bio === (user.bio ?? "")) {
+    closeBioEditor();
+    return;
+  }
+
+  try {
+    // Nama tetap memakai nama yang tersimpan, bukan isi form Data Diri yang mungkin belum disimpan.
+    user = await withLoading(el.bioSave, () => updateProfile({ name: user.name, bio }), "Menyimpan...");
+  } catch (err) {
+    showToast(err.message || "Bio gagal disimpan. Coba lagi.", { type: "error" });
+    return;
+  }
+  renderBanner();
+  refreshShellUser(user);
+  closeBioEditor();
+  showToast(bio ? "Bio diperbarui." : "Bio dihapus.");
+});
+
 /* ---------- Simpan data diri ---------- */
 
-el.bioInput.addEventListener("input", updateBioCounter);
 el.nameInput.addEventListener("input", () => {
   el.nameInput.classList.remove("is-error");
   hide(el.nameError);
@@ -132,7 +186,7 @@ el.form.addEventListener("submit", async (e) => {
   try {
     user = await withLoading(
       el.saveBtn,
-      () => updateProfile({ name, bio: el.bioInput.value }),
+      () => updateProfile({ name, bio: user.bio ?? "" }),
       "Menyimpan..."
     );
   } catch (err) {

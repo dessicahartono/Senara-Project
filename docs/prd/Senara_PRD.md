@@ -76,6 +76,14 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 > • Riwayat percakapan disimpan di Realtime Database (chats/{uid}). Backend PHP menyimpan pesan pengguna dan balasan Nomi setelah balasan diterima dari Gemini, hanya ke path milik uid yang sedang login.
 >
 > • Pengguna dapat menghapus satu pesan atau membersihkan seluruh riwayat percakapan (Delete).
+>
+> • **Memuat riwayat secara bertahap.** Seluruh riwayat tetap tersimpan di chats/{uid}, tetapi tidak dimuat sekaligus. Saat halaman Nomi dibuka, endpoint chat.php hanya mengirim pesan 3 hari terakhir. Bila 3 hari terakhir berisi kurang dari 20 pesan (misalnya pengguna lama tidak chat), yang dikirim adalah 20 pesan terakhir, sehingga ruang chat tidak pernah kosong selama masih ada riwayat. Jumlahnya dibatasi paling banyak 200 pesan sebagai pengaman.
+>
+> • **Gulir ke atas untuk pesan lama.** Saat pengguna menggulir sampai dekat bagian atas, frontend meminta chat.php?before={id pesan terlama} dan backend mengirim 30 pesan sebelumnya beserta penanda hasMore. Pesan lama disisipkan di atas tanpa menggeser posisi baca. Bila hasMore bernilai false, seluruh riwayat sudah tampil.
+>
+> • **Kenapa tidak membebani database saat pengguna bertambah.** Setiap pengguna punya node sendiri (chats/{uid}), dan setiap query dibatasi (limitToLast), jadi kecepatan memuat tidak bergantung pada panjang riwayat maupun jumlah pengguna. Satu pesan sekitar 200 byte, sehingga kuota 1 GB Realtime Database muat sekitar 5 juta pesan. Gemini hanya menerima 10 pesan terakhir sebagai konteks, berapa pun panjang riwayatnya.
+>
+> • **Catatan teknis.** Rentang 3 hari dicari dengan orderByKey().startAt(awalan kunci push()): 8 karakter pertama kunci push() adalah waktu pembuatan, sehingga tidak perlu index tambahan pada createdAt. Batas-batasnya diatur sebagai konstanta di src/chat.php (CHAT_RECENT_DAYS, CHAT_MIN_MESSAGES, CHAT_RECENT_MAX, CHAT_PAGE_SIZE, NOMI_CONTEXT_MESSAGES). Bila nanti perlu menghemat penyimpanan, bisa ditambahkan aturan retensi (misalnya menghapus pesan yang lebih tua dari 1 tahun).
 
 ### **c. Journaling (Journaling Your Precious Moment)**
 
@@ -178,7 +186,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 | **Field**                      | **Akses**   | **Keterangan**                                                                                         |
 |--------------------------------|-------------|--------------------------------------------------------------------------------------------------------|
 | **Nama Lengkap**               | Bisa diubah | Nama depannya dipakai untuk sapaan di Homepage dan Profile ("Hi, Seno").                               |
-| **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri.                                                                 |
+| **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri (maks. 160 karakter). Tidak ada kolom bio di form; bio ditulis dan diedit langsung di banner profil lewat ikon pena (draw), lalu Simpan/Enter untuk menyimpan, Batal/Esc untuk membatalkan. |
 | **Foto Profil (Avatar)**       | Bisa diubah | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. |
 | **Alamat Email**               | Read-only   | Menampilkan email terdaftar dari Firebase Auth.                                                        |
 | **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
@@ -191,7 +199,7 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 
 ## **5.3 Pengaturan & Aksi Akun**
 
-> • **Simpan Perubahan:** memperbarui data nama, bio, dan avatar ke Realtime Database (Update).
+> • **Simpan Perubahan:** memperbarui nama ke Realtime Database (Update). Bio disimpan dari editor di banner lewat endpoint yang sama (profile.php, Update 2), sedangkan foto disimpan lewat tombol Ganti Foto.
 >
 > • **Ganti Password:** memicu email reset password bawaan Firebase Auth.
 >
@@ -220,7 +228,7 @@ Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya 
 
 ## **6.1 Daftar Lengkap Operasi CRUD**
 
-Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 26 operasi: 6 Create, 10 Read, 6 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 27 operasi: 6 Create, 11 Read, 6 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
 
 **Create**
 
@@ -246,7 +254,8 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **R7**  | Log History: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournals      | Read 2           |
 | **R8**  | Log History: ringkasan bulan (jumlah momen, konsistensi %)   | journalDates/{uid}, query per bulan                     | journalService.getMonthSummary  | -                |
 | **R9**  | Log History: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournals      | Read 1           |
-| **R10** | Chat Nomi: memuat riwayat percakapan                         | chats/{uid}, limitToLast(50)                            | chatService.getMessages         | -                |
+| **R10** | Chat Nomi: memuat riwayat percakapan (3 hari terakhir, minimal 20 pesan) | chats/{uid}, orderByKey().startAt(), limitToLast | chatService.getMessages | -          |
+| **R11** | Chat Nomi: memuat 30 pesan lama saat menggulir ke atas       | chats/{uid}, orderByKey().endAt(id), limitToLast(31)    | chatService.getOlderMessages    | -                |
 
 **Update**
 
@@ -430,7 +439,7 @@ chats
 | **journals/{uid}/{dateKey}**     | Isi lengkap jurnal pada tanggal itu (dengan photoUrl) | Saat pengguna mengklik tanggal di Log History  |
 | **journalDates/{uid}/{dateKey}** | Penanda tanggal yang punya jurnal (bernilai true)     | Saat membuka kalender bulanan                  |
 | **affirmations/{1..365}**        | Kalimat afirmasi                                      | Satu node acak setiap halaman dimuat           |
-| **chats/{uid}/{messageId}**      | Riwayat percakapan dengan Nomi                        | Saat membuka halaman chat (dibatasi jumlahnya) |
+| **chats/{uid}/{messageId}**      | Riwayat percakapan dengan Nomi                        | Saat membuka halaman chat (3 hari terakhir, minimal 20 pesan) dan saat menggulir ke atas (30 pesan per muat) |
 
 **Keterangan field:**
 
@@ -484,7 +493,7 @@ Backend PHP membaca data sekali per permintaan (getValue / getSnapshot), bukan l
 
 ## **11.8 Batasi jumlah data yang dibaca**
 
-Baca riwayat chat dengan limitToLast (misalnya 50 pesan). Untuk Gemini, kirim hanya beberapa pesan terakhir (misalnya 10) supaya hemat token dan kuota. Jurnal selalu dibaca per bulan, bukan sekaligus.
+Riwayat chat dimuat bertahap: 3 hari terakhir (minimal 20 pesan) saat halaman dibuka, lalu 30 pesan lebih lama setiap kali pengguna menggulir ke atas (lihat Bagian 3.2 b). Untuk Gemini, kirim hanya beberapa pesan terakhir (misalnya 10) supaya hemat token dan kuota. Jurnal selalu dibaca per bulan, bukan sekaligus.
 
 ## **11.9 Security Rules dan validasi**
 

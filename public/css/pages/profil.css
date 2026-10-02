@@ -170,6 +170,51 @@
   max-width: 28rem;
 }
 
+/* Bio: ditulis dan diedit langsung di banner lewat ikon pena */
+.profile-bio {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.profile-bio__edit {
+  flex-shrink: 0;
+  margin-top: -0.375rem;
+  color: var(--color-primary);
+}
+
+.profile-bio-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+  max-width: 28rem;
+}
+
+.profile-bio-editor__input {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--text-body-sm);
+  resize: none;
+}
+
+.profile-bio-editor__input:focus {
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-sm), 0 0 0 2px var(--color-primary);
+}
+
+.profile-bio-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.profile-bio-editor__actions > span {
+  margin-right: auto;
+}
+
 .profile-banner__photo-btn {
   align-self: flex-end;
   padding: var(--space-sm) var(--space-md);

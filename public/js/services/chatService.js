@@ -22,10 +22,16 @@ function post(url, fields) {
   return request(url, { method: "POST", body });
 }
 
-/** Pesan-pesan terakhir, urut dari yang terlama. */
+/** Pesan 3 hari terakhir (minimal 20), urut dari yang terlama. hasMore: masih ada pesan yang lebih lama. */
 export async function getMessages() {
-  const { messages } = await request("actions/chat.php");
-  return messages;
+  const { messages, hasMore } = await request("actions/chat.php");
+  return { messages, hasMore };
+}
+
+/** Pesan-pesan sebelum pesan beforeId, untuk dimuat saat pengguna menggulir ke atas. */
+export async function getOlderMessages(beforeId) {
+  const { messages, hasMore } = await request(`actions/chat.php?before=${encodeURIComponent(beforeId)}`);
+  return { messages, hasMore };
 }
 
 export async function getQuickPrompts() {

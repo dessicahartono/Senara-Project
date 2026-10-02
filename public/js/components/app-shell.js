@@ -12,6 +12,7 @@ import { ROUTES, ASSETS, APP_NAME } from "../config.js";
 import { getProfile } from "../services/userService.js";
 import { logout } from "../services/authService.js";
 import { escapeHtml, icon } from "../utils/dom.js";
+import { firstName } from "../utils/format.js";
 
 // Halaman dari back/forward cache dimuat ulang agar status login dicek lagi (misalnya setelah logout).
 window.addEventListener("pageshow", (e) => {
@@ -61,7 +62,7 @@ function sidebarMarkup(active, user) {
       <a class="sidebar__user${active === "profile" ? " is-active" : ""}" href="${ROUTES.profile}"
         ${active === "profile" ? 'aria-current="page"' : ""}>
         ${avatarMarkup(user)}
-        <span class="sidebar__user-name text-label-md truncate">${escapeHtml(user.name)}</span>
+        <span class="sidebar__user-name text-label-md truncate" title="${escapeHtml(user.name)}">${escapeHtml(firstName(user.name))}</span>
       </a>
     </div>`;
 }
@@ -114,10 +115,11 @@ export async function mountAppShell({ active }) {
   return user;
 }
 
-/** Perbarui nama/foto di sidebar setelah profil diubah. */
+/** Perbarui nama/foto di sidebar setelah profil diubah. Sidebar cukup menampilkan nama sapaan. */
 export function refreshShellUser(user) {
   document.querySelectorAll(".sidebar__user-name").forEach((el) => {
-    el.textContent = user.name;
+    el.textContent = firstName(user.name);
+    el.title = user.name;
   });
   document.querySelectorAll(".sidebar__user .avatar").forEach((el) => {
     el.outerHTML = avatarMarkup(user);

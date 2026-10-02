@@ -41,7 +41,22 @@
               </div>
               <div class="profile-banner__text">
                 <h1 class="text-headline-md profile-banner__name" id="profile-greeting">Hi!</h1>
-                <p class="text-body-sm text-muted profile-banner__bio" id="profile-bio"></p>
+                <div class="profile-bio" id="bio-view">
+                  <p class="text-body-sm text-muted profile-banner__bio" id="profile-bio"></p>
+                  <button class="icon-btn icon-btn--sm profile-bio__edit" type="button" id="btn-edit-bio"
+                    title="Tulis bio" aria-label="Tulis bio">
+                    <span class="icon icon--sm" aria-hidden="true">draw</span>
+                  </button>
+                </div>
+                <form class="profile-bio-editor hidden" id="bio-editor" novalidate>
+                  <textarea class="textarea profile-bio-editor__input" id="input-bio" rows="2" maxlength="160"
+                    aria-label="Bio singkat" placeholder="Tulis kutipan yang menggambarkan dirimu"></textarea>
+                  <div class="profile-bio-editor__actions">
+                    <span class="text-label-sm text-muted" id="bio-counter">0 / 160</span>
+                    <button class="btn btn--sm btn--ghost" type="button" id="btn-cancel-bio">Batal</button>
+                    <button class="btn btn--sm btn--primary" type="submit" id="btn-save-bio">Simpan</button>
+                  </div>
+                </form>
               </div>
             </div>
             <button class="btn btn--md profile-banner__photo-btn" type="button" data-pick-photo>
@@ -71,14 +86,6 @@
                   <span class="icon icon--sm" aria-hidden="true">error</span>
                   Nama lengkap tidak boleh kosong.
                 </p>
-              </div>
-
-              <div class="profile-field">
-                <div class="field__row">
-                  <label class="profile-field__label" for="input-bio">Bio Singkat / Kutipan Diri</label>
-                  <span class="text-label-sm text-muted" id="bio-counter">0 / 160</span>
-                </div>
-                <textarea class="textarea profile-input profile-input--area" id="input-bio" rows="3" maxlength="160"></textarea>
               </div>
 
               <div class="profile-field">

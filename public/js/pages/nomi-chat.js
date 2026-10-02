@@ -4,6 +4,7 @@ import { confirmDialog, openModal } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
 import {
   getMessages,
+  getOlderMessages,
   getQuickPrompts,
   sendMessage,
   getNomiReply,
@@ -21,6 +22,9 @@ const sendBtn = $("#send-btn");
 let messages = [];
 let quickPrompts = [];
 let isWaiting = false;
+/** Masih ada pesan lama di database yang belum dimuat. */
+let hasMore = false;
+let isLoadingOlder = false;
 
 /** Sapaan Nomi saat riwayat kosong. Hanya tampil di layar, tidak disimpan ke database. */
 const WELCOME_ID = "welcome";
@@ -102,9 +106,20 @@ const typingMarkup = `
 
 /* ---------- Render ---------- */
 
-function render({ notice } = {}) {
+/**
+ * keepScroll: pertahankan posisi baca setelah pesan lama disisipkan di atas, bukan gulir ke bawah.
+ * instant: langsung lompat ke bawah tanpa animasi (saat halaman pertama dibuka).
+ */
+function render({ notice, keepScroll = false, instant = false } = {}) {
   const parts = [];
   let lastDay = null;
+
+  if (isLoadingOlder) {
+    parts.push(`
+      <div class="chat__notice">
+        <span class="text-label-sm">${icon("history", "icon--xs")}Memuat pesan sebelumnya...</span>
+      </div>`);
+  }
   const lastIndex = messages.length - 1;
 
   messages.forEach((message, index) => {
@@ -125,9 +140,44 @@ function render({ notice } = {}) {
   }
   if (isWaiting) parts.push(typingMarkup);
 
+  const fromBottom = stream.scrollHeight - stream.scrollTop;
   stream.innerHTML = parts.join("");
-  stream.scrollTop = stream.scrollHeight;
+  // scroll-behavior: smooth di CSS dimatikan sesaat agar lompatan posisi tidak terlihat.
+  stream.style.scrollBehavior = keepScroll || instant ? "auto" : "";
+  stream.scrollTop = keepScroll ? stream.scrollHeight - fromBottom : stream.scrollHeight;
 }
+
+/* ---------- Pesan lama saat menggulir ke atas ---------- */
+
+async function loadOlder() {
+  const oldest = messages.find((m) => m.id !== WELCOME_ID);
+  if (!hasMore || isLoadingOlder || !oldest) return;
+
+  isLoadingOlder = true;
+  render({ keepScroll: true });
+  let loaded = false;
+  try {
+    const older = await getOlderMessages(oldest.id);
+    messages = [...older.messages, ...messages];
+    hasMore = older.hasMore;
+    loaded = true;
+  } catch (err) {
+    showToast(err.message || "Pesan sebelumnya gagal dimuat.", { type: "error" });
+  } finally {
+    isLoadingOlder = false;
+    render({ keepScroll: true });
+  }
+  if (loaded) fillStream();
+}
+
+/** Bila pesan belum cukup untuk memunculkan scroll, muat pesan lama tanpa menunggu pengguna menggulir. */
+function fillStream() {
+  if (hasMore && stream.scrollHeight <= stream.clientHeight) loadOlder();
+}
+
+stream.addEventListener("scroll", () => {
+  if (stream.scrollTop < 80) loadOlder();
+});
 
 /* ---------- Kirim pesan ---------- */
 
@@ -241,6 +291,7 @@ $("#btn-clear").addEventListener("click", async () => {
   });
   if (!cleared) return;
   messages = [];
+  hasMore = false;
   render({ notice: "Riwayat chat telah dibersihkan. Memulai ruang obrolan baru dengan tenang." });
 });
 
@@ -280,17 +331,19 @@ breatheModal.addEventListener("modal:closed", () => clearInterval(breatheTimer))
 /* ---------- Mulai ---------- */
 
 async function init() {
-  const [user, list, prompts] = await Promise.all([
+  const [user, history, prompts] = await Promise.all([
     mountAppShell({ active: "chat" }),
     getMessages().catch((err) => {
       showToast(err.message || "Riwayat chat gagal dimuat.", { type: "error" });
-      return [];
+      return { messages: [], hasMore: false };
     }),
     getQuickPrompts(),
   ]);
-  messages = list.length ? list : [welcomeMessage(firstName(user.name))];
+  messages = history.messages.length ? history.messages : [welcomeMessage(firstName(user.name))];
+  hasMore = history.hasMore;
   quickPrompts = prompts;
-  render();
+  render({ instant: true });
+  fillStream();
 }
 
 init();

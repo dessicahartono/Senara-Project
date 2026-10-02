@@ -2,7 +2,8 @@
 /**
  * Riwayat chat dengan Nomi milik pengguna yang sedang login.
  *
- * GET  - pesan-pesan terakhir, urut dari yang terlama.
+ * GET  - pesan 3 hari terakhir (minimal 20), urut dari yang terlama, beserta hasMore.
+ *        ?before={id} - pesan-pesan sebelum id itu, untuk dimuat saat pengguna menggulir ke atas.
  * POST - simpan pesan pengguna (text). Balasan Nomi diminta terpisah lewat nomi_reply.php.
  */
 declare(strict_types=1);
@@ -15,13 +16,25 @@ require_once __DIR__ . '/../../config/firebase_config.php';
 require_once __DIR__ . '/../../src/chat.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $before = (string) ($_GET['before'] ?? '');
+    if ($before !== '' && !isValidMessageId($before)) {
+        jsonResponse(['success' => false, 'message' => 'Pesan tidak valid.'], 400);
+    }
     try {
-        $messages = recentMessages($database, $uid, CHAT_HISTORY_LIMIT);
+        if ($before === '') {
+            $messages = initialMessages($database, $uid);
+            $hasMore = $messages !== [] && hasMessagesBefore($database, $uid, $messages[0]['id']);
+        } else {
+            // Ambil satu lebih untuk tahu apakah masih ada pesan yang lebih lama.
+            $messages = messagesBefore($database, $uid, $before, CHAT_PAGE_SIZE + 1);
+            $hasMore = count($messages) > CHAT_PAGE_SIZE;
+            $messages = array_slice($messages, -CHAT_PAGE_SIZE);
+        }
     } catch (Throwable $error) {
         error_log('Chat read failed: ' . $error->getMessage());
         jsonResponse(['success' => false, 'message' => 'Riwayat chat gagal dimuat.'], 500);
     }
-    jsonResponse(['success' => true, 'messages' => $messages]);
+    jsonResponse(['success' => true, 'messages' => $messages, 'hasMore' => $hasMore]);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
