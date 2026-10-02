@@ -39,3 +39,34 @@ function rememberPendingVerification(string $uid, string $email): void
     $_SESSION['pending_verification_uid'] = $uid;
     $_SESSION['pending_verification_email'] = $email;
 }
+
+/**
+ * Minta Firebase mengirim link verifikasi ke email baru. Email akun baru berganti setelah link itu diklik,
+ * dan Firebase juga mengirim pemberitahuan ke email lama.
+ *
+ * Admin SDK tidak mendukung alur ini, jadi dipanggil lewat REST API Identity Toolkit memakai
+ * ID token pengguna (dari login ulang dengan kata sandi) dan API key web.
+ *
+ * Melempar RuntimeException berisi kode error Firebase, misalnya EMAIL_EXISTS.
+ */
+function sendEmailChangeLink(string $idToken, string $newEmail): void
+{
+    $config = require __DIR__ . '/../firebase_web_config.php';
+    $response = (new GuzzleHttp\Client(['timeout' => 15, 'http_errors' => false]))->post(
+        'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=' . rawurlencode($config['apiKey']),
+        [
+            'headers' => ['X-Firebase-Locale' => 'id'],
+            'json' => [
+                'requestType' => 'VERIFY_AND_CHANGE_EMAIL',
+                'idToken' => $idToken,
+                'newEmail' => $newEmail,
+                'continueUrl' => appUrl('profil.html?emailChanged=1'),
+            ],
+        ]
+    );
+    if ($response->getStatusCode() !== 200) {
+        $result = json_decode((string) $response->getBody(), true);
+        // Pesan error Firebase berupa kode, misalnya "EMAIL_EXISTS" atau "TOO_MANY_ATTEMPTS_TRY_LATER : ...".
+        throw new RuntimeException((string) strtok((string) ($result['error']['message'] ?? 'UNKNOWN'), ' :'));
+    }
+}

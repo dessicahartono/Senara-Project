@@ -190,7 +190,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 | **Nama Lengkap**               | Bisa diubah | Nama depannya dipakai untuk sapaan di Homepage dan Profile ("Hi, Seno").                               |
 | **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri (maks. 160 karakter). Tidak ada kolom bio di form; bio ditulis dan diedit langsung di banner profil lewat ikon pena (edit, sama dengan ikon di kolom Nama Lengkap), lalu Simpan/Enter untuk menyimpan, Batal/Esc untuk membatalkan. |
 | **Foto Profil (Avatar)**       | Bisa diubah | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. |
-| **Alamat Email**               | Read-only   | Menampilkan email terdaftar dari Firebase Auth.                                                        |
+| **Alamat Email**               | Bisa diganti (akun email) | Menampilkan email terdaftar dari Firebase Auth beserta status Terverifikasi. Akun email dan kata sandi bisa menggantinya lewat ikon pena (lihat 5.3); akun Google ditandai ikon gembok karena emailnya mengikuti akun Google. |
 | **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
 
 ## **5.2 Kartu Ringkasan Aktivitas (Statistik Refleksi)**
@@ -203,7 +203,9 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 
 > • **Simpan Perubahan:** memperbarui nama ke Realtime Database (Update). Bio disimpan dari editor di banner lewat endpoint yang sama (profile.php, Update 2), sedangkan foto disimpan lewat tombol Ganti Foto.
 >
-> • **Ganti Password:** memicu email reset password bawaan Firebase Auth.
+> • **Ganti Alamat Email (verifikasi ulang):** ikon pena di kolom Alamat Email membuka pop-up berisi email baru dan kata sandi untuk konfirmasi. Endpoint change_email.php mengecek kata sandi, lalu meminta Firebase Auth mengirim link verifikasi ke email baru (alur VERIFY_AND_CHANGE_EMAIL lewat REST API Identity Toolkit, karena Admin SDK tidak menyediakannya). Email akun baru berganti setelah link itu diklik, sehingga email baru selalu sudah terverifikasi; sampai saat itu pengguna tetap masuk dengan email lama, jadi salah ketik email tidak membuat akun terkunci. Firebase juga mengirim pemberitahuan ke email lama. Selama menunggu, Profil menampilkan "Menunggu verifikasi {email baru}" (disimpan di users/{uid}/pendingEmail). Link membawa pengguna kembali ke profil.html?emailChanged=1; saat profil dibaca, backend menyamakan users/{uid}/email dengan email di Auth dan menghapus pendingEmail. Pengiriman dibatasi sekali per 60 detik. Akun Google tidak bisa mengganti email di sini.
+>
+> • **Ganti Password:** memicu email reset password bawaan Firebase Auth, dikirim ke email akun yang aktif saat ini (dibaca dari Firebase Auth, bukan dari session login).
 >
 > • **Logout:** keluar dari sesi aplikasi.
 >
@@ -230,7 +232,7 @@ Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya 
 
 ## **6.1 Daftar Lengkap Operasi CRUD**
 
-Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 27 operasi: 6 Create, 11 Read, 6 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 28 operasi: 6 Create, 11 Read, 7 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
 
 **Create**
 
@@ -269,6 +271,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **U4**  | Simpan perubahan profil (nama lengkap, bio)                  | users/{uid}: name, bio                                  | userService.updateProfile       | Update 2         |
 | **U5**  | Ganti foto profil (avatar)                                   | Cloudinary dan users/{uid}/photoUrl                     | userService.updateProfilePhoto  | Update 3         |
 | **U6**  | Hitung ulang streak setelah jurnal dibuat atau dihapus       | users/{uid}/stats: streak, lastCheckIn                  | journalService (saat simpan/hapus) | -             |
+| **U7**  | Ganti alamat email (berlaku setelah link verifikasi diklik)  | Firebase Auth email, users/{uid}: pendingEmail, email   | userService.changeEmail         | -                |
 
 **Delete**
 
@@ -416,6 +419,7 @@ Realtime Database menyimpan data sebagai satu pohon JSON. Seluruh baca dan tulis
 users
   {uid}
     name, email, bio, photoUrl, createdAt
+    pendingEmail                   hanya ada selama ganti email menunggu verifikasi
     stats
       streak, lastCheckIn
 journals
@@ -447,7 +451,8 @@ chats
 
 | **Field**                  | **Tipe dan isi**                                                                                         |
 |----------------------------|----------------------------------------------------------------------------------------------------------|
-| **name, email, bio**       | String. email disalin dari Firebase Auth saat registrasi dan hanya dibaca. bio boleh kosong.             |
+| **name, email, bio**       | String. email disalin dari Firebase Auth saat registrasi dan disamakan lagi setelah pengguna mengganti email; email di Auth tetap sumber utamanya. bio boleh kosong. |
+| **pendingEmail**           | String, opsional. Email baru yang link verifikasinya belum diklik; dihapus otomatis setelah penggantian selesai. |
 | **photoUrl**               | String URL dari Cloudinary, atau null jika tidak ada foto. Dipakai untuk foto profil dan foto jurnal. Foto profil akun Google memakai URL foto Google sampai pengguna menggantinya. |
 | **photoName**              | String nama file asli foto jurnal, ditampilkan di form edit.                                             |
 | **note**                   | String catatan jurnal, maksimal 2000 karakter.                                                           |

@@ -21,11 +21,29 @@ function getUserProfile(Auth $auth, Database $database, string $uid): ?array
 
     $account = $auth->getUser($uid);
     $providers = array_map(fn ($provider) => $provider->providerId, $account->providerData);
+    $email = (string) ($account->email ?? $profile['email'] ?? '');
+
+    // Setelah link ganti email diklik, email di Auth sudah berubah: samakan salinan di database
+    // dan hapus penanda pendingEmail.
+    $pendingEmail = (string) ($profile['pendingEmail'] ?? '');
+    $sync = [];
+    if ($email !== '' && $email !== ($profile['email'] ?? '')) {
+        $sync['email'] = $email;
+    }
+    if ($pendingEmail !== '' && strcasecmp($pendingEmail, $email) === 0) {
+        $sync['pendingEmail'] = null;
+        $pendingEmail = '';
+    }
+    if ($sync !== []) {
+        $database->getReference('users/' . $uid)->update($sync);
+    }
 
     return [
         'name' => (string) ($profile['name'] ?? ''),
         // Email di Auth yang dipakai; salinan di database hanya untuk referensi.
-        'email' => (string) ($account->email ?? $profile['email'] ?? ''),
+        'email' => $email,
+        // Email baru yang menunggu link verifikasinya diklik, atau null.
+        'pendingEmail' => $pendingEmail !== '' ? $pendingEmail : null,
         'bio' => (string) ($profile['bio'] ?? ''),
         'photoUrl' => $profile['photoUrl'] ?? null,
         'createdAt' => $profile['createdAt'] ?? null,

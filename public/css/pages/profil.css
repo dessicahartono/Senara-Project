@@ -337,6 +337,30 @@
   padding: 0.125rem 0.625rem;
 }
 
+.profile-email > span:first-child {
+  flex: 1;
+}
+
+.profile-email__edit {
+  flex-shrink: 0;
+  margin-right: calc(var(--space-sm) * -1);
+  color: var(--color-primary);
+}
+
+.profile-email__pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  margin-top: var(--space-xs);
+  padding-inline: var(--space-md);
+  color: var(--color-tertiary);
+}
+
+.profile-email__pending .icon {
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
 .profile-member {
   display: flex;
   align-items: center;
@@ -598,6 +622,22 @@
   .profile-action--danger {
     margin-left: 0;
   }
+}
+
+/* ---------- Modal ganti email ---------- */
+.change-email {
+  border-radius: var(--radius-xl);
+}
+
+.change-email__input {
+  padding: 0.625rem var(--space-md);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container);
+}
+
+.change-email__input:focus {
+  background: var(--color-surface-container);
+  box-shadow: var(--shadow-inner), 0 0 0 2px var(--color-primary);
 }
 
 /* ---------- Modal hapus akun ---------- */

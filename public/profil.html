@@ -91,7 +91,9 @@
               <div class="profile-field">
                 <span class="profile-field__label profile-field__label--icon">
                   Alamat Email
-                  <span class="icon icon--xs text-muted" aria-hidden="true">lock</span>
+                  <!-- Gembok hanya untuk akun Google: emailnya mengikuti akun Google dan tidak bisa diganti. -->
+                  <span class="icon icon--xs text-muted hidden" id="email-lock" aria-hidden="true"
+                    title="Email akun Google mengikuti akun Google-mu">lock</span>
                 </span>
                 <div class="profile-email">
                   <span class="text-body-sm truncate" id="profile-email"></span>
@@ -99,7 +101,15 @@
                     <span class="icon icon--xs" aria-hidden="true">verified</span>
                     Terverifikasi
                   </span>
+                  <button class="icon-btn icon-btn--sm profile-email__edit hidden" type="button" id="btn-change-email"
+                    title="Ganti email" aria-label="Ganti email">
+                    <span class="icon icon--sm" aria-hidden="true">edit</span>
+                  </button>
                 </div>
+                <p class="text-label-sm profile-email__pending hidden" id="email-pending" role="status">
+                  <span class="icon icon--xs" aria-hidden="true">mark_email_unread</span>
+                  <span id="email-pending-text"></span>
+                </p>
               </div>
 
               <div class="profile-member">
@@ -227,6 +237,49 @@
       <div class="modal__actions">
         <button class="btn btn--md delete-account__cancel" type="button" data-modal-close>Batal</button>
         <button class="btn btn--danger btn--md" type="submit" id="btn-confirm-delete">Hapus Akun Saya</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Modal ganti email -->
+  <div class="modal hidden" id="email-modal" role="dialog" aria-modal="true" aria-labelledby="email-title">
+    <form class="modal__dialog change-email" id="email-form" novalidate>
+      <div class="modal__header">
+        <span class="icon-circle icon-circle--lg icon-circle--peach">
+          <span class="icon" aria-hidden="true">alternate_email</span>
+        </span>
+        <div>
+          <h3 class="modal__title" id="email-title">Ganti Alamat Email</h3>
+          <span class="modal__subtitle">Perlu verifikasi ulang</span>
+        </div>
+      </div>
+      <p class="modal__text">
+        Kami akan mengirim link verifikasi ke email baru. Email baru berlaku setelah link itu diklik; sampai saat itu,
+        kamu tetap masuk dengan email yang sekarang.
+      </p>
+      <div class="profile-field">
+        <label class="profile-field__label" for="new-email">Email baru</label>
+        <input class="input change-email__input" id="new-email" type="email" autocomplete="email"
+          placeholder="nama@email.com">
+      </div>
+      <div class="profile-field">
+        <label class="profile-field__label" for="email-password">Kata sandi untuk konfirmasi</label>
+        <div class="input-wrap">
+          <input class="input change-email__input" id="email-password" type="password"
+            placeholder="Kata sandi akunmu" autocomplete="current-password">
+          <button class="input-wrap__icon" type="button" data-toggle-password="email-password"
+            aria-label="Tampilkan kata sandi">
+            <span class="icon" aria-hidden="true">visibility</span>
+          </button>
+        </div>
+        <p class="field__error hidden" id="email-error">
+          <span class="icon icon--sm" aria-hidden="true">error</span>
+          <span id="email-error-text"></span>
+        </p>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--md delete-account__cancel" type="button" data-modal-close>Batal</button>
+        <button class="btn btn--primary btn--md" type="submit" id="btn-send-email">Kirim Link Verifikasi</button>
       </div>
     </form>
   </div>

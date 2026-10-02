@@ -3,7 +3,7 @@ import { mountAppShell, refreshShellUser } from "../components/app-shell.js";
 import { openModal, closeModal } from "../components/modal.js";
 import { initFormHelpers } from "../components/form.js";
 import { showToast } from "../components/toast.js";
-import { updateProfile, updateProfilePhoto, deleteAccount } from "../services/userService.js";
+import { updateProfile, updateProfilePhoto, changeEmail, deleteAccount } from "../services/userService.js";
 import { compressPhoto } from "../services/photoService.js";
 import { logout, sendPasswordReset } from "../services/authService.js";
 import { getStreak } from "../services/journalService.js";
@@ -30,6 +30,15 @@ const el = {
   bioCounter: $("#bio-counter"),
   email: $("#profile-email"),
   emailVerified: $("#email-verified"),
+  emailLock: $("#email-lock"),
+  emailEdit: $("#btn-change-email"),
+  emailPending: $("#email-pending"),
+  emailModal: $("#email-modal"),
+  emailForm: $("#email-form"),
+  newEmail: $("#new-email"),
+  emailPassword: $("#email-password"),
+  emailError: $("#email-error"),
+  emailErrorText: $("#email-error-text"),
   memberSince: $("#member-since"),
   saveFeedback: $("#save-feedback"),
   saveBtn: $("#btn-save"),
@@ -59,9 +68,21 @@ function renderBanner() {
 
 function renderForm() {
   el.nameInput.value = user.name;
+  renderEmail();
+  el.memberSince.textContent = `Bagian dari Senara sejak ${formatDate(user.createdAt)}`;
+}
+
+function renderEmail() {
   el.email.textContent = user.email;
   show(el.emailVerified, user.emailVerified);
-  el.memberSince.textContent = `Bagian dari Senara sejak ${formatDate(user.createdAt)}`;
+  // Email akun Google mengikuti akun Google-nya, jadi hanya akun email dan kata sandi yang bisa menggantinya.
+  show(el.emailEdit, user.hasPassword);
+  show(el.emailLock, !user.hasPassword);
+  show(el.emailPending, Boolean(user.pendingEmail));
+  if (user.pendingEmail) {
+    $("#email-pending-text").textContent =
+      `Menunggu verifikasi ${user.pendingEmail}. Klik link di email itu untuk menyelesaikan penggantian.`;
+  }
 }
 
 function updateBioCounter() {
@@ -200,6 +221,62 @@ el.form.addEventListener("submit", async (e) => {
   setTimeout(() => hide(el.saveFeedback), 3500);
 });
 
+/* ---------- Ganti email (perlu verifikasi ulang) ---------- */
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function showEmailError(message, input) {
+  el.emailErrorText.textContent = message;
+  show(el.emailError);
+  input?.focus();
+}
+
+el.emailEdit.addEventListener("click", () => {
+  el.newEmail.value = user.pendingEmail ?? "";
+  el.emailPassword.value = "";
+  hide(el.emailError);
+  openModal(el.emailModal);
+  el.newEmail.focus();
+});
+
+[el.newEmail, el.emailPassword].forEach((input) => input.addEventListener("input", () => hide(el.emailError)));
+
+el.emailForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const newEmail = el.newEmail.value.trim();
+  const password = el.emailPassword.value;
+
+  if (!EMAIL_PATTERN.test(newEmail)) {
+    showEmailError("Format email belum benar.", el.newEmail);
+    return;
+  }
+  if (newEmail.toLowerCase() === user.email.toLowerCase()) {
+    showEmailError("Email baru sama dengan email yang sedang dipakai.", el.newEmail);
+    return;
+  }
+  if (!password) {
+    showEmailError("Masukkan kata sandi terlebih dahulu.", el.emailPassword);
+    return;
+  }
+
+  let pendingEmail;
+  try {
+    pendingEmail = await withLoading(
+      $("#btn-send-email"),
+      () => changeEmail({ newEmail, password }),
+      "Mengirim..."
+    );
+  } catch (err) {
+    const input = err.status === 403 ? el.emailPassword : el.newEmail;
+    showEmailError(err.message || "Email verifikasi gagal dikirim. Coba lagi.", input);
+    return;
+  }
+  user = { ...user, pendingEmail };
+  renderEmail();
+  closeModal(el.emailModal);
+  showToast(`Link verifikasi dikirim ke ${pendingEmail}.`);
+});
+
 /* ---------- Pengaturan akun ---------- */
 
 $("#btn-change-pwd").addEventListener("click", async (e) => {
@@ -268,6 +345,12 @@ async function init() {
   renderBanner();
   renderForm();
   renderStreak(streak);
+
+  // ?emailChanged=1 datang dari link ganti email (continueUrl Firebase).
+  if (new URLSearchParams(window.location.search).has("emailChanged")) {
+    showToast(`Email berhasil diganti ke ${user.email} dan sudah terverifikasi.`);
+    history.replaceState(null, "", window.location.pathname);
+  }
 }
 
 init();

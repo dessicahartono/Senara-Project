@@ -45,6 +45,19 @@ export async function updateProfilePhoto(file) {
 }
 
 /**
+ * Minta link verifikasi dikirim ke email baru. Email akun berganti setelah link diklik.
+ * @returns {Promise<string>} email baru yang menunggu verifikasi
+ */
+export async function changeEmail({ newEmail, password }) {
+  const body = new FormData();
+  body.append("newEmail", newEmail.trim());
+  body.append("password", password);
+  const { pendingEmail } = await request("actions/change_email.php", { method: "POST", body });
+  profilePromise = null;
+  return pendingEmail;
+}
+
+/**
  * Hapus akun beserta seluruh datanya.
  * @param {{password?: string, idToken?: string}} confirmation kata sandi (akun email) atau ID token Google baru
  */

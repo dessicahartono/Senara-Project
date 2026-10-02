@@ -14,10 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Alamat email sengaja tidak diterima dari browser agar endpoint ini
-// tidak bisa dipakai mengirim email ke sembarang alamat.
-$email = $_SESSION['firebase_email'] ?? '';
-if (empty($_SESSION['firebase_uid']) || !is_string($email) || $email === '') {
+$uid = $_SESSION['firebase_uid'] ?? '';
+if (!is_string($uid) || $uid === '') {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Sesi berakhir. Silakan masuk kembali.']);
     exit;
@@ -27,6 +25,9 @@ require_once __DIR__ . '/../../config/firebase_config.php';
 require_once __DIR__ . '/../../src/verification.php';
 
 try {
+    // Alamat email sengaja tidak diterima dari browser agar endpoint ini tidak bisa dipakai mengirim
+    // email ke sembarang alamat. Email dibaca dari Auth, bukan dari session, karena bisa sudah diganti di Profil.
+    $email = (string) $auth->getUser($uid)->email;
     $auth->sendPasswordResetLink($email, ['continueUrl' => appUrl('login.html')], 'id');
 } catch (Throwable $error) {
     error_log('Firebase password reset email failed: ' . $error->getMessage());
