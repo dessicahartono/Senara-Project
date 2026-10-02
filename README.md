@@ -4,7 +4,7 @@ Ruang tenang untuk jurnal harian, afirmasi, dan bercerita bersama Nomi.
 
 Senara adalah website refleksi diri berbasis layanan cloud. Pengguna bisa membaca afirmasi harian, menulis jurnal momen berharga lengkap dengan foto, melihat kembali jurnalnya dalam kalender arsip, dan bercerita kepada **Nomi**, teman bicara virtual yang hangat, empatik, dan menenangkan (ditenagai Gemini API).
 
-**Website:** `https://<nama-service>.onrender.com` <!-- TODO: ganti dengan URL Render setelah deploy, contoh: [https://senara.onrender.com](https://senara.onrender.com) -->
+**Website:** `https://<nama-service>.onrender.com`
 
 ## Tim
 
@@ -57,7 +57,6 @@ Slider dengan 4 slide:
   - Saat halaman dibuka: pesan **3 hari terakhir**. Bila kurang dari 20 pesan, yang dimuat adalah **20 pesan terakhir**, sehingga ruang chat tidak kosong selama masih ada riwayat (maksimal 200 pesan sebagai pengaman).
   - Saat digulir ke atas: browser meminta `chat.php?before={id pesan terlama}` dan backend mengirim **30 pesan sebelumnya** beserta penanda `hasMore`. Pesan lama disisipkan tanpa menggeser posisi baca.
 - Gemini hanya menerima **10 pesan terakhir** sebagai konteks, berapa pun panjang riwayatnya, supaya hemat token dan kuota.
-- Batas-batas di atas diatur sebagai konstanta di `src/chat.php`: `CHAT_RECENT_DAYS`, `CHAT_MIN_MESSAGES`, `CHAT_RECENT_MAX`, `CHAT_PAGE_SIZE`, dan `NOMI_CONTEXT_MESSAGES`.
 - Pengguna bisa menghapus satu pesan atau membersihkan seluruh riwayat chat.
 - **Mode Tenang:** latihan napas terpandu dari menu ⋯ di room chat. Pop-up dengan gradien bergerak menampilkan "Persiapkan dirimu tunggu instruksi dari Nomi" selama 4 detik, lalu instruksi berulang setiap 3 detik: *Tarik Napas → Tahan Sejenak → Hembuskan Perlahan → Rileks*. Fitur ini berjalan sepenuhnya di browser, tanpa menyimpan data dan tanpa memanggil Gemini.
 
@@ -76,7 +75,7 @@ Alur upload:
 1. Pengguna memilih foto (maksimal 10 MB sebelum kompresi).
 2. Browser otomatis mengecilkan foto ke **lebar maksimal 1080 px** dan mengompresnya ke **WebP** (cadangan JPEG) dengan **kualitas 0.8**. Foto HP sekitar 5 MB turun ke kisaran 200 sampai 400 KB.
 3. Backend memeriksa isi file (harus JPG, PNG, atau WebP), lalu mengunggahnya ke Cloudinary dengan *signed upload*. API secret Cloudinary hanya ada di server.
-4. Database hanya menyimpan **URL** foto pada field `photoUrl`, contoh `https://res.cloudinary.com/{cloud_name}/image/upload/v123/senara/journals/{uid}/2026-09-29.webp`. Nomor versi (`v123`) berubah setiap foto diganti, sehingga browser tidak menampilkan foto lama dari cache.
+4. Database hanya menyimpan **URL** foto pada field `photoUrl`. Nomor versi di URL berubah setiap foto diganti, sehingga browser tidak menampilkan foto lama dari cache.
 
 Pengaturan kompres foto di browser:
 
@@ -88,12 +87,7 @@ Pengaturan kompres foto di browser:
 | Target ukuran akhir | 200 sampai 400 KB | Foto HP sekitar 5 MB turun ke kisaran ini. |
 | Batas file sebelum kompresi | 10 MB | File di atas batas ditolak. |
 
-| Foto | Lokasi di Cloudinary | Keterangan |
-|---|---|---|
-| Foto profil | `senara/avatars/{uid}` | Dipotong menjadi persegi 400 × 400 px saat diunggah |
-| Foto jurnal | `senara/journals/{uid}/{dateKey}` | Satu foto per jurnal |
-
-Karena lokasinya ditentukan dari uid dan tanggal, foto baru selalu menimpa foto lama di tempat yang sama, sehingga tidak ada file lama yang tertinggal. Saat jurnal atau akun dihapus, fotonya ikut dihapus dari Cloudinary.
+Foto profil dipotong menjadi persegi 400 × 400 px saat diunggah, dan setiap jurnal punya satu foto. Foto baru selalu menimpa foto lama di tempat yang sama, sehingga tidak ada file lama yang tertinggal. Saat jurnal atau akun dihapus, fotonya ikut dihapus dari Cloudinary.
 
 ### Arsip
 
@@ -438,25 +432,6 @@ chats
 | `stats.lastCheckIn` | `dateKey` jurnal terbaru. |
 | `dateKey` | Tanggal berformat `yyyy-mm-dd`. Karena jurnal hanya satu per tanggal, tanggal langsung dipakai sebagai kunci, jadi tidak perlu `journalId`. |
 
-## Optimasi Database
-
-Realtime Database mengunduh seluruh isi node yang dibaca dan tidak punya join, jadi setiap aksi dirancang untuk membaca data sesedikit mungkin.
-
-| Teknik | Cara kerja | Yang dihemat |
-|---|---|---|
-| **Struktur datar per pengguna** | Jurnal, profil, dan chat ditaruh di node terpisah, bukan bersarang di dalam `users`. | Membaca profil tidak menarik data jurnal dan chat. |
-| **Kunci tanggal + query per bulan** | Kalender Oktober cukup mengambil `orderByKey().startAt("2026-10-01").endAt("2026-10-31")`, tanpa index tambahan. | Tidak mengunduh semua jurnal untuk membuka kalender. |
-| **Penanda `journalDates`** | Kalender hanya membaca pasangan tanggal dan `true`, ditulis bersamaan dengan jurnal dalam satu multi-path update. | Kalender tampil tanpa membaca isi jurnal. |
-| **Streak tersimpan** | Streak disimpan di `users/{uid}/stats` dan dihitung ulang dari `journalDates` saat jurnal dibuat atau dihapus. | Profil tidak menghitung dari semua jurnal. |
-| **Foto di Cloudinary + kompres** | Database hanya menyimpan URL; foto dikompres di browser sebelum diunggah. | Ukuran database kecil, penyimpanan foto hemat. |
-| **Afirmasi 1 node acak** | Backend hanya membaca satu kalimat `affirmations/{n}`, bukan 365 kalimat. | Satu baca kecil per muat halaman, tanpa kuota Gemini. |
-| **Chat dimuat bertahap** | 3 hari terakhir (minimal 20 pesan), lalu 30 pesan per gulir. Rentang 3 hari dicari dari kunci `push()`, yang 8 karakter pertamanya adalah waktu pembuatan, jadi tidak perlu index. | Kecepatan memuat tidak bergantung pada panjang riwayat maupun jumlah pengguna. |
-| **Konteks Gemini terbatas** | Gemini hanya menerima 10 pesan terakhir. | Token dan kuota Gemini. |
-| **Baca sekali per permintaan** | Backend membaca data sekali per request (`getValue`), tanpa listener realtime. | Koneksi dan bandwidth. |
-| **Rules tolak semua + validasi di PHP** | Lihat [Keamanan](#keamanan). | Mencegah data sampah dan akses lintas pengguna. |
-
-Sebagai gambaran kapasitas: satu pesan chat sekitar 200 byte, sehingga 1 GB penyimpanan Realtime Database muat sekitar 5 juta pesan. Batas paket gratis Firebase bisa berubah, jadi pantau penggunaannya di Firebase Console.
-
 ## Fungsi CRUD
 
 ### 12 Fungsi CRUD Utama
@@ -553,23 +528,3 @@ Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke R
 - Afirmasi 365 kalimat diisi sekali lewat Firebase Console atau skrip admin, dan tidak disimpan per pengguna.
 - Registrasi meminta nama lengkap; sapaan di aplikasi hanya memakai nama depan.
 - Gemini dipilih sebagai mesin chatbot karena memiliki paket gratis.
-
-## Catatan UI
-
-**Font** (Google Fonts, didefinisikan sebagai variabel di `public/css/variables.css`):
-
-| Font | Variabel | Dipakai untuk |
-|---|---|---|
-| Bricolage Grotesque | `--font-display` | Judul dan nama brand "Senara" di sidebar |
-| Nunito Sans | `--font-body` | Teks biasa: paragraf, tombol, label menu, form |
-| Fraunces (serif) | `--font-serif` | Nama brand di header landing page |
-| Material Symbols Outlined | - | Ikon |
-
-Font dimuat lewat tag link Google Fonts di `<head>` setiap halaman. Cadangan jika gagal dimuat: `system-ui`/`sans-serif` untuk Bricolage Grotesque dan Nunito Sans, `Georgia`/`serif` untuk Fraunces.
-
-**Navigasi:**
-
-- **Desktop/tablet** (lebar 768 px ke atas): sidebar kiri berisi Beranda, Nomi, Journaling, dan Arsip. Halaman Profil dibuka lewat kartu nama pengguna di kiri bawah sidebar.
-- **Mobile** (di bawah 768 px): sidebar diganti bottom nav dengan label Beranda, Nomi, Journal, Arsip, dan Profil.
-- Menu di sidebar dan bottom nav hanya berupa teks, tanpa emoji atau ikon.
-- Daftar menu diatur di satu tempat, yaitu `public/js/components/app-shell.js`.
