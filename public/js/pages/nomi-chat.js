@@ -303,30 +303,43 @@ const BREATH_STEPS = [
   { label: "Hembuskan Perlahan...", phase: "exhale" },
   { label: "Rileks...", phase: "rest" },
 ];
+/** Ajakan bersiap sebelum instruksi napas pertama, agar pengguna tidak langsung diminta menarik napas. */
+const BREATH_PREPARE = { label: "Persiapkan dirimu tunggu instruksi dari Nomi", phase: "prepare" };
+const BREATH_PREPARE_MS = 4000;
+const BREATH_STEP_MS = 3000;
 const breatheModal = $("#breathe-modal");
 const breatheCircle = $("#breathe-circle");
 const breatheText = $("#breathe-instruction");
 let breatheTimer = null;
+let breatheStartTimer = null;
 
-function setBreathStep(index) {
-  const step = BREATH_STEPS[index];
+function setBreathStep(step) {
   breatheText.textContent = step.label;
   breatheCircle.dataset.phase = step.phase;
 }
 
+function stopBreathing() {
+  clearTimeout(breatheStartTimer);
+  clearInterval(breatheTimer);
+}
+
 $("#btn-calm").addEventListener("click", () => {
   setMenu(false);
-  let step = 0;
-  setBreathStep(step);
+  stopBreathing();
+  setBreathStep(BREATH_PREPARE);
   openModal(breatheModal);
-  clearInterval(breatheTimer);
-  breatheTimer = setInterval(() => {
-    step = (step + 1) % BREATH_STEPS.length;
-    setBreathStep(step);
-  }, 3000);
+
+  breatheStartTimer = setTimeout(() => {
+    let index = 0;
+    setBreathStep(BREATH_STEPS[index]);
+    breatheTimer = setInterval(() => {
+      index = (index + 1) % BREATH_STEPS.length;
+      setBreathStep(BREATH_STEPS[index]);
+    }, BREATH_STEP_MS);
+  }, BREATH_PREPARE_MS);
 });
 
-breatheModal.addEventListener("modal:closed", () => clearInterval(breatheTimer));
+breatheModal.addEventListener("modal:closed", stopBreathing);
 
 /* ---------- Mulai ---------- */
 
