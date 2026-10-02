@@ -6,12 +6,17 @@ use GuzzleHttp\Client;
 /**
  * Penyimpanan foto di Cloudinary. Database hanya menyimpan URL foto.
  *
- * Struktur folder:
+ * Public ID:
  *   senara/avatars/{uid}                 foto profil (selalu ditimpa, jadi tidak ada file lama tersisa)
  *   senara/journals/{uid}/{dateKey}      foto jurnal
+ *
+ * Folder di Media Library sama, tetapi berawalan CLOUDINARY_ASSET_ROOT, misalnya Senara-Project/avatars.
  */
 
 const CLOUDINARY_ROOT = 'senara';
+
+/** Folder utama di Media Library (dynamic folders). Terpisah dari awalan public_id agar URL foto lama tetap berlaku. */
+const CLOUDINARY_ASSET_ROOT = 'Senara-Project';
 
 function cloudinaryConfig(): array
 {
@@ -52,6 +57,8 @@ function cloudinaryUpload(string $filePath, string $publicId, ?string $transform
 {
     $params = [
         'public_id' => CLOUDINARY_ROOT . '/' . $publicId,
+        // Akun dynamic folders tidak membuat folder dari public_id, jadi folder Media Library diisi terpisah.
+        'asset_folder' => CLOUDINARY_ASSET_ROOT . '/' . dirname($publicId),
         'overwrite' => 'true',
         'invalidate' => 'true',
         'timestamp' => (string) time(),

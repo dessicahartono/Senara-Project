@@ -1,9 +1,15 @@
 import { ROUTES } from "../config.js";
 import { mountAppShell, refreshShellUser } from "../components/app-shell.js";
-import { openModal, closeModal } from "../components/modal.js";
+import { openModal, closeModal, confirmDialog } from "../components/modal.js";
 import { initFormHelpers } from "../components/form.js";
 import { showToast } from "../components/toast.js";
-import { updateProfile, updateProfilePhoto, changeEmail, deleteAccount } from "../services/userService.js";
+import {
+  updateProfile,
+  updateProfilePhoto,
+  removeProfilePhoto,
+  changeEmail,
+  deleteAccount,
+} from "../services/userService.js";
 import { compressPhoto } from "../services/photoService.js";
 import { logout, sendPasswordReset } from "../services/authService.js";
 import { getStreak } from "../services/journalService.js";
@@ -23,6 +29,7 @@ const el = {
   bioEditor: $("#bio-editor"),
   bioSave: $("#btn-save-bio"),
   photoInput: $("#photo-input"),
+  removePhoto: $("#btn-remove-photo"),
   form: $("#profile-form"),
   nameInput: $("#input-name"),
   nameError: $("#name-error"),
@@ -60,8 +67,9 @@ function renderBanner() {
   el.avatar.innerHTML = user.photoUrl
     ? `<img src="${escapeHtml(user.photoUrl)}" alt="Foto profil ${escapeHtml(user.name)}">`
     : escapeHtml(initials(user.name));
+  show(el.removePhoto, Boolean(user.photoUrl));
   el.greeting.textContent = `Hi, ${firstName(user.name)}`;
-  el.bio.textContent = user.bio || "Belum ada bio. Tambahkan kutipan yang menggambarkan dirimu.";
+  el.bio.textContent = user.bio || "Belum ada bio. Tambahkan bio.";
   $("#btn-edit-bio").setAttribute("aria-label", user.bio ? "Edit bio" : "Tulis bio");
   $("#btn-edit-bio").title = user.bio ? "Edit bio" : "Tulis bio";
 }
@@ -133,6 +141,28 @@ el.photoInput.addEventListener("change", async () => {
   renderBanner();
   refreshShellUser(user);
   showToast("Foto profil diperbarui.");
+});
+
+el.removePhoto.addEventListener("click", async () => {
+  const removed = await confirmDialog({
+    icon: "no_photography",
+    title: "Hapus foto profil?",
+    message: "Foto profilmu akan dihapus dan diganti inisial namamu. Kamu bisa mengunggah foto baru kapan saja.",
+    confirmText: "Ya, Hapus",
+    onConfirm: async () => {
+      try {
+        user = await removeProfilePhoto();
+      } catch (err) {
+        showToast(err.message || "Foto profil gagal dihapus. Coba lagi.", { type: "error" });
+        throw err;
+      }
+    },
+  });
+  if (!removed) return;
+
+  renderBanner();
+  refreshShellUser(user);
+  showToast("Foto profil dihapus.");
 });
 
 /* ---------- Bio (diedit langsung di banner) ---------- */

@@ -1,6 +1,9 @@
 <?php
 /**
- * Mengganti foto profil. Foto diunggah ke Cloudinary, lalu URL-nya disimpan di users/{uid}/photoUrl.
+ * Foto profil pengguna yang sedang login.
+ *
+ * POST photo=<file> - ganti foto: diunggah ke Cloudinary, lalu URL-nya disimpan di users/{uid}/photoUrl.
+ * POST remove=1     - hapus foto: photoUrl dihapus dan fotonya dihapus dari Cloudinary.
  */
 declare(strict_types=1);
 
@@ -19,6 +22,26 @@ require_once __DIR__ . '/../../src/cloudinary.php';
 
 /** Foto biasanya sudah dikompres di browser (photoService.js); batas ini hanya pengaman. */
 const AVATAR_MAX_BYTES = 3 * 1024 * 1024;
+
+if (($_POST['remove'] ?? '') === '1') {
+    try {
+        $database->getReference('users/' . $uid . '/photoUrl')->remove();
+        $profile = getUserProfile($auth, $database, $uid);
+    } catch (Throwable $error) {
+        error_log('Profile photo removal failed: ' . $error->getMessage());
+        jsonResponse(['success' => false, 'message' => 'Foto profil gagal dihapus. Coba lagi beberapa saat lagi.'], 500);
+    }
+
+    try {
+        // Foto akun Google yang belum pernah diganti tidak ada di Cloudinary; foto yang tidak ada dianggap berhasil.
+        cloudinaryDestroy(CLOUDINARY_ROOT . '/avatars/' . $uid);
+    } catch (Throwable $error) {
+        // Foto sudah tidak dipakai di profil; foto yang gagal dihapus cukup dicatat.
+        error_log('Cloudinary avatar delete failed: ' . $error->getMessage());
+    }
+
+    jsonResponse(['success' => true, 'profile' => $profile]);
+}
 
 try {
     $path = validatedUploadedPhoto($_FILES['photo'] ?? null, AVATAR_MAX_BYTES);

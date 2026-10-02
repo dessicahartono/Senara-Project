@@ -122,6 +122,8 @@ Kredensial Cloudinary (cloud name, API key, API secret) disimpan di cloudinary_c
 
 Karena public_id ditentukan dari uid dan tanggal, foto baru selalu menimpa foto lama di lokasi yang sama. Tidak ada file lama yang tertinggal, dan database tidak perlu menyimpan path file.
 
+Akun Cloudinary memakai mode *dynamic folders*, sehingga folder di Media Library tidak dibuat dari public_id. Saat upload, backend mengisi asset_folder secara terpisah dengan awalan Senara-Project: foto profil tampil di folder Senara-Project/avatars dan foto jurnal di Senara-Project/journals/{uid}. Folder ini hanya untuk kerapian di Media Library; URL foto tetap mengikuti public_id di atas.
+
 **Pengaturan kompres foto (di frontend):**
 
 | **Parameter**                   | **Nilai**             | **Alasan**                                                                                                                     |
@@ -189,7 +191,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 |--------------------------------|-------------|--------------------------------------------------------------------------------------------------------|
 | **Nama Lengkap**               | Bisa diubah | Nama depannya dipakai untuk sapaan di Homepage dan Profile ("Hi, Seno").                               |
 | **Bio Singkat / Kutipan Diri** | Bisa diubah | Kata-kata motivasi untuk diri sendiri (maks. 160 karakter). Tidak ada kolom bio di form; bio ditulis dan diedit langsung di banner profil lewat ikon pena (edit, sama dengan ikon di kolom Nama Lengkap), lalu Simpan/Enter untuk menyimpan, Batal/Esc untuk membatalkan. |
-| **Foto Profil (Avatar)**       | Bisa diubah | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. |
+| **Foto Profil (Avatar)**       | Bisa diubah dan dihapus | Foto dikompres lewat PhotoService, lalu diunggah backend ke Cloudinary; URL disimpan di users/{uid}/photoUrl. Foto juga bisa dihapus (lihat 5.3), sehingga avatar kembali menampilkan inisial nama. |
 | **Alamat Email**               | Bisa diganti (akun email) | Menampilkan email terdaftar dari Firebase Auth beserta status Terverifikasi. Akun email dan kata sandi bisa menggantinya lewat ikon pena (lihat 5.3); akun Google ditandai ikon gembok karena emailnya mengikuti akun Google. |
 | **Tanggal Bergabung**          | Read-only   | Contoh: "Member Senara sejak 28 September 2026".                                                       |
 
@@ -204,6 +206,8 @@ Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 > • **Simpan Perubahan:** memperbarui nama ke Realtime Database (Update). Bio disimpan dari editor di banner lewat endpoint yang sama (profile.php, Update 2), sedangkan foto disimpan lewat tombol Ganti Foto.
 >
 > • **Ganti Alamat Email (verifikasi ulang):** ikon pena di kolom Alamat Email membuka pop-up berisi email baru dan kata sandi untuk konfirmasi. Endpoint change_email.php mengecek kata sandi, lalu meminta Firebase Auth mengirim link verifikasi ke email baru (alur VERIFY_AND_CHANGE_EMAIL lewat REST API Identity Toolkit, karena Admin SDK tidak menyediakannya). Email akun baru berganti setelah link itu diklik, sehingga email baru selalu sudah terverifikasi; sampai saat itu pengguna tetap masuk dengan email lama, jadi salah ketik email tidak membuat akun terkunci. Firebase juga mengirim pemberitahuan ke email lama. Selama menunggu, Profil menampilkan "Menunggu verifikasi {email baru}" (disimpan di users/{uid}/pendingEmail). Link membawa pengguna kembali ke profil.html?emailChanged=1; saat profil dibaca, backend menyamakan users/{uid}/email dengan email di Auth dan menghapus pendingEmail. Pengiriman dibatasi sekali per 60 detik. Akun Google tidak bisa mengganti email di sini.
+>
+> • **Hapus Foto Profil:** tombol Hapus Foto di samping Ganti Foto, hanya muncul jika pengguna punya foto profil. Setelah dikonfirmasi lewat dialog, endpoint profile_photo.php (remove=1) menghapus users/{uid}/photoUrl lalu menghapus foto senara/avatars/{uid} dari Cloudinary, dan avatar di banner serta sidebar kembali menampilkan inisial nama. Jika penghapusan di Cloudinary gagal, foto tetap hilang dari profil dan kegagalannya hanya dicatat di log. Foto Google bawaan juga bisa dihapus dan tidak muncul lagi saat login berikutnya, karena foto Google hanya diambil saat profil pertama kali dibuat.
 >
 > • **Ganti Password:** memicu email reset password bawaan Firebase Auth, dikirim ke email akun yang aktif saat ini (dibaca dari Firebase Auth, bukan dari session login).
 >
@@ -232,7 +236,7 @@ Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya 
 
 ## **6.1 Daftar Lengkap Operasi CRUD**
 
-Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 28 operasi: 6 Create, 11 Read, 7 Update, 4 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 29 operasi: 6 Create, 11 Read, 7 Update, 5 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
 
 **Create**
 
@@ -281,6 +285,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **D2**  | Hapus satu pesan chat                                        | chats/{uid}/{messageId}                                 | chatService.deleteMessage       | Delete 2         |
 | **D3**  | Bersihkan seluruh riwayat chat                               | chats/{uid}                                             | chatService.clearMessages       | Delete 2         |
 | **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, Cloudinary, Firebase Auth | userService.deleteAccount  | Delete 3         |
+| **D5**  | Hapus foto profil (avatar kembali ke inisial nama)           | Cloudinary dan users/{uid}/photoUrl                     | userService.removeProfilePhoto  | -                |
 
 **Tidak dihitung sebagai CRUD database**
 
@@ -453,7 +458,7 @@ chats
 |----------------------------|----------------------------------------------------------------------------------------------------------|
 | **name, email, bio**       | String. email disalin dari Firebase Auth saat registrasi dan disamakan lagi setelah pengguna mengganti email; email di Auth tetap sumber utamanya. bio boleh kosong. |
 | **pendingEmail**           | String, opsional. Email baru yang link verifikasinya belum diklik; dihapus otomatis setelah penggantian selesai. |
-| **photoUrl**               | String URL dari Cloudinary, atau null jika tidak ada foto. Dipakai untuk foto profil dan foto jurnal. Foto profil akun Google memakai URL foto Google sampai pengguna menggantinya. |
+| **photoUrl**               | String URL dari Cloudinary, atau null jika tidak ada foto. Dipakai untuk foto profil dan foto jurnal. Foto profil akun Google memakai URL foto Google sampai pengguna mengganti atau menghapusnya. Field ini hilang saat pengguna menghapus foto profil. |
 | **photoName**              | String nama file asli foto jurnal, ditampilkan di form edit.                                             |
 | **note**                   | String catatan jurnal, maksimal 2000 karakter.                                                           |
 | **sender**                 | "user" atau "nomi".                                                                                      |

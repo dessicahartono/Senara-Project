@@ -44,7 +44,7 @@ File di sini tidak dipanggil langsung oleh browser. Isinya fungsi yang dipakai u
 | `resend_verification.php` | Mengirim ulang email verifikasi. Email tujuan diambil dari session, bukan dari input browser. |
 | `reset_password.php` | Mengirim email reset kata sandi ke email akun yang sedang login. |
 | `profile.php` | GET: membaca profil. POST: mengubah nama dan bio. **(Read, Update)** |
-| `profile_photo.php` | Mengganti foto profil: upload ke Cloudinary, lalu menyimpan URL-nya. **(Update)** |
+| `profile_photo.php` | Mengganti foto profil (upload ke Cloudinary, lalu menyimpan URL-nya) atau menghapusnya (`remove=1`). **(Update, Delete)** |
 | `change_email.php` | Mengganti email dengan verifikasi ulang (wajib memasukkan kata sandi). **(Update)** |
 | `delete_account.php` | Menghapus akun beserta semua data dan fotonya. Wajib konfirmasi kata sandi atau login Google ulang. **(Delete)** |
 | `journals.php` | GET: jurnal per bulan, per tanggal, atau yang terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. **(Create, Read, Update)** |
@@ -89,7 +89,7 @@ Satu file untuk tiap halaman HTML, berisi logika interaksi halaman itu.
 | `nomi-chat.js` | Menampilkan chat, memuat pesan lama saat scroll ke atas, mengirim dan menghapus pesan, serta animasi napas Mode Tenang. |
 | `journaling.js` | Form jurnal, kompres foto, mode edit otomatis, dan hapus jurnal. |
 | `arsip.js` | Render kalender, detail jurnal, ringkasan bulan, edit dan hapus. |
-| `profil.js` | Edit nama dan bio, ganti foto, ganti email, reset kata sandi, dan hapus akun. |
+| `profil.js` | Edit nama dan bio, ganti dan hapus foto, ganti email, reset kata sandi, dan hapus akun. |
 
 ### `services/`
 
@@ -99,7 +99,7 @@ Lapisan yang memanggil endpoint PHP (dengan `fetch`), supaya halaman tidak meman
 |---|---|
 | `authService.js` | Logout dan reset kata sandi. |
 | `googleAuth.js` | Memuat Firebase SDK, membuka popup Google, lalu mengirim token ke `google_login.php`. |
-| `userService.js` | Profil, foto profil, ganti email, dan hapus akun (dengan cache profil). |
+| `userService.js` | Profil, ganti dan hapus foto profil, ganti email, dan hapus akun (dengan cache profil). |
 | `journalService.js` | CRUD jurnal, streak, dan ringkasan bulan (dengan cache per bulan). |
 | `chatService.js` | Pesan chat, balasan Nomi, hapus pesan, dan daftar pertanyaan cepat. |
 | `affirmationService.js` | Afirmasi acak (nomor terakhir disimpan di `sessionStorage`). |

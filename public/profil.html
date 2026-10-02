@@ -59,10 +59,17 @@
                 </form>
               </div>
             </div>
-            <button class="btn btn--md profile-banner__photo-btn" type="button" data-pick-photo>
-              <span class="icon icon--md" aria-hidden="true">photo_camera</span>
-              <span>Ganti Foto</span>
-            </button>
+            <div class="profile-banner__photo-actions">
+              <button class="btn btn--md btn--danger-ghost profile-banner__remove-btn hidden" type="button"
+                id="btn-remove-photo">
+                <span class="icon icon--md" aria-hidden="true">delete</span>
+                <span>Hapus Foto</span>
+              </button>
+              <button class="btn btn--md profile-banner__photo-btn" type="button" data-pick-photo>
+                <span class="icon icon--md" aria-hidden="true">photo_camera</span>
+                <span>Ganti Foto</span>
+              </button>
+            </div>
             <input class="sr-only" id="photo-input" type="file" accept="image/png, image/jpeg" tabindex="-1">
           </div>
         </section>

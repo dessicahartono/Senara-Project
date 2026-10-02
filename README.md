@@ -102,7 +102,7 @@ Foto profil dipotong menjadi persegi 400 × 400 px saat diunggah, dan setiap jur
 |---|---|
 | **Nama lengkap** | Bisa diubah; nama depannya dipakai untuk sapaan. |
 | **Bio** | Kutipan diri maksimal 160 karakter, ditulis dan diedit langsung di banner profil lewat ikon pena. |
-| **Foto profil** | Bisa diganti (JPG atau PNG, maksimal 3 MB). |
+| **Foto profil** | Bisa diganti (JPG atau PNG, maksimal 3 MB) atau dihapus sehingga avatar kembali menampilkan inisial nama. |
 | **Alamat email** | Akun email dan kata sandi bisa **mengganti email dengan verifikasi ulang**: masukkan email baru dan kata sandi, lalu Firebase mengirim link verifikasi ke email baru. Email baru **baru berlaku setelah link diklik**, jadi salah ketik email tidak membuat akun terkunci, dan Firebase juga memberi tahu email lama. Selama menunggu, Profil menampilkan "Menunggu verifikasi {email baru}". Email akun Google mengikuti akun Google sehingga tidak bisa diganti. |
 | **Tanggal bergabung** | Hanya dibaca. |
 | **Streak** | Jumlah hari berturut-turut menulis jurnal. Karena jurnal bisa diisi untuk tanggal yang sudah lewat, streak dihitung ulang setiap kali jurnal dibuat atau dihapus. |
@@ -455,7 +455,7 @@ Sesuai persyaratan proyek, Senara memiliki 12 fungsi CRUD (3 Create, 3 Read, 3 U
 
 ### Daftar Lengkap Operasi
 
-Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya **28 operasi: 6 Create, 11 Read, 7 Update, 4 Delete**. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya **29 operasi: 6 Create, 11 Read, 7 Update, 5 Delete**. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
 
 **Create**
 
@@ -504,6 +504,7 @@ Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke R
 | **D2** | Hapus satu pesan chat | `chats/{uid}/{messageId}` | `chatService.deleteMessage` | Delete 2 |
 | **D3** | Bersihkan seluruh riwayat chat | `chats/{uid}` | `chatService.clearMessages` | Delete 2 |
 | **D4** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, Cloudinary, Firebase Auth | `userService.deleteAccount` | Delete 3 |
+| **D5** | Hapus foto profil (avatar kembali ke inisial nama) | Cloudinary dan `users/{uid}/photoUrl` | `userService.removeProfilePhoto` | - |
 
 **Tidak dihitung sebagai CRUD database**
 

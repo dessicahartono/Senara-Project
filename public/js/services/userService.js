@@ -44,6 +44,15 @@ export async function updateProfilePhoto(file) {
   return profile;
 }
 
+/** Hapus foto profil; avatar kembali menampilkan inisial nama. */
+export async function removeProfilePhoto() {
+  const body = new FormData();
+  body.append("remove", "1");
+  const { profile } = await request("actions/profile_photo.php", { method: "POST", body });
+  profilePromise = Promise.resolve(profile);
+  return profile;
+}
+
 /**
  * Minta link verifikasi dikirim ke email baru. Email akun berganti setelah link diklik.
  * @returns {Promise<string>} email baru yang menunggu verifikasi

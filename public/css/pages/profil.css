@@ -215,13 +215,24 @@
   margin-right: auto;
 }
 
-.profile-banner__photo-btn {
+.profile-banner__photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-sm);
   align-self: flex-end;
+}
+
+.profile-banner__photo-btn,
+.profile-banner__remove-btn {
   padding: var(--space-sm) var(--space-md);
+  font-weight: 600;
+}
+
+.profile-banner__photo-btn {
   background: var(--color-surface-container);
   color: var(--color-on-surface);
   box-shadow: var(--shadow-sm);
-  font-weight: 600;
 }
 
 .profile-banner__photo-btn:hover {
@@ -229,7 +240,8 @@
 }
 
 @media (min-width: 768px) {
-  .profile-banner__photo-btn {
+  .profile-banner__photo-actions {
+    flex-shrink: 0;
     align-self: center;
   }
 }
