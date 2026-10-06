@@ -1,7 +1,7 @@
 FROM php:8.2-apache
 
 RUN apt-get update \
-    && apt-get install -y git unzip libcurl4-openssl-dev libxml2-dev \
+    && apt-get install -y git unzip libcurl4-openssl-dev libxml2-dev libonig-dev \
     && docker-php-ext-install curl mbstring xml \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
