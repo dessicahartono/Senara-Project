@@ -1,0 +1,20 @@
+# Docker ignore file for Senara project
+# Exclude vendor directory (dependencies installed in Docker)
+vendor/
+
+# Exclude environment files and secrets (not needed in Docker; passed via Render env vars)
+.env*
+!.dockerignore
+!.gitignore
+
+# Exclude session and log files (generated at runtime)
+*.log
+storage/
+bootstrap/cache/
+
+# Exclude Git and CI files
+.git/
+.github/
+
+# Exclude Docker cache and build artifacts
+.dockerinit

@@ -138,7 +138,7 @@ function nomiSystemPrompt(string $firstName): string
           SEJIWA di 119 ekstensi 8, atau layanan darurat 112.
         - Tolak dengan sopan permintaan di luar peran teman bicara (misalnya menulis kode atau mengerjakan tugas),
           lalu arahkan kembali ke obrolan tentang perasaannya.
-        PROMPT;
+    PROMPT;
 }
 
 /**
@@ -147,12 +147,11 @@ function nomiSystemPrompt(string $firstName): string
  */
 function generateNomiReply(array $messages, string $firstName): string
 {
-    $configFile = __DIR__ . '/../gemini_config.php';
-    $config = is_file($configFile) ? require $configFile : [];
-    if (empty($config['api_key'])) {
-        throw new RuntimeException('gemini_config.php belum diisi (api_key).');
+    $apiKey = getenv('GEMINI_API_KEY');
+    if (empty($apiKey)) {
+        throw new RuntimeException('GEMINI_API_KEY environment variable not set.');
     }
-    $model = $config['model'] ?? 'gemini-3.5-flash-lite';
+    $model = 'gemini-3.5-flash-lite';
 
     // Gemini memakai peran "user" dan "model". Pesan berurutan dari pengirim yang sama digabung,
     // dan percakapan harus dimulai dari pesan pengguna.
@@ -179,7 +178,7 @@ function generateNomiReply(array $messages, string $firstName): string
     $response = (new Client(['timeout' => 30]))->post(
         'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent',
         [
-            'headers' => ['x-goog-api-key' => $config['api_key']],
+            'headers' => ['x-goog-api-key' => $apiKey],
             'json' => [
                 'system_instruction' => ['parts' => [['text' => nomiSystemPrompt($firstName)]]],
                 'contents' => $contents,
