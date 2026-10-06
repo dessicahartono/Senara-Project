@@ -4,18 +4,19 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Kreait\Firebase\Factory; 
 use Kreait\Firebase\Auth; 
 
-$credentialsPath = '/etc/secrets/firebase_credentials.json'; 
-if (!is_file($credentialsPath)) { 
-    $credentialsPath = __DIR__ . '/../firebase_credentials.json'; 
-}
-if (!is_file($credentialsPath)) { 
-    throw new RuntimeException('Firebase credentials file not found at: ' . $credentialsPath); 
+$credentialsJson = getenv('FIREBASE_CREDENTIALS_JSON');
+if ($credentialsJson === false || trim($credentialsJson) === '') {
+    throw new RuntimeException('FIREBASE_CREDENTIALS_JSON environment variable is not set.');
 }
 
-$firebaseCredentials = json_decode(file_get_contents($credentialsPath), true); 
+try {
+    $firebaseCredentials = json_decode($credentialsJson, true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $exception) {
+    throw new RuntimeException('FIREBASE_CREDENTIALS_JSON must contain valid JSON.', 0, $exception);
+}
 
-if (!is_array($firebaseCredentials)) { 
-    throw new RuntimeException('Firebase credentials file is not valid JSON: ' . $credentialsPath); 
+if (!is_array($firebaseCredentials)) {
+    throw new RuntimeException('FIREBASE_CREDENTIALS_JSON must contain a JSON object.');
 }
 
 $databaseUrl = getenv('FIREBASE_DATABASE_URL') ?: 'https://senara-alp-cloud-computing-default-rtdb.asia-southeast1.firebasedatabase.app/'; 
