@@ -124,7 +124,7 @@ function validatedUploadedPhoto(?array $file, int $maxBytes): string
     } 
     if ($file['error'] === UPLOAD_ERR_INI_SIZE || $file['error'] === UPLOAD_ERR_FORM_SIZE || $file['size'] > $maxBytes) { 
         throw new InvalidArgumentException('Ukuran foto maksimal ' . round($maxBytes / 1024 / 1024) . ' MB.'); 
-    
+    }
     if ($file['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'])) { 
         throw new InvalidArgumentException('Foto gagal diunggah. Coba lagi.'); 
     } 
@@ -136,4 +136,3 @@ function validatedUploadedPhoto(?array $file, int $maxBytes): string
     } 
     return $file['tmp_name']; 
 } 
-}
