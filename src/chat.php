@@ -147,11 +147,33 @@ function nomiSystemPrompt(string $firstName): string
  */
 function generateNomiReply(array $messages, string $firstName): string
 {
-    $apiKey = getenv('GEMINI_API_KEY');
-    if (empty($apiKey)) {
-        throw new RuntimeException('GEMINI_API_KEY environment variable not set.');
+    $apiKey = getenv('GEMINI_API_KEY'); 
+    if (empty($apiKey)) { 
+        $geminiFile = __DIR__ . '/../gemini_config.php'; 
+        if (is_file($geminiFile)) { 
+            $local = require $geminiFile; 
+            if (is_array($local) && !empty($local['api_key'])) { 
+                $apiKey = $local['api_key']; 
+            } 
+        } 
+    } 
+    if (empty($apiKey)) { 
+        throw new RuntimeException('GEMINI_API_KEY belum diisi. Set env GEMINI_API_KEY di Render atau isi gemini_config.php lokal.'); // CHANGED: pesan menyebut dua sumber. WHY: user tahu harus set di mana.
+    } 
+
+    $model = getenv('GEMINI_MODEL'); 
+    if (empty($model)) { 
+        $geminiFile = __DIR__ . '/../gemini_config.php'; 
+        if (is_file($geminiFile)) { 
+            $localModel = require $geminiFile; 
+            if (is_array($localModel) && !empty($localModel['model'])) { 
+                $model = $localModel['model']; 
+            } 
+        } 
+    } 
+    if (empty($model)) { 
+        $model = 'gemini-3.5-flash-lite'; 
     }
-    $model = 'gemini-3.5-flash-lite';
 
     // Gemini memakai peran "user" dan "model". Pesan berurutan dari pengirim yang sama digabung,
     // dan percakapan harus dimulai dari pesan pengguna.

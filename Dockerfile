@@ -1,34 +1,26 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm \
-    redis \
-    && docker-php-ext-install pdo pdo_mysql bcmath
+RUN apt-get update \
+    && apt-get install -y git unzip libcurl4-openssl-dev libxml2-dev \
+    && docker-php-ext-install curl mbstring xml \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 WORKDIR /var/www/html
 
-# Copy composer files and install dependencies
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --no-scripts --optimize-autoloader
 
-# Copy application code
 COPY . .
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
+    && printf '<Directory /var/www/html/public>\n\tAllowOverride All\n\tRequire all granted\n</Directory>\n' > /etc/apache2/conf-available/senara.conf \
+    && a2enconf senara
 
-# Expose port 8080 for Render
 EXPOSE 8080
 
-# Start PHP-FPM server
-CMD ["php-fpm"]
+CMD sed -i "s/Listen 80/Listen ${PORT:-8080}/" /etc/apache2/ports.conf \
+    && sed -i "s/:80>/:${PORT:-8080}>/" /etc/apache2/sites-available/000-default.conf \
+    && apache2-foreground

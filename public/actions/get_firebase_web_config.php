@@ -8,7 +8,7 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$firebaseWebConfig = require __DIR__ . '/../../firebase_web_config.php';
+$firebaseWebConfig = json_decode(getenv('FIREBASE_WEB_CONFIG_JSON'), true) ?: require __DIR__ . '/../../firebase_web_config.php';
 $requiredKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
 
 foreach ($requiredKeys as $key) {
