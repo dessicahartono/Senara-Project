@@ -139,6 +139,13 @@ try {
     $existing = $journals->getChild($date)->getValue();
     $existing = is_array($existing) ? $existing : null;
 
+    if ($existing === null && $date < journalEarliestNewDate()) {
+        jsonResponse([
+            'success' => false,
+            'message' => 'Jurnal baru hanya bisa ditulis untuk hari ini sampai ' . JOURNAL_BACKDATE_DAYS . ' hari sebelumnya.',
+        ], 400);
+    }
+
     $photoUrl = $existing['photoUrl'] ?? null;
     $photoName = $existing['photoName'] ?? null;
     $photoId = 'journals/' . $uid . '/' . $date;

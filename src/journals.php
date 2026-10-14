@@ -6,12 +6,24 @@ use Kreait\Firebase\Contract\Database;
 /** Batas panjang catatan jurnal; samakan dengan maxlength di journaling.html. */
 const JOURNAL_NOTE_MAX = 2000;
 
+/**
+ * Jurnal baru hanya bisa dibuat untuk hari ini dan sekian hari sebelumnya, agar streak tidak bisa diisi
+ * mundur. Jurnal lama yang sudah ada tetap bisa disunting. Samakan dengan JOURNAL_BACKDATE_DAYS di config.js.
+ */
+const JOURNAL_BACKDATE_DAYS = 2;
+
 /** Zona waktu untuk menentukan "hari ini" pada streak dan validasi tanggal. */
 const JOURNAL_TIMEZONE = 'Asia/Jakarta';
 
 function journalToday(): DateTimeImmutable
 {
     return new DateTimeImmutable('today', new DateTimeZone(JOURNAL_TIMEZONE));
+}
+
+/** Tanggal paling awal (yyyy-mm-dd) yang masih boleh diberi jurnal baru. */
+function journalEarliestNewDate(): string
+{
+    return journalToday()->modify('-' . JOURNAL_BACKDATE_DAYS . ' day')->format('Y-m-d');
 }
 
 /** true jika $date berformat yyyy-mm-dd dan merupakan tanggal yang ada. */

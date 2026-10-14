@@ -96,6 +96,8 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 > • Menjadi fungsi Create utama pada database.
 >
 > • Satu tanggal hanya bisa memiliki satu jurnal. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit.
+>
+> • Jurnal baru hanya bisa ditulis untuk hari ini sampai 2 hari sebelumnya (WIB), agar streak tidak bisa diisi mundur. Jurnal lama yang sudah ada tetap bisa diedit atau dihapus.
 
 ### **Penyimpanan Foto (Cloudinary)**
 
@@ -215,7 +217,7 @@ Halaman Profile tidak hanya berisi form data diri, tetapi juga menjadi tempat pe
 
 Statistik ringkas membuat tampilan profil terasa lebih personal dan profesional.
 
-> • **Streak Refleksi:** jumlah hari berturut-turut pengguna menulis jurnal. Karena tanggal jurnal bisa dipilih mundur, streak dihitung ulang dari journalDates setiap kali jurnal dibuat atau dihapus.
+> • **Streak Refleksi:** jumlah hari berturut-turut pengguna menulis jurnal. Karena jurnal bisa ditulis sampai 2 hari mundur dan bisa dihapus, streak dihitung ulang dari journalDates setiap kali jurnal dibuat atau dihapus.
 
 ## **5.3 Pengaturan & Aksi Akun**
 

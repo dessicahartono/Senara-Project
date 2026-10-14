@@ -33,3 +33,6 @@ export const ASSETS = {
 };
 
 export const MAX_PHOTO_SIZE = 10 * 1024 * 1024; // 10 MB
+
+/** Jurnal baru hanya untuk hari ini dan sekian hari sebelumnya; samakan dengan journals.php. */
+export const JOURNAL_BACKDATE_DAYS = 2;

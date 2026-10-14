@@ -5,6 +5,8 @@ import { showToast } from "../components/toast.js";
 import {
   getLatestJournal,
   getJournalByDate,
+  canStartJournal,
+  earliestNewJournalDate,
   saveJournal,
   deleteJournal,
 } from "../services/journalService.js";
@@ -123,8 +125,14 @@ function renderAll() {
 /* ---------- Memuat data ---------- */
 
 async function loadDate(date) {
+  let journal = await getJournalByDate(date);
+  // Tanggal di luar batas hanya bisa dibuka bila sudah punya jurnal (untuk disunting); selain itu kembali ke hari ini.
+  if (!journal && !canStartJournal(date)) {
+    date = toISODate(new Date());
+    journal = await getJournalByDate(date);
+  }
   state.date = date;
-  state.journal = await getJournalByDate(date);
+  state.journal = journal;
   state.photoFile = null;
   state.removePhoto = false;
   renderAll();
@@ -146,6 +154,7 @@ el.modeEdit.addEventListener("click", async () => {
 
 /* ---------- Tanggal ---------- */
 
+el.dateNative.min = earliestNewJournalDate();
 el.dateNative.max = toISODate(new Date());
 
 el.dateDisplay.addEventListener("click", () => {

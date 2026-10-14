@@ -65,7 +65,7 @@ Satu afirmasi acak dari **365 kalimat**, selalu berbeda dari afirmasi yang terak
 
 - Satu jurnal per tanggal, berisi **foto** dan/atau **catatan** (maksimal 2000 karakter).
 - Jika tanggal yang dipilih sudah punya jurnal, form otomatis masuk mode Edit.
-- Tanggal bisa dipilih mundur, tetapi tidak untuk tanggal yang belum terjadi (WIB).
+- Jurnal baru hanya bisa ditulis untuk hari ini sampai 2 hari sebelumnya (WIB), agar streak tidak bisa diisi mundur. Jurnal lama yang sudah ada tetap bisa diedit atau dihapus.
 - Foto dikompres otomatis di browser (lebar maksimal 1080 px, WebP kualitas 0.8), sehingga foto HP sekitar 5 MB turun ke kisaran 200–400 KB. Backend lalu mengunggahnya ke Cloudinary dan database hanya menyimpan URL-nya.
 
 ### Arsip

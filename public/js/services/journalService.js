@@ -3,7 +3,20 @@
  * Tanggal (yyyy-mm-dd) sekaligus menjadi id jurnal.
  */
 
-import { ACTIONS } from "../config.js";
+import { ACTIONS, JOURNAL_BACKDATE_DAYS } from "../config.js";
+import { toISODate } from "../utils/format.js";
+
+/** Tanggal paling awal (yyyy-mm-dd) yang masih boleh diberi jurnal baru. */
+export function earliestNewJournalDate() {
+  const date = new Date();
+  date.setDate(date.getDate() - JOURNAL_BACKDATE_DAYS);
+  return toISODate(date);
+}
+
+/** true jika tanggal ini boleh diberi jurnal baru (hari ini sampai JOURNAL_BACKDATE_DAYS hari sebelumnya). */
+export function canStartJournal(date) {
+  return date >= earliestNewJournalDate() && date <= toISODate(new Date());
+}
 
 async function request(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", cache: "no-store", ...options });

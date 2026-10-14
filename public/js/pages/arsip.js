@@ -1,8 +1,14 @@
-import { ROUTES } from "../config.js";
+import { JOURNAL_BACKDATE_DAYS, ROUTES } from "../config.js";
 import { mountAppShell } from "../components/app-shell.js";
 import { confirmDialog } from "../components/modal.js";
 import { showToast } from "../components/toast.js";
-import { getJournalDates, getJournalByDate, getMonthSummary, deleteJournal } from "../services/journalService.js";
+import {
+  getJournalDates,
+  getJournalByDate,
+  getMonthSummary,
+  deleteJournal,
+  canStartJournal,
+} from "../services/journalService.js";
 import { $, show, hide } from "../utils/dom.js";
 import {
   toISODate,
@@ -171,10 +177,16 @@ async function renderDetail() {
   show(el.empty, !journal);
 
   if (!journal) {
+    const canWrite = canStartJournal(state.selected);
     $("#empty-text").textContent = isToday(state.selected)
       ? "Hari ini masih menjadi lembaran hening. Tuangkan apa yang sedang berbisik di dadamu."
-      : `${formatDate(state.selected)} masih menjadi lembaran hening. Kamu masih bisa menuliskannya sekarang.`;
+      : state.selected > todayISO
+        ? `${formatDate(state.selected)} belum tiba.`
+        : canWrite
+          ? `${formatDate(state.selected)} masih menjadi lembaran hening. Kamu masih bisa menuliskannya sekarang.`
+          : `${formatDate(state.selected)} tidak memiliki jurnal. Jurnal baru hanya bisa ditulis untuk hari ini sampai ${JOURNAL_BACKDATE_DAYS} hari sebelumnya.`;
     $("#empty-write").href = `${ROUTES.journal}?date=${state.selected}`;
+    show($("#empty-write"), canWrite);
     return;
   }
 
