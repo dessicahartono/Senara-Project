@@ -122,7 +122,7 @@ Lapisan yang memanggil endpoint PHP (dengan `fetch`), supaya halaman tidak meman
 | `googleAuth.js` | Memuat Firebase SDK, membuka popup Google, lalu mengirim token ke `google_login.php`. |
 | `userService.js` | Profil, ganti dan hapus foto profil, ganti email, dan hapus akun (dengan cache profil). |
 | `journalService.js` | CRUD jurnal, streak, dan ringkasan bulan (dengan cache per bulan). |
-| `chatService.js` | Pesan chat, balasan Nomi, hapus pesan, dan daftar pertanyaan cepat. |
+| `chatService.js` | Pesan chat, balasan Nomi, dan hapus pesan. |
 | `affirmationService.js` | Afirmasi acak (nomor terakhir disimpan di `sessionStorage`). |
 | `summaryService.js` | Rangkuman mingguan chat dengan Nomi untuk kartu di dashboard. |
 | `photoService.js` | Kompres foto di browser (lebar maksimal 1080 px, WebP kualitas 0.8). |

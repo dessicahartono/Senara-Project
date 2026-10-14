@@ -312,7 +312,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 > • Operasi Firebase Auth: login email, login Google, logout, cek dan kirim ulang email verifikasi, reset password, dan login ulang sebelum hapus akun.
 >
-> • Data statis di frontend: tombol pertanyaan cepat di chat Nomi (chatService.getQuickPrompts) dan langkah latihan napas Mode Tenang di chat Nomi.
+> • Data statis di frontend: langkah latihan napas Mode Tenang di chat Nomi.
 
 **B. RANCANGAN TEKNIS**
 

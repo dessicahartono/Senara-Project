@@ -5,7 +5,6 @@ import { showToast } from "../components/toast.js";
 import {
   getMessages,
   getOlderMessages,
-  getQuickPrompts,
   sendMessage,
   getNomiReply,
   deleteMessage,
@@ -20,7 +19,6 @@ const input = $("#chat-input");
 const sendBtn = $("#send-btn");
 
 let messages = [];
-let quickPrompts = [];
 let isWaiting = false;
 /** Masih ada pesan lama di database yang belum dimuat. */
 let hasMore = false;
@@ -60,7 +58,7 @@ function actionsMarkup() {
     </div>`;
 }
 
-function messageMarkup(message, { withPrompts }) {
+function messageMarkup(message) {
   const text = escapeHtml(message.text);
   const time = formatTime(message.createdAt);
 
@@ -76,12 +74,6 @@ function messageMarkup(message, { withPrompts }) {
       </div>`;
   }
 
-  const prompts = withPrompts
-    ? `<div class="quick-replies">${quickPrompts
-        .map((p) => `<button class="quick-reply" type="button" data-prompt="${escapeHtml(p)}">${escapeHtml(p)}</button>`)
-        .join("")}</div>`
-    : "";
-
   return `
     <div class="message" data-id="${message.id}">
       ${nomiAvatar()}
@@ -91,7 +83,6 @@ function messageMarkup(message, { withPrompts }) {
           <span class="text-label-sm">${time}</span>
           ${actionsMarkup()}
         </div>
-        ${prompts}
       </div>
     </div>`;
 }
@@ -120,16 +111,13 @@ function render({ notice, keepScroll = false, instant = false } = {}) {
         <span class="text-label-sm">${icon("history", "icon--xs")}Memuat pesan sebelumnya...</span>
       </div>`);
   }
-  const lastIndex = messages.length - 1;
-
-  messages.forEach((message, index) => {
+  messages.forEach((message) => {
     const day = toISODate(new Date(message.createdAt));
     if (day !== lastDay) {
       parts.push(separatorMarkup(day));
       lastDay = day;
     }
-    const withPrompts = index === lastIndex && message.sender === "nomi" && !isWaiting;
-    parts.push(messageMarkup(message, { withPrompts }));
+    parts.push(messageMarkup(message));
   });
 
   if (notice) {
@@ -221,13 +209,6 @@ form.addEventListener("submit", (e) => {
 /* ---------- Interaksi di dalam aliran pesan ---------- */
 
 stream.addEventListener("click", async (e) => {
-  const prompt = e.target.closest("[data-prompt]");
-  if (prompt) {
-    input.value = prompt.dataset.prompt;
-    input.focus();
-    return;
-  }
-
   const more = e.target.closest(".message__more");
   if (more) {
     const actions = more.parentElement;
@@ -344,17 +325,15 @@ breatheModal.addEventListener("modal:closed", stopBreathing);
 /* ---------- Mulai ---------- */
 
 async function init() {
-  const [user, history, prompts] = await Promise.all([
+  const [user, history] = await Promise.all([
     mountAppShell({ active: "chat" }),
     getMessages().catch((err) => {
       showToast(err.message || "Riwayat chat gagal dimuat.", { type: "error" });
       return { messages: [], hasMore: false };
     }),
-    getQuickPrompts(),
   ]);
   messages = history.messages.length ? history.messages : [welcomeMessage(firstName(user.name))];
   hasMore = history.hasMore;
-  quickPrompts = prompts;
   render({ instant: true });
   fillStream();
 }

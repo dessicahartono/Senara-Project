@@ -4,9 +4,6 @@
 
 import { ACTIONS } from "../config.js";
 
-/** Pertanyaan cepat di bawah balasan Nomi terakhir. */
-const QUICK_PROMPTS = ["Tenggat waktu pekerjaan", "Rasa cemas berlebih", "Hanya ingin didengar"];
-
 async function request(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", cache: "no-store", ...options });
   const result = await response.json().catch(() => ({}));
@@ -34,10 +31,6 @@ export async function getMessages() {
 export async function getOlderMessages(beforeId) {
   const { messages, hasMore } = await request(`${ACTIONS}chat.php?before=${encodeURIComponent(beforeId)}`);
   return { messages, hasMore };
-}
-
-export async function getQuickPrompts() {
-  return QUICK_PROMPTS;
 }
 
 /** Simpan pesan pengguna. Balasan Nomi diambil terpisah lewat getNomiReply(). */
