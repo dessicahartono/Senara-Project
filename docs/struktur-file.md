@@ -68,7 +68,7 @@ Aturan penamaan: endpoint data memakai nama benda dan membedakan operasi lewat m
 | `change_email.php` | Mengganti email dengan verifikasi ulang (wajib memasukkan kata sandi). **(Update)** |
 | `delete_account.php` | Menghapus akun beserta semua data dan fotonya. Wajib konfirmasi kata sandi atau login Google ulang. **(Delete)** |
 | `journals.php` | GET: tanggal yang punya jurnal per bulan (dari `journalDates`), isi jurnal per tanggal, atau jurnal terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. DELETE `?date=`: menghapus jurnal di satu tanggal beserta fotonya di Cloudinary. **(Create, Read, Update, Delete)** |
-| `streak.php` | Menghitung streak dan status 5 hari terakhir untuk dashboard. |
+| `streak.php` | Menghitung streak dan status 7 hari minggu ini (Minggu sampai Sabtu) untuk dashboard. |
 | `chat.php` | GET: riwayat chat, termasuk `?before=` untuk memuat pesan lama. POST: menyimpan pesan pengguna. DELETE: menghapus satu pesan (`?id=`) atau seluruh riwayat beserta rangkuman mingguannya (`?all=1`). **(Create, Read, Delete)** |
 | `nomi_reply.php` | Meminta balasan dari Gemini, lalu menyimpan balasan Nomi ke database. |
 | `weekly_summary.php` | GET: rangkuman mingguan chat dengan Nomi untuk dashboard; dibuat lewat Gemini sekali per minggu lalu disimpan. **(Create, Read, Update)** |

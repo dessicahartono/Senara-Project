@@ -1,6 +1,6 @@
 <?php
 /**
- * Streak jurnal pengguna yang sedang login: jumlah hari berturut-turut dan status 5 hari terakhir.
+ * Streak jurnal pengguna yang sedang login: jumlah hari berturut-turut dan status 7 hari minggu ini.
  */
 declare(strict_types=1);
 

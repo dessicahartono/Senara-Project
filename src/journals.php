@@ -58,7 +58,7 @@ function formatJournalList(mixed $value): array
  *
  * Streak dihitung mundur dari hari ini. Jika hari ini belum ada jurnal, hitungan dimulai
  * dari kemarin, sehingga streak tidak terputus sebelum hari berakhir.
- * lastDays berisi status 5 hari terakhir untuk tampilan dashboard.
+ * weekDays berisi status 7 hari minggu ini (Minggu sampai Sabtu) untuk tampilan dashboard.
  */
 function computeStreak(array $dates): array
 {
@@ -71,13 +71,21 @@ function computeStreak(array $dates): array
         $count++;
     }
 
-    $lastDays = [];
-    foreach ([4, 3, 2, 1, 0] as $daysAgo) {
-        $date = $key($daysAgo);
-        $lastDays[] = ['date' => $date, 'done' => isset($filled[$date]), 'isToday' => $daysAgo === 0];
+    // format('w'): 0 = Minggu, jadi hari ini dikurangi angka itu adalah Minggu minggu ini.
+    $sunday = (int) $today->format('w');
+    $weekDays = [];
+    for ($i = 0; $i < 7; $i++) {
+        $daysAgo = $sunday - $i;
+        $date = $today->modify(($daysAgo >= 0 ? '-' : '+') . abs($daysAgo) . ' day')->format('Y-m-d');
+        $weekDays[] = [
+            'date' => $date,
+            'done' => isset($filled[$date]),
+            'isToday' => $daysAgo === 0,
+            'isFuture' => $daysAgo < 0,
+        ];
     }
 
-    return ['count' => $count, 'lastDays' => $lastDays];
+    return ['count' => $count, 'weekDays' => $weekDays];
 }
 
 /** Semua tanggal yang punya jurnal milik pengguna (dari journalDates, node kecil berisi true). */

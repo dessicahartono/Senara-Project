@@ -171,8 +171,8 @@
 .streak__labels,
 .streak__days {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: var(--space-sm);
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xs);
 }
 
 .streak__labels {
@@ -200,6 +200,11 @@
   background: var(--color-primary-container);
   color: var(--color-on-primary-container);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.streak__day--upcoming {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--color-surface-container-high);
 }
 
 .streak__note {

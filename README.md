@@ -45,7 +45,7 @@ Slider 4 slide (Tentang Senara, contoh afirmasi harian, perkenalan Nomi, dan aja
 
 ### Dashboard
 
-Sapaan dengan nama depan, afirmasi harian, dan **streak** (jumlah hari berturut-turut menulis jurnal) beserta status 5 hari terakhir.
+Sapaan dengan nama depan, afirmasi harian, dan **streak** (jumlah hari berturut-turut menulis jurnal) beserta status 7 hari minggu ini (Minggu sampai Sabtu).
 
 **Rangkuman mingguan:** kartu "Minggumu Bersama Nomi" berisi rangkuman 2–3 kalimat dan maksimal 3 tema dari chat dengan Nomi minggu lalu (Senin sampai Minggu, WIB). Rangkuman dibuat Gemini saat dashboard pertama kali dibuka di minggu itu, lalu disimpan, sehingga Gemini dipanggil paling banyak sekali per pengguna per minggu. Jika chat minggu itu kurang dari 5 pesan, Gemini tidak dipanggil dan kartu mengajak pengguna ngobrol dengan Nomi. Rangkuman ikut terhapus saat riwayat chat dibersihkan.
 

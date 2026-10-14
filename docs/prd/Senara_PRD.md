@@ -275,7 +275,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **R1**  | Nama dan avatar di sidebar (setiap halaman setelah login)    | users/{uid}                                             | userService.getProfile          | -                |
 | **R2**  | Profile: data diri dan statistik                             | users/{uid}                                             | userService.getProfile, journalService.getStreak | Read 3 |
 | **R3**  | Dashboard: afirmasi acak                                     | affirmations/{n}                                        | affirmationService.getRandomAffirmation | -        |
-| **R4**  | Dashboard: streak dan status 5 hari terakhir                 | users/{uid}/stats dan journalDates/{uid}                | journalService.getStreak        | -                |
+| **R4**  | Dashboard: streak dan status 7 hari minggu ini              | users/{uid}/stats dan journalDates/{uid}                | journalService.getStreak        | -                |
 | **R5**  | Journaling: membuka jurnal pada tanggal tertentu             | journals/{uid}/{dateKey}                                | journalService.getJournalByDate | -                |
 | **R6**  | Journaling: mode Sunting mencari jurnal terakhir             | journals/{uid}, limitToLast(1)                          | journalService.getLatestJournal | -                |
 | **R7**  | Arsip: kalender bulanan (tanggal yang punya jurnal)    | journalDates/{uid}, query per bulan                     | journalService.getJournalDates  | Read 2           |
