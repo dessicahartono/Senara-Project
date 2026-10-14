@@ -6,10 +6,11 @@ Penjelasan tujuan dan isi setiap file di project Senara, dikelompokkan per folde
 
 | File | Tujuan dan isi |
 |---|---|
-| `README.md` | Dokumentasi utama: fitur, teknologi, arsitektur, class diagram, struktur database, cara menjalankan. |
+| `README.md` | Dokumentasi utama: fitur, teknologi, cara menjalankan (lokal, Docker, Render), dan ringkasan keamanan. |
 | `composer.json` | Daftar library PHP yang dipakai. Hanya satu: `kreait/firebase-php` (Firebase Admin SDK untuk PHP). |
 | `composer.lock` | Versi persis semua library hasil `composer install`. Dibuat otomatis, tidak perlu diedit manual. |
-| `.gitignore` | File yang tidak boleh masuk Git karena berisi rahasia: `firebase_credentials.json`, `firebase_web_config.php`, `cloudinary_config.php`, `gemini_config.php`, dan folder `vendor/`. |
+| `.gitignore` | File yang tidak boleh masuk Git: file rahasia (`firebase_credentials.json`, `firebase_web_config.php`, `cloudinary_config.php`, `gemini_config.php`, `.env`), folder `vendor/`, dan `.DS_Store` dari macOS. |
+| `.editorconfig` | Pengaturan editor yang sama untuk semua anggota tim: UTF-8, line ending LF, indentasi 4 spasi untuk PHP/JSON dan 2 spasi untuk lainnya. |
 | `.gitattributes` | Memaksa semua file teks memakai line ending LF agar tidak muncul perubahan palsu CRLF. |
 | `Dockerfile` | Image PHP 8.3 + Apache untuk deploy: install dependency Composer, set DocumentRoot ke `public/`, dan port dari env `PORT` (bawaan 8080). |
 | `.dockerignore` | File yang tidak ikut masuk image Docker: file rahasia, `vendor/`, `.git/`, dan `docs/`. |
