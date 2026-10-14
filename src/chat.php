@@ -158,7 +158,7 @@ function generateNomiReply(array $messages, string $firstName): string
         } 
     } 
     if (empty($apiKey)) { 
-        throw new RuntimeException('GEMINI_API_KEY belum diisi. Set env GEMINI_API_KEY di Render atau isi gemini_config.php lokal.'); // CHANGED: pesan menyebut dua sumber. WHY: user tahu harus set di mana.
+        throw new RuntimeException('GEMINI_API_KEY belum diisi. Set env GEMINI_API_KEY di Render atau isi gemini_config.php lokal.');
     } 
 
     $model = getenv('GEMINI_MODEL'); 

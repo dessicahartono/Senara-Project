@@ -1,8 +1,8 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php'; 
+require_once __DIR__ . '/../vendor/autoload.php';
 
-use Kreait\Firebase\Factory; 
-use Kreait\Firebase\Auth; 
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Auth;
 
 $credentialsJson = getenv('FIREBASE_CREDENTIALS_JSON');
 if ($credentialsJson === false || trim($credentialsJson) === '') {
@@ -24,11 +24,11 @@ if (!is_array($firebaseCredentials)) {
     throw new RuntimeException('FIREBASE_CREDENTIALS_JSON must contain a JSON object.');
 }
 
-$databaseUrl = getenv('FIREBASE_DATABASE_URL') ?: 'https://senara-alp-cloud-computing-default-rtdb.asia-southeast1.firebasedatabase.app/'; 
+$databaseUrl = getenv('FIREBASE_DATABASE_URL') ?: 'https://senara-alp-cloud-computing-default-rtdb.asia-southeast1.firebasedatabase.app/';
 
-$factory = (new Factory) 
-    ->withServiceAccount($firebaseCredentials) 
-    ->withDatabaseUri($databaseUrl); 
+$factory = (new Factory)
+    ->withServiceAccount($firebaseCredentials)
+    ->withDatabaseUri($databaseUrl);
 
-$database = $factory->createDatabase(); 
-$auth = $factory->createAuth(); 
+$database = $factory->createDatabase();
+$auth = $factory->createAuth();
