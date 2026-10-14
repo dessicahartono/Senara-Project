@@ -4,6 +4,14 @@ Ruang tenang untuk jurnal harian, afirmasi, dan bercerita bersama Nomi.
 
 Senara adalah website refleksi diri berbasis layanan cloud. Pengguna bisa membaca afirmasi harian, menulis jurnal lengkap dengan foto, melihat kembali jurnalnya di kalender arsip, dan bercerita kepada **Nomi**, teman bicara virtual yang hangat dan empatik (ditenagai Gemini API).
 
+## Tim
+
+| Nama |
+|---|
+| Dessica Suhaedi Hartono |
+| Khadijatul Kubro |
+
+
 ## Daftar Isi
 
 - [Persyaratan Proyek](#persyaratan-proyek)
@@ -334,9 +342,3 @@ Penjelasan lengkap setiap file ada di [docs/struktur-file.md](docs/struktur-file
 - **Web mailer hanya untuk verifikasi:** email dikirim oleh server Firebase, sehingga pembatasan port SMTP di Render paket gratis tidak berpengaruh. Tidak ada welcome email.
 - **Satu jurnal per tanggal,** dengan `dateKey` (`yyyy-mm-dd`) sebagai kunci database.
 
-## Tim
-
-| Nama |
-|---|
-| Dessica Suhaedi Hartono |
-| Khadijatul Kubro |
