@@ -7,7 +7,8 @@
  */
 declare(strict_types=1);
 
-session_start();
+require_once __DIR__ . '/../../src/session.php';
+startSession();
 
 require_once __DIR__ . '/../../config/firebase_config.php';
 require_once __DIR__ . '/../../src/users.php';

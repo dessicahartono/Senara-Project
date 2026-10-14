@@ -3,14 +3,15 @@ declare(strict_types=1);
 
 use Kreait\Firebase\Contract\Auth;
 
+require_once __DIR__ . '/session.php';
+
 /** Jeda minimal (detik) antar pengiriman ulang email verifikasi; samakan dengan COOLDOWN_SECONDS di cek-email.js. */
 const VERIFICATION_RESEND_COOLDOWN = 60;
 
 /** URL absolut ke halaman di folder public, misalnya appUrl('login.html?verified=1'). */
 function appUrl(string $path): string
 {
-    $https = ($_SERVER['HTTPS'] ?? '') !== '' && $_SERVER['HTTPS'] !== 'off';
-    $scheme = $https || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' ? 'https' : 'http';
+    $scheme = isHttpsRequest() ? 'https' : 'http';
     // Endpoint ada di public/actions, jadi folder public satu tingkat di atasnya.
     $base = rtrim(dirname(dirname($_SERVER['SCRIPT_NAME'])), '/\\');
     return $scheme . '://' . $_SERVER['HTTP_HOST'] . $base . '/' . ltrim($path, '/');

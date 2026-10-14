@@ -10,7 +10,8 @@ declare(strict_types=1);
 use Kreait\Firebase\Auth\SignIn\FailedToSignIn;
 use Kreait\Firebase\Exception\InvalidArgumentException;
 
-session_start();
+require_once __DIR__ . '/../../src/session.php';
+startSession();
 
 require_once __DIR__ . '/../../config/firebase_config.php';
 require_once __DIR__ . '/../../src/verification.php';
