@@ -51,7 +51,7 @@ function rememberPendingVerification(string $uid, string $email): void
  */
 function sendEmailChangeLink(string $idToken, string $newEmail): void
 {
-    $config = require __DIR__ . '/../firebase_web_config.php';
+    $config = json_decode((string) getenv('FIREBASE_WEB_CONFIG_JSON'), true) ?: require __DIR__ . '/../firebase_web_config.php';
     $response = (new GuzzleHttp\Client(['timeout' => 15, 'http_errors' => false]))->post(
         'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=' . rawurlencode($config['apiKey']),
         [

@@ -6,7 +6,12 @@ use Kreait\Firebase\Auth;
 
 $credentialsJson = getenv('FIREBASE_CREDENTIALS_JSON');
 if ($credentialsJson === false || trim($credentialsJson) === '') {
-    throw new RuntimeException('FIREBASE_CREDENTIALS_JSON environment variable is not set.');
+    // Lokal: pakai firebase_credentials.json di root project jika env belum di-set.
+    $credentialsFile = __DIR__ . '/../firebase_credentials.json';
+    if (!is_file($credentialsFile)) {
+        throw new RuntimeException('FIREBASE_CREDENTIALS_JSON environment variable is not set and firebase_credentials.json was not found.');
+    }
+    $credentialsJson = (string) file_get_contents($credentialsFile);
 }
 
 try {
