@@ -73,6 +73,8 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 >
 > • System prompt Gemini diatur agar Nomi berkarakter sebagai pendengar yang hangat, ramah, dan menenangkan.
 >
+> • **Batas token Nomi.** Pesan pengguna maksimal 1.000 karakter. Gemini menerima system prompt dan 6 pesan terakhir sebagai konteks (input maksimal sekitar 1.900 token). Balasan dibatasi 256 token, dengan target sekitar 60 kata. Thinking diatur serendah mungkin. Rinciannya ada di Bagian 11.8.
+>
 > • Riwayat percakapan disimpan di Realtime Database (chats/{uid}). Backend PHP menyimpan pesan pengguna dan balasan Nomi setelah balasan diterima dari Gemini, hanya ke path milik uid yang sedang login.
 >
 > • Pengguna dapat menghapus satu pesan atau membersihkan seluruh riwayat percakapan (Delete).
@@ -162,7 +164,7 @@ Dengan rata-rata 300 KB per foto, kuota penyimpanan paket gratis Cloudinary suda
 >
 > • Rangkuman dibuat Gemini saat dashboard pertama kali dibuka di minggu itu, lalu disimpan di summaries/{uid}. Gemini dipanggil paling banyak sekali per pengguna per minggu. Kartu dimuat terpisah agar afirmasi dan streak tidak ikut menunggu.
 >
-> • Hemat token: hanya pesan pengguna yang dikirim (balasan Nomi dan pesan di bawah 10 karakter dilewati), setiap pesan dipotong 300 karakter, total maksimal 6.000 karakter (pesan terbaru diutamakan). Jawaban berupa JSON dengan batas 300 token.
+> • Hemat token: hanya pesan pengguna yang dikirim (balasan Nomi dan pesan di bawah 10 karakter dilewati), setiap pesan dipotong 300 karakter, total maksimal 6.000 karakter (pesan terbaru diutamakan), sehingga input maksimal sekitar 1.650 token. Jawaban berupa JSON dengan batas 300 token. Rinciannya ada di Bagian 11.8.
 >
 > • Jika pesan pengguna minggu itu kurang dari 5, Gemini tidak dipanggil dan kartu mengajak pengguna ngobrol dengan Nomi. Jika Gemini gagal, rangkuman sebelumnya tetap ditampilkan dan percobaan berikutnya ditunda 1 jam.
 >
@@ -631,7 +633,37 @@ Backend PHP membaca data sekali per permintaan (getValue / getSnapshot), bukan l
 
 ## **11.8 Batasi jumlah data yang dibaca**
 
-Riwayat chat dimuat bertahap: 3 hari terakhir (minimal 20 pesan) saat halaman dibuka, lalu 30 pesan lebih lama setiap kali pengguna menggulir ke atas (lihat Bagian 3.2 b). Untuk Gemini, kirim hanya beberapa pesan terakhir (misalnya 10) supaya hemat token dan kuota. Kalender membaca penanda tanggal per bulan, dan isi jurnal dibaca per tanggal, bukan sekaligus.
+Riwayat chat dimuat bertahap: 3 hari terakhir (minimal 20 pesan) saat halaman dibuka, lalu 30 pesan lebih lama setiap kali pengguna menggulir ke atas (lihat Bagian 3.2 b). Kalender membaca penanda tanggal per bulan, dan isi jurnal dibaca per tanggal, bukan sekaligus.
+
+**Batas input dan output token Gemini**
+
+Data yang dikirim ke Gemini dibatasi supaya hemat token dan kuota free tier. Gemini dipakai di dua tempat: balasan Nomi (src/chat.php) dan rangkuman mingguan (src/summary.php). Keduanya memanggil Gemini lewat callGemini di src/gemini.php.
+
+| **Batas**                     | **Nomi (balasan chat)**                                         | **Rangkuman mingguan**                                                        |
+|-------------------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------|
+| **Kapan Gemini dipanggil**    | Setiap pesan pengguna; maksimal 100 balasan per hari dan jeda 3 detik per pengguna | Paling banyak sekali per pengguna per minggu, hanya jika ada minimal 5 pesan |
+| **System prompt**             | ±1.240 karakter (±310 token)                                    | ±500 karakter (±125 token)                                                    |
+| **Isi input**                 | 6 pesan terakhir (pesan pengguna dan balasan Nomi)              | Hanya pesan pengguna minggu lalu; pesan di bawah 10 karakter dilewati          |
+| **Batas per pesan**           | Pesan pengguna maksimal 1.000 karakter (ditolak jika lebih)     | Setiap pesan dipotong menjadi 300 karakter                                    |
+| **Batas total input**         | 6 pesan; tidak dipotong per karakter                            | Maksimal 6.000 karakter; jika lebih, pesan terbaru yang diambil                |
+| **Perkiraan input maksimal**  | ±1.900 token (biasanya ±500 token karena pesan chat pendek)     | ±1.650 token                                                                  |
+| **Batas output**              | maxOutputTokens 256                                             | maxOutputTokens 300                                                           |
+| **Perkiraan output biasa**    | ±100 token (target 2–4 kalimat, maksimal sekitar 60 kata)       | ±150 token (JSON berisi 2–3 kalimat dan maksimal 3 tema)                      |
+| **Format output**             | Teks biasa                                                      | JSON (responseMimeType application/json dengan responseSchema)               |
+| **Temperature**               | 0.8 (lebih bervariasi, terasa seperti mengobrol)                | 0.5 (lebih konsisten)                                                         |
+| **Konstanta di kode**         | CHAT_MESSAGE_MAX, NOMI_CONTEXT_MESSAGES, NOMI_MAX_OUTPUT_TOKENS | SUMMARY_MIN_CHARS, SUMMARY_MESSAGE_MAX_CHARS, SUMMARY_INPUT_MAX_CHARS, SUMMARY_MAX_OUTPUT_TOKENS |
+
+**Thinking.** Model Gemini terbaru bisa "berpikir" sebelum menjawab, dan token thinking ikut dihitung ke batas output. Untuk chat dan rangkuman, thinking tidak diperlukan, jadi diatur serendah mungkin oleh geminiThinkingConfig di src/gemini.php:
+
+| **Model**                                              | **Pengaturan thinking**                                   |
+|--------------------------------------------------------|-----------------------------------------------------------|
+| **Gemini 2.5 Flash dan 2.5 Flash-Lite**                | thinkingBudget 0 (thinking mati)                          |
+| **Model "lite" generasi 3 ke atas** (misalnya gemini-3.5-flash-lite, model bawaan) | Tidak dikirim; bawaannya sudah minimal |
+| **Model generasi 3 ke atas lainnya**                   | thinkingLevel "low" (didukung semua model 3 ke atas, sedangkan "minimal" tidak) |
+
+thinkingBudget dan thinkingLevel tidak boleh dikirim bersamaan karena Gemini akan menolak permintaan dengan error 400.
+
+**Catatan perkiraan token.** Angka token di atas adalah perkiraan dengan asumsi sekitar 4 karakter per token. Jumlah sebenarnya bisa dilihat di usageMetadata pada respons Gemini (promptTokenCount, candidatesTokenCount, thoughtsTokenCount).
 
 ## **11.9 Security Rules dan validasi**
 
