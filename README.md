@@ -133,7 +133,7 @@ flowchart LR
 | **Update 3** | Ganti foto profil | `users/{uid}/photoUrl` |
 | **Delete 1** | Hapus jurnal beserta fotonya di Cloudinary | `journals`, `journalDates`, dan `stats` |
 | **Delete 2** | Hapus satu pesan atau bersihkan riwayat chat | `chats/{uid}` |
-| **Delete 3** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, Cloudinary, Firebase Auth |
+| **Delete 3** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, `chatUsage`, Cloudinary, Firebase Auth |
 
 Dalam alur website yang sebenarnya ada lebih banyak operasi (total 29). Daftar lengkapnya ada di [PRD bagian 6.1](docs/prd/Senara_PRD.md).
 
@@ -163,6 +163,9 @@ chats
   {uid}
     {messageId}                    kunci dari push(), otomatis urut waktu
       sender, text, createdAt
+chatUsage
+  {uid}
+    date, count, lastAt            pemakaian balasan Nomi hari ini
 ```
 
 | Path | Isi |
@@ -172,6 +175,7 @@ chats
 | `journalDates/{uid}/{dateKey}` | Penanda ringan tanggal yang punya jurnal, untuk kalender dan perhitungan streak |
 | `affirmations/{1..365}` | Kalimat afirmasi, dibaca satu node acak setiap kali |
 | `chats/{uid}/{messageId}` | Riwayat percakapan dengan Nomi (`sender` bernilai `user` atau `nomi`) |
+| `chatUsage/{uid}` | Batas pemakaian Gemini: jeda 3 detik antar balasan dan maksimal 100 balasan per hari (WIB) |
 
 Penjelasan setiap field dan strategi optimasinya ada di [PRD bagian 10 dan 11](docs/prd/Senara_PRD.md).
 
