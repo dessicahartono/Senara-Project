@@ -262,16 +262,6 @@
   box-shadow: var(--shadow-soft);
 }
 
-/* Kartu tautan yang bisa di-hover */
-.card--interactive {
-  transition: all var(--duration-slow) var(--ease);
-}
-
-.card--interactive:hover {
-  background: var(--color-surface-container);
-  box-shadow: var(--shadow-md);
-}
-
 /* Kartu kecil di dalam kartu */
 .inset-box {
   padding: var(--space-md);
