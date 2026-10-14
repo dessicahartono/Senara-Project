@@ -278,13 +278,3 @@ Setiap fitur ditulis dengan *user story* dan kriteria penerimaan. Kriteria pener
 | Server gratis lambat setelah lama tidak dipakai | Kesan pertama buruk | Diterima untuk lingkup tugas; dibuka sekali sebelum demo. |
 | Email verifikasi masuk spam | Pengguna tidak bisa login | Pengingat di halaman Cek Email dan tombol kirim ulang. |
 | Streak dicurangi dengan mengisi tanggal lama | Streak tidak bermakna | Jurnal baru dibatasi hari ini sampai 2 hari sebelumnya. |
-
-## 12. Jadwal
-
-| Periode | Pekerjaan |
-|---|---|
-| 29 Sep – 5 Okt | Setup Firebase dan Render, registrasi, login, verifikasi email, halaman Profil |
-| 6 – 12 Okt | Journaling dan foto, Arsip, afirmasi harian, landing page |
-| 13 – 17 Okt | Nomi (backend dan chat), Kilasan Mingguan, hapus akun, keamanan |
-| 18 – 19 Okt | Pengujian akhir, perbaikan, deploy final |
-| 20 Okt | Pengumpulan |
