@@ -2,6 +2,8 @@
  * Profil pengguna lewat endpoint PHP (users/{uid} di Realtime Database).
  */
 
+import { ACTIONS } from "../config.js";
+
 async function request(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", cache: "no-store", ...options });
   const result = await response.json().catch(() => ({}));
@@ -17,7 +19,7 @@ async function request(url, options = {}) {
 let profilePromise = null;
 
 export async function getProfile() {
-  profilePromise ??= request("actions/profile.php").then((result) => result.profile);
+  profilePromise ??= request(`${ACTIONS}profile.php`).then((result) => result.profile);
   try {
     return await profilePromise;
   } catch (error) {
@@ -30,7 +32,7 @@ export async function updateProfile({ name, bio }) {
   const body = new FormData();
   body.append("name", name.trim());
   body.append("bio", bio.trim());
-  const { profile } = await request("actions/profile.php", { method: "POST", body });
+  const { profile } = await request(`${ACTIONS}profile.php`, { method: "POST", body });
   profilePromise = Promise.resolve(profile);
   return profile;
 }
@@ -39,14 +41,14 @@ export async function updateProfile({ name, bio }) {
 export async function updateProfilePhoto(file) {
   const body = new FormData();
   body.append("photo", file);
-  const { profile } = await request("actions/profile_photo.php", { method: "POST", body });
+  const { profile } = await request(`${ACTIONS}profile_photo.php`, { method: "POST", body });
   profilePromise = Promise.resolve(profile);
   return profile;
 }
 
 /** Hapus foto profil; avatar kembali menampilkan inisial nama. */
 export async function removeProfilePhoto() {
-  const { profile } = await request("actions/profile_photo.php", { method: "DELETE" });
+  const { profile } = await request(`${ACTIONS}profile_photo.php`, { method: "DELETE" });
   profilePromise = Promise.resolve(profile);
   return profile;
 }
@@ -59,7 +61,7 @@ export async function changeEmail({ newEmail, password }) {
   const body = new FormData();
   body.append("newEmail", newEmail.trim());
   body.append("password", password);
-  const { pendingEmail } = await request("actions/change_email.php", { method: "POST", body });
+  const { pendingEmail } = await request(`${ACTIONS}change_email.php`, { method: "POST", body });
   profilePromise = null;
   return pendingEmail;
 }
@@ -72,5 +74,5 @@ export async function deleteAccount({ password, idToken }) {
   const body = new FormData();
   if (password) body.append("password", password);
   if (idToken) body.append("idToken", idToken);
-  await request("actions/delete_account.php", { method: "POST", body });
+  await request(`${ACTIONS}delete_account.php`, { method: "POST", body });
 }

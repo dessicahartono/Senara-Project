@@ -74,11 +74,13 @@ Aturan penamaan: endpoint data memakai nama benda dan membedakan operasi lewat m
 | `weekly_summary.php` | GET: rangkuman mingguan chat dengan Nomi untuk dashboard; dibuat lewat Gemini sekali per minggu lalu disimpan. **(Create, Read, Update)** |
 | `affirmation.php` | Mengambil satu afirmasi acak dari 365 afirmasi, yang berbeda dari afirmasi terakhir. Bisa dibuka tanpa login. |
 
-## `public/*.html`: halaman
+## `public/index.html` dan `public/views/*.html`: halaman
+
+`index.html` tetap di root `public/` supaya alamat utama langsung membuka landing page. Halaman lain ada di `public/views/`.
 
 | File | Halaman |
 |---|---|
-| `index.html` | Landing page dengan slider 4 slide (Tentang, Afirmasi, Nomi, Daftar). |
+| `index.html` (root) | Landing page dengan slider 4 slide (Tentang, Afirmasi, Nomi, Daftar). |
 | `registrasi.html` | Form daftar dan tombol Google. |
 | `login.html` | Form masuk. |
 | `cek-email.html` | Pemberitahuan "cek emailmu" setelah daftar, dengan tombol kirim ulang. |
@@ -92,7 +94,7 @@ Aturan penamaan: endpoint data memakai nama benda dan membedakan operasi lewat m
 
 ### `config.js`
 
-Konfigurasi global: nama aplikasi, tagline, `ROUTES` (alamat semua halaman), `ASSETS` (logo, foto Nomi), dan `MAX_PHOTO_SIZE` (10 MB).
+Konfigurasi global: nama aplikasi, tagline, `ROUTES` (alamat semua halaman), `ACTIONS` (folder endpoint PHP), `ASSETS` (logo, foto Nomi). Semua alamat dihitung dari lokasi `config.js`, sehingga tetap benar baik dipakai dari `index.html` maupun dari halaman di `views/`, dan `MAX_PHOTO_SIZE` (10 MB).
 
 ### `pages/`
 
@@ -165,7 +167,7 @@ Potongan UI yang dipakai ulang.
 
 Contoh saat pengguna membuka halaman Journaling:
 
-1. `journaling.html` memuat `js/pages/journaling.js`.
+1. `views/journaling.html` memuat `js/pages/journaling.js`.
 2. `journaling.js` memanggil `js/services/journalService.js`.
 3. Service itu melakukan `fetch` ke `actions/journals.php`.
 4. Endpoint memakai helper di `src/` (`journals.php`, `cloudinary.php`) dan `config/firebase_config.php`.

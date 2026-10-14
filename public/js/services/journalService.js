@@ -3,6 +3,8 @@
  * Tanggal (yyyy-mm-dd) sekaligus menjadi id jurnal.
  */
 
+import { ACTIONS } from "../config.js";
+
 async function request(url, options = {}) {
   const response = await fetch(url, { credentials: "same-origin", cache: "no-store", ...options });
   const result = await response.json().catch(() => ({}));
@@ -23,7 +25,7 @@ const monthCache = new Map();
 export async function getJournalDates({ year, month }) {
   const key = monthKey(year, month);
   if (!monthCache.has(key)) {
-    const promise = request(`actions/journals.php?month=${key}`).then((result) => result.dates);
+    const promise = request(`${ACTIONS}journals.php?month=${key}`).then((result) => result.dates);
     monthCache.set(key, promise);
     promise.catch(() => monthCache.delete(key));
   }
@@ -31,12 +33,12 @@ export async function getJournalDates({ year, month }) {
 }
 
 export async function getJournalByDate(date) {
-  const { journal } = await request(`actions/journals.php?date=${encodeURIComponent(date)}`);
+  const { journal } = await request(`${ACTIONS}journals.php?date=${encodeURIComponent(date)}`);
   return journal;
 }
 
 export async function getLatestJournal() {
-  const { journal } = await request("actions/journals.php?latest=1");
+  const { journal } = await request(`${ACTIONS}journals.php?latest=1`);
   return journal;
 }
 
@@ -51,21 +53,21 @@ export async function saveJournal({ date, note, photoFile = null, removePhoto = 
   if (photoFile) body.append("photo", photoFile);
   if (removePhoto) body.append("removePhoto", "1");
 
-  const { journal } = await request("actions/journals.php", { method: "POST", body });
+  const { journal } = await request(`${ACTIONS}journals.php`, { method: "POST", body });
   monthCache.clear();
   return journal;
 }
 
 /** Hapus jurnal. id jurnal adalah tanggalnya. */
 export async function deleteJournal(id) {
-  await request(`actions/journals.php?date=${encodeURIComponent(id)}`, { method: "DELETE" });
+  await request(`${ACTIONS}journals.php?date=${encodeURIComponent(id)}`, { method: "DELETE" });
   monthCache.clear();
   return true;
 }
 
 /** Streak hari berturut-turut beserta status 5 hari terakhir untuk dashboard. */
 export async function getStreak() {
-  const { streak } = await request("actions/streak.php");
+  const { streak } = await request(`${ACTIONS}streak.php`);
   return streak;
 }
 

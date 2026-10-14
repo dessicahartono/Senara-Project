@@ -304,7 +304,8 @@ Senara-Project/
 ├── config/firebase_config.php   # inisialisasi Firebase Admin SDK ($auth, $database)
 ├── src/                         # logika backend bersama (session, users, journals, chat, cloudinary, verification)
 ├── public/                      # root web yang disajikan ke browser
-│   ├── *.html                   # halaman
+│   ├── index.html               # landing page
+│   ├── views/                   # halaman lain (login, dashboard, jurnal, dll.)
 │   ├── actions/                 # endpoint PHP yang dipanggil browser
 │   ├── js/                      # pages, services, components, utils
 │   ├── css/                     # design tokens, base, layout, components, per halaman

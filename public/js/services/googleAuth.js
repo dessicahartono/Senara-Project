@@ -3,11 +3,13 @@
  * (login/registrasi) atau sebagai konfirmasi ulang (hapus akun).
  */
 
+import { ACTIONS } from "../config.js";
+
 let authPromise = null;
 
 async function getFirebaseAuth() {
   authPromise ??= (async () => {
-    const response = await fetch("actions/get_firebase_web_config.php");
+    const response = await fetch(`${ACTIONS}get_firebase_web_config.php`);
     const config = await response.json();
     if (!response.ok) {
       throw new Error(config.message || "Konfigurasi Firebase Web belum tersedia.");
@@ -43,7 +45,7 @@ export async function signInWithGoogle() {
   const formData = new FormData();
   formData.append("idToken", await getGoogleIdToken());
 
-  const response = await fetch("actions/google_login.php", {
+  const response = await fetch(`${ACTIONS}google_login.php`, {
     method: "POST",
     body: formData,
     credentials: "same-origin",

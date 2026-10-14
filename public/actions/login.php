@@ -18,7 +18,7 @@ require_once __DIR__ . '/../../src/verification.php';
 
 function redirectWithError(string $code): never
 {
-    header('Location: ../login.html?error=' . rawurlencode($code));
+    header('Location: ../views/login.html?error=' . rawurlencode($code));
     exit;
 }
 
@@ -74,5 +74,5 @@ if (!$emailVerified) {
 
 $_SESSION['firebase_uid'] = $uid;
 $_SESSION['firebase_email'] = $email;
-header('Location: ../dashboard.html');
+header('Location: ../views/dashboard.html');
 exit;

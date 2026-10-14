@@ -28,7 +28,7 @@ $confirmPassword = (string) ($_POST['confirmPassword'] ?? '');
 // Validasi ulang di server karena validasi JavaScript bisa dilewati.
 if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 6) {
     http_response_code(400);
-    exit('Nama, format email, atau kata sandi tidak valid. <a href="../registrasi.html">Kembali</a>');
+    exit('Nama, format email, atau kata sandi tidak valid. <a href="../views/registrasi.html">Kembali</a>');
 }
 
 try {
@@ -49,7 +49,7 @@ try {
     // Detail error hanya dicatat di log, tidak ditampilkan ke pengguna.
     error_log('Firebase registration failed: ' . $error->getMessage());
     http_response_code(400);
-    exit('Registrasi gagal. Periksa email dan kata sandi, lalu coba lagi. <a href="../registrasi.html">Kembali</a>');
+    exit('Registrasi gagal. Periksa email dan kata sandi, lalu coba lagi. <a href="../views/registrasi.html">Kembali</a>');
 }
 
 // Gagal mengirim email verifikasi tidak membatalkan registrasi;
@@ -59,5 +59,5 @@ rememberPendingVerification($user->uid, $email);
 $verificationSent = sendVerificationEmail($auth, $email);
 
 $query = 'email=' . rawurlencode($email) . ($verificationSent ? '' : '&verification=failed');
-header('Location: ../cek-email.html?' . $query);
+header('Location: ../views/cek-email.html?' . $query);
 exit;

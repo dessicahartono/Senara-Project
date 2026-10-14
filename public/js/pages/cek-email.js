@@ -1,3 +1,4 @@
+import { ACTIONS, ROUTES } from "../config.js";
 import { $, icon } from "../utils/dom.js";
 
 const COOLDOWN_SECONDS = 60;
@@ -47,10 +48,10 @@ resendBtn.addEventListener("click", async () => {
   resendBtn.innerHTML = `${icon("sync", "spin")}<span>Mengirim...</span>`;
 
   try {
-    const response = await fetch("actions/resend_verification.php", { method: "POST", credentials: "same-origin" });
+    const response = await fetch(`${ACTIONS}resend_verification.php`, { method: "POST", credentials: "same-origin" });
     const result = await response.json();
     if (result.alreadyVerified) {
-      window.location.href = "login.html?verified=1";
+      window.location.href = `${ROUTES.login}?verified=1`;
       return;
     }
     if (!response.ok || !result.success) {

@@ -2,6 +2,8 @@
  * Afirmasi acak dari endpoint PHP (affirmations/{1..365} di Realtime Database).
  */
 
+import { ACTIONS } from "../config.js";
+
 const LAST_KEY = "senara:lastAffirmation";
 
 /** Afirmasi acak yang berganti setiap kali halaman dimuat, tidak sama dengan yang terakhir tampil. */
@@ -13,7 +15,7 @@ export async function getRandomAffirmation() {
     // sessionStorage bisa diblokir browser; abaikan
   }
 
-  const response = await fetch(`actions/affirmation.php?exclude=${encodeURIComponent(lastId)}`, {
+  const response = await fetch(`${ACTIONS}affirmation.php?exclude=${encodeURIComponent(lastId)}`, {
     cache: "no-store",
   });
   const result = await response.json().catch(() => ({}));

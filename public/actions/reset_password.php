@@ -39,7 +39,7 @@ try {
     // Alamat email sengaja tidak diterima dari browser agar endpoint ini tidak bisa dipakai mengirim
     // email ke sembarang alamat. Email dibaca dari Auth, bukan dari session, karena bisa sudah diganti di Profil.
     $email = (string) $account->email;
-    $auth->sendPasswordResetLink($email, ['continueUrl' => appUrl('login.html')], 'id');
+    $auth->sendPasswordResetLink($email, ['continueUrl' => appUrl('views/login.html')], 'id');
 } catch (Throwable $error) {
     error_log('Firebase password reset email failed: ' . $error->getMessage());
     jsonResponse(['success' => false, 'message' => 'Email atur ulang kata sandi gagal dikirim. Coba lagi beberapa saat lagi.'], 502);

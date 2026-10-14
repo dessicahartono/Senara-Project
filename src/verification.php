@@ -8,7 +8,7 @@ require_once __DIR__ . '/session.php';
 /** Jeda minimal (detik) antar pengiriman ulang email verifikasi; samakan dengan COOLDOWN_SECONDS di cek-email.js. */
 const VERIFICATION_RESEND_COOLDOWN = 60;
 
-/** URL absolut ke halaman di folder public, misalnya appUrl('login.html?verified=1'). */
+/** URL absolut ke halaman di folder public, misalnya appUrl('views/login.html?verified=1'). */
 function appUrl(string $path): string
 {
     $scheme = isHttpsRequest() ? 'https' : 'http';
@@ -25,7 +25,7 @@ function appUrl(string $path): string
 function sendVerificationEmail(Auth $auth, string $email): bool
 {
     try {
-        $auth->sendEmailVerificationLink($email, ['continueUrl' => appUrl('login.html?verified=1')], 'id');
+        $auth->sendEmailVerificationLink($email, ['continueUrl' => appUrl('views/login.html?verified=1')], 'id');
         $_SESSION['verification_sent_at'] = time();
         return true;
     } catch (Throwable $error) {
@@ -68,7 +68,7 @@ function sendEmailChangeLink(string $idToken, string $newEmail): void
                 'requestType' => 'VERIFY_AND_CHANGE_EMAIL',
                 'idToken' => $idToken,
                 'newEmail' => $newEmail,
-                'continueUrl' => appUrl('profil.html?emailChanged=1'),
+                'continueUrl' => appUrl('views/profil.html?emailChanged=1'),
             ],
         ]
     );

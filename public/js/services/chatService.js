@@ -2,6 +2,8 @@
  * Percakapan dengan Nomi lewat endpoint PHP. Balasan Nomi dibuat oleh Gemini di backend.
  */
 
+import { ACTIONS } from "../config.js";
+
 /** Pertanyaan cepat di bawah balasan Nomi terakhir. */
 const QUICK_PROMPTS = ["Tenggat waktu pekerjaan", "Rasa cemas berlebih", "Hanya ingin didengar"];
 
@@ -24,13 +26,13 @@ function post(url, fields) {
 
 /** Pesan 3 hari terakhir (minimal 20), urut dari yang terlama. hasMore: masih ada pesan yang lebih lama. */
 export async function getMessages() {
-  const { messages, hasMore } = await request("actions/chat.php");
+  const { messages, hasMore } = await request(`${ACTIONS}chat.php`);
   return { messages, hasMore };
 }
 
 /** Pesan-pesan sebelum pesan beforeId, untuk dimuat saat pengguna menggulir ke atas. */
 export async function getOlderMessages(beforeId) {
-  const { messages, hasMore } = await request(`actions/chat.php?before=${encodeURIComponent(beforeId)}`);
+  const { messages, hasMore } = await request(`${ACTIONS}chat.php?before=${encodeURIComponent(beforeId)}`);
   return { messages, hasMore };
 }
 
@@ -40,19 +42,19 @@ export async function getQuickPrompts() {
 
 /** Simpan pesan pengguna. Balasan Nomi diambil terpisah lewat getNomiReply(). */
 export async function sendMessage(text) {
-  const { message } = await post("actions/chat.php", { text: text.trim() });
+  const { message } = await post(`${ACTIONS}chat.php`, { text: text.trim() });
   return message;
 }
 
 export async function getNomiReply() {
-  const { message } = await post("actions/nomi_reply.php", {});
+  const { message } = await post(`${ACTIONS}nomi_reply.php`, {});
   return message;
 }
 
 export async function deleteMessage(id) {
-  await request(`actions/chat.php?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  await request(`${ACTIONS}chat.php?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
 export async function clearMessages() {
-  await request("actions/chat.php?all=1", { method: "DELETE" });
+  await request(`${ACTIONS}chat.php?all=1`, { method: "DELETE" });
 }

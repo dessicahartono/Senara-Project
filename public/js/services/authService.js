@@ -4,6 +4,8 @@
  * oleh form/halaman login.js, registrasi.js, dan cek-email.js.
  */
 
+import { ACTIONS } from "../config.js";
+
 async function postJson(url) {
   const response = await fetch(url, { method: "POST", credentials: "same-origin" });
   const result = await response.json().catch(() => ({}));
@@ -14,10 +16,10 @@ async function postJson(url) {
 }
 
 export async function logout() {
-  await postJson("actions/logout.php");
+  await postJson(`${ACTIONS}logout.php`);
 }
 
 /** Kirim email atur ulang kata sandi ke akun yang sedang login. */
 export async function sendPasswordReset() {
-  return postJson("actions/reset_password.php");
+  return postJson(`${ACTIONS}reset_password.php`);
 }

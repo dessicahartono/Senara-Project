@@ -1,4 +1,4 @@
-import { ROUTES } from "../config.js";
+import { ACTIONS, ROUTES } from "../config.js";
 import { initFormHelpers, setFieldError, isValidEmail } from "../components/form.js";
 import { signInWithGoogle } from "../services/googleAuth.js";
 import { $, show, hide, shake } from "../utils/dom.js";
@@ -118,7 +118,7 @@ resendButton.addEventListener("click", async () => {
   resendButton.disabled = true;
   hide(el.resent);
   try {
-    const response = await fetch("actions/resend_verification.php", { method: "POST", credentials: "same-origin" });
+    const response = await fetch(`${ACTIONS}resend_verification.php`, { method: "POST", credentials: "same-origin" });
     const result = await response.json();
     if (!response.ok || !result.success) throw new Error(result.message);
     if (result.alreadyVerified) {
