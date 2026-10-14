@@ -78,6 +78,8 @@ function renderForm() {
   el.nameInput.value = user.name;
   renderEmail();
   el.memberSince.textContent = `Bagian dari Senara sejak ${formatDate(user.createdAt)}`;
+  // Akun Google tidak punya kata sandi; reset kata sandi justru akan menambahkan kata sandi baru.
+  show($("#btn-change-pwd"), user.hasPassword);
 }
 
 function renderEmail() {
