@@ -172,38 +172,42 @@ function nomiSystemPrompt(string $firstName): string
 }
 
 /**
+ * API key dan model Gemini dari env GEMINI_API_KEY dan GEMINI_MODEL, atau dari gemini_config.php
+ * di root project jika env kosong. Model memakai bawaan jika keduanya kosong.
+ */
+function geminiConfig(): array
+{
+    static $config = null;
+    if ($config === null) {
+        $config = ['api_key' => getenv('GEMINI_API_KEY'), 'model' => getenv('GEMINI_MODEL')];
+        if (empty($config['api_key']) || empty($config['model'])) {
+            $file = __DIR__ . '/../gemini_config.php';
+            $local = is_file($file) ? require $file : null;
+            if (is_array($local)) {
+                foreach (['api_key', 'model'] as $key) {
+                    if (empty($config[$key]) && !empty($local[$key])) {
+                        $config[$key] = $local[$key];
+                    }
+                }
+            }
+        }
+        if (empty($config['api_key'])) {
+            throw new RuntimeException('GEMINI_API_KEY belum diisi. Set env GEMINI_API_KEY di Render atau isi gemini_config.php lokal.');
+        }
+        if (empty($config['model'])) {
+            $config['model'] = 'gemini-3.5-flash-lite';
+        }
+    }
+    return $config;
+}
+
+/**
  * Minta balasan Nomi dari Gemini berdasarkan pesan-pesan terakhir.
  * Melempar RuntimeException jika Gemini tidak mengembalikan teks.
  */
 function generateNomiReply(array $messages, string $firstName): string
 {
-    $apiKey = getenv('GEMINI_API_KEY'); 
-    if (empty($apiKey)) { 
-        $geminiFile = __DIR__ . '/../gemini_config.php'; 
-        if (is_file($geminiFile)) { 
-            $local = require $geminiFile; 
-            if (is_array($local) && !empty($local['api_key'])) { 
-                $apiKey = $local['api_key']; 
-            } 
-        } 
-    } 
-    if (empty($apiKey)) { 
-        throw new RuntimeException('GEMINI_API_KEY belum diisi. Set env GEMINI_API_KEY di Render atau isi gemini_config.php lokal.');
-    } 
-
-    $model = getenv('GEMINI_MODEL'); 
-    if (empty($model)) { 
-        $geminiFile = __DIR__ . '/../gemini_config.php'; 
-        if (is_file($geminiFile)) { 
-            $localModel = require $geminiFile; 
-            if (is_array($localModel) && !empty($localModel['model'])) { 
-                $model = $localModel['model']; 
-            } 
-        } 
-    } 
-    if (empty($model)) { 
-        $model = 'gemini-3.5-flash-lite'; 
-    }
+    ['api_key' => $apiKey, 'model' => $model] = geminiConfig();
 
     // Gemini memakai peran "user" dan "model". Pesan berurutan dari pengirim yang sama digabung,
     // dan percakapan harus dimulai dari pesan pengguna.
