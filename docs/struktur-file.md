@@ -10,6 +10,9 @@ Penjelasan tujuan dan isi setiap file di project Senara, dikelompokkan per folde
 | `composer.json` | Daftar library PHP yang dipakai. Hanya satu: `kreait/firebase-php` (Firebase Admin SDK untuk PHP). |
 | `composer.lock` | Versi persis semua library hasil `composer install`. Dibuat otomatis, tidak perlu diedit manual. |
 | `.gitignore` | File yang tidak boleh masuk Git karena berisi rahasia: `firebase_credentials.json`, `firebase_web_config.php`, `cloudinary_config.php`, `gemini_config.php`, dan folder `vendor/`. |
+| `.gitattributes` | Memaksa semua file teks memakai line ending LF agar tidak muncul perubahan palsu CRLF. |
+| `Dockerfile` | Image PHP 8.3 + Apache untuk deploy: install dependency Composer, set DocumentRoot ke `public/`, dan port dari env `PORT` (bawaan 8080). |
+| `.dockerignore` | File yang tidak ikut masuk image Docker: file rahasia, `vendor/`, `.git/`, dan `docs/`. |
 | `docs/prd/Senara_PRD.md` (dan `media/`) | Dokumen PRD (Product Requirements Document): rancangan kebutuhan produk beserta gambarnya. |
 | `docs/struktur-file.md` | Dokumen ini. |
 
@@ -17,7 +20,19 @@ Penjelasan tujuan dan isi setiap file di project Senara, dikelompokkan per folde
 
 | File | Tujuan dan isi |
 |---|---|
-| `firebase_config.php` | Menghubungkan PHP ke Firebase. Membaca `firebase_credentials.json` (service account), menentukan URL Realtime Database, lalu membuat dua objek: `$database` dan `$auth`. Hampir semua endpoint memanggil file ini. |
+| `firebase_config.php` | Menghubungkan PHP ke Firebase. Membaca service account dari env `FIREBASE_CREDENTIALS_JSON` (atau `firebase_credentials.json` jika env kosong), menentukan URL Realtime Database, lalu membuat dua objek: `$database` dan `$auth`. Hampir semua endpoint memanggil file ini. |
+
+### Konfigurasi rahasia
+
+Setiap konfigurasi dibaca dari env lebih dulu (dipakai saat deploy), lalu dari file lokal di root project jika env kosong (dipakai saat development). File lokal tidak masuk Git maupun image Docker.
+
+| Env | File lokal | Dipakai oleh |
+|---|---|---|
+| `FIREBASE_CREDENTIALS_JSON` | `firebase_credentials.json` | `config/firebase_config.php` |
+| `FIREBASE_DATABASE_URL` | (nilai bawaan di kode) | `config/firebase_config.php` |
+| `FIREBASE_WEB_CONFIG_JSON` | `firebase_web_config.php` | `get_firebase_web_config.php`, `src/verification.php` (ganti email) |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | `cloudinary_config.php` | `src/cloudinary.php` |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | `gemini_config.php` | `src/chat.php` |
 
 ## `src/`: logika backend bersama
 
