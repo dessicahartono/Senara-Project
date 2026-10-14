@@ -151,10 +151,6 @@
   margin-inline: auto;
 }
 
-.container--narrow {
-  max-width: 48rem;
-}
-
 /* ---------- Bottom nav (mobile, <768px) ---------- */
 .bottom-nav {
   position: fixed;

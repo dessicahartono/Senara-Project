@@ -57,18 +57,6 @@
   }
 }
 
-.auth-card__head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-lg);
-}
-
-.auth-card__head--center {
-  align-items: center;
-  text-align: center;
-}
-
 .auth-card__title {
   margin-bottom: var(--space-lg);
   letter-spacing: -0.025em;

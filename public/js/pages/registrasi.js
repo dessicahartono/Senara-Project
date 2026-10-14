@@ -2,7 +2,7 @@ import { ROUTES } from "../config.js";
 import { mountSiteHeader } from "../components/site-header.js";
 import { initFormHelpers, isValidEmail } from "../components/form.js";
 import { signInWithGoogle } from "../services/googleAuth.js";
-import { $, show, hide, shake } from "../utils/dom.js";
+import { $, show, shake } from "../utils/dom.js";
 
 mountSiteHeader();
 initFormHelpers();

@@ -274,10 +274,6 @@ h4 {
   animation: spin 1s linear infinite;
 }
 
-.pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
 .shake {
   animation: shake 0.3s var(--ease);
 }

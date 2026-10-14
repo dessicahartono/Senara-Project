@@ -319,13 +319,6 @@
   box-shadow: 0 0 0 2px var(--color-error);
 }
 
-.profile-input--area {
-  height: auto;
-  padding: 0.875rem;
-  border-radius: var(--radius-xl);
-  resize: none;
-}
-
 .profile-email {
   height: 3rem;
   display: flex;

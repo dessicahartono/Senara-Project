@@ -76,18 +76,6 @@
   color: var(--color-on-surface);
 }
 
-/* Putih di atas latar berwarna */
-.btn--surface {
-  background: rgb(var(--rgb-surface-container-lowest) / 0.8);
-  color: var(--color-on-surface-variant);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn--surface:hover:not(:disabled) {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface);
-}
-
 /* Tanpa latar */
 .btn--ghost {
   color: var(--color-on-surface-variant);
@@ -274,10 +262,6 @@
   box-shadow: var(--shadow-soft);
 }
 
-.card--lg-radius {
-  border-radius: var(--radius-lg);
-}
-
 /* Kartu tautan yang bisa di-hover */
 .card--interactive {
   transition: all var(--duration-slow) var(--ease);
@@ -321,25 +305,9 @@
   box-shadow: none;
 }
 
-.chip--peach {
-  background: var(--color-primary-fixed);
-  color: var(--color-on-primary-fixed-variant);
-}
-
-.chip--lavender {
-  background: var(--color-secondary-fixed);
-  color: var(--color-on-secondary-fixed-variant);
-}
-
 .chip--sage {
   background: var(--color-tertiary-fixed);
   color: var(--color-on-tertiary-fixed);
-}
-
-.chip--muted {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface-variant);
-  box-shadow: none;
 }
 
 /* ==========================================================================
@@ -378,13 +346,6 @@
   padding-left: 0;
 }
 
-.field__hint {
-  padding-left: var(--space-xs);
-  font-size: var(--text-body-sm);
-  line-height: var(--lh-body-sm);
-  color: var(--color-on-surface-variant);
-}
-
 .field__error {
   display: flex;
   align-items: flex-start;
@@ -414,10 +375,6 @@
 .input-group.is-error {
   background: rgb(var(--rgb-error-container) / 0.2);
   box-shadow: var(--shadow-error), 0 0 0 1px rgb(var(--rgb-error) / 0.25);
-}
-
-.input-group.is-valid {
-  box-shadow: 0 0 0 1px var(--color-tertiary-container);
 }
 
 .input-group__icon {
@@ -763,8 +720,6 @@ button.input-wrap__icon:hover {
 }
 
 .avatar--md { --avatar-size: 2.5rem; }
-.avatar--lg { --avatar-size: 3rem; }
-.avatar--xl { --avatar-size: 6rem; }
 
 .avatar--peach {
   background: var(--color-primary-fixed);
@@ -798,11 +753,6 @@ button.input-wrap__icon:hover {
   color: var(--color-primary);
 }
 
-.icon-circle--lavender {
-  background: var(--color-secondary-fixed);
-  color: var(--color-secondary);
-}
-
 .icon-circle--sage {
   background: var(--color-tertiary-fixed);
   color: var(--color-tertiary);
@@ -827,17 +777,6 @@ button.input-wrap__icon:hover {
 .glow--peach { background: rgb(var(--rgb-primary-container) / 0.2); }
 .glow--peach-strong { background: rgb(var(--rgb-primary-fixed) / 0.5); }
 .glow--lavender { background: rgb(var(--rgb-secondary-fixed) / 0.3); }
-.glow--lavender-strong { background: rgb(var(--rgb-secondary-container) / 0.25); }
-.glow--sage { background: rgb(var(--rgb-tertiary-fixed) / 0.3); }
-
-.glow--hero {
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--rgb-primary-fixed) / 0.35),
-    rgb(var(--rgb-secondary-fixed) / 0.3),
-    transparent
-  );
-}
 
 /* ==========================================================================
    Modal
