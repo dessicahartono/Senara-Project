@@ -203,9 +203,9 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Hari yang belum tiba: lingkaran sama seperti hari lain, dibuat pudar dan tanpa ikon */
 .streak__day--upcoming {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--color-surface-container-high);
+  opacity: 0.5;
 }
 
 .streak__note {
