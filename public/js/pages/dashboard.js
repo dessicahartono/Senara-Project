@@ -59,8 +59,8 @@ async function loadWeeklySummary() {
   }
 
   text.textContent =
-    "Belum cukup cerita minggu lalu untuk dirangkum. Ngobrol lebih banyak dengan Nomi minggu ini, " +
-    "rangkumanmu akan muncul di sini hari Senin.";
+    "Rangkuman minggu lalu belum tersedia. Lanjutkan percakapanmu dengan Nomi " +
+    "untuk melihat rangkuman minggu ini pada hari Senin.";
   show($("#summary-cta"));
 }
 
