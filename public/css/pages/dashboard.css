@@ -110,6 +110,7 @@
   font-size: var(--text-headline-lg-m);
   line-height: var(--lh-headline-lg-m);
   font-weight: 600;
+  font-style: italic;
   color: var(--color-on-surface);
 }
 

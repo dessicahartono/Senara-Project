@@ -22,7 +22,7 @@ async function init() {
 
   affirmation = randomAffirmation;
   if (affirmation) {
-    $("#affirmation-text").textContent = `« ${affirmation.text} »`;
+    $("#affirmation-text").textContent = affirmation.text;
   } else {
     $("#affirmation-text").textContent = "Afirmasi belum bisa dimuat. Coba muat ulang halaman sebentar lagi.";
     shareBtn.disabled = true;
@@ -88,7 +88,7 @@ function renderStreak({ count, weekDays }) {
 }
 
 shareBtn.addEventListener("click", async () => {
-  const text = `« ${affirmation.text} »`;
+  const text = affirmation.text;
   if (navigator.share) {
     navigator.share({ title: "Afirmasi Untukmu dari Senara", text }).catch(() => {});
     return;
