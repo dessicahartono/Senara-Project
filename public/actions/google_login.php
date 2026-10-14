@@ -4,7 +4,8 @@
  */
 declare(strict_types=1);
 
-session_start();
+require_once __DIR__ . '/../../src/session.php';
+startSession();
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -26,6 +27,14 @@ try {
     require_once __DIR__ . '/../../src/users.php';
     $verifiedToken = $auth->verifyIdToken($idToken);
     $claims = $verifiedToken->claims();
+
+    // Hanya token dari login Google yang diterima. Token akun email dan kata sandi ditolak agar
+    // syarat verifikasi email di login.php tidak bisa dilewati lewat endpoint ini.
+    $firebaseClaim = $claims->get('firebase');
+    if (!is_array($firebaseClaim) || ($firebaseClaim['sign_in_provider'] ?? null) !== 'google.com') {
+        throw new RuntimeException('ID token is not from Google sign-in.');
+    }
+
     $uid = $claims->get('sub');
     $email = $claims->get('email');
     $name = $claims->get('name');
