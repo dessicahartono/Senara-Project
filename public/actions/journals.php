@@ -77,10 +77,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
             'journals/' . $uid . '/' . $date => null,
             'journalDates/' . $uid . '/' . $date => null,
         ]);
-        refreshJournalStats($database, $uid);
     } catch (Throwable $error) {
         error_log('Journal delete failed: ' . $error->getMessage());
         jsonResponse(['success' => false, 'message' => 'Jurnal gagal dihapus. Coba lagi beberapa saat lagi.'], 500);
+    }
+
+    try {
+        refreshJournalStats($database, $uid);
+    } catch (Throwable $error) {
+        // Jurnal sudah terhapus; streak di dashboard tetap dihitung ulang oleh streak.php.
+        error_log('Journal stats refresh failed: ' . $error->getMessage());
     }
 
     if (!empty($existing['photoUrl'])) {
@@ -143,12 +149,15 @@ try {
         jsonResponse(['success' => false, 'message' => 'Isi catatan atau tambahkan foto terlebih dahulu.'], 400);
     }
 
+    // Foto lama baru dihapus dari Cloudinary setelah jurnal tersimpan, agar photoUrl di database
+    // tidak menunjuk ke foto yang sudah hilang jika penyimpanan gagal.
+    $deleteOldPhoto = false;
     if ($photoPath !== null) {
         // Foto baru menimpa foto lama di public_id yang sama.
         $photoUrl = cloudinaryUpload($photoPath, $photoId)['url'];
         $photoName = mb_substr(basename((string) $_FILES['photo']['name']), 0, 120);
     } elseif ($removePhoto && $photoUrl !== null) {
-        cloudinaryDestroy(CLOUDINARY_ROOT . '/' . $photoId);
+        $deleteOldPhoto = true;
         $photoUrl = null;
         $photoName = null;
     }
@@ -167,10 +176,25 @@ try {
         'journals/' . $uid . '/' . $date => $journal,
         'journalDates/' . $uid . '/' . $date => true,
     ]);
-    refreshJournalStats($database, $uid);
 } catch (Throwable $error) {
     error_log('Journal save failed: ' . $error->getMessage());
     jsonResponse(['success' => false, 'message' => 'Jurnal gagal disimpan. Coba lagi beberapa saat lagi.'], 500);
+}
+
+try {
+    refreshJournalStats($database, $uid);
+} catch (Throwable $error) {
+    // Jurnal sudah tersimpan; streak di dashboard tetap dihitung ulang oleh streak.php.
+    error_log('Journal stats refresh failed: ' . $error->getMessage());
+}
+
+if ($deleteOldPhoto) {
+    try {
+        cloudinaryDestroy(CLOUDINARY_ROOT . '/' . $photoId);
+    } catch (Throwable $error) {
+        // Foto sudah tidak dipakai jurnal; foto yang gagal dihapus cukup dicatat.
+        error_log('Journal photo delete failed: ' . $error->getMessage());
+    }
 }
 
 jsonResponse(['success' => true, 'journal' => formatJournal($date, $journal)]);
