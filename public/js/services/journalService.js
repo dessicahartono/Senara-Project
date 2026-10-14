@@ -58,9 +58,7 @@ export async function saveJournal({ date, note, photoFile = null, removePhoto = 
 
 /** Hapus jurnal. id jurnal adalah tanggalnya. */
 export async function deleteJournal(id) {
-  const body = new FormData();
-  body.append("date", id);
-  await request("actions/delete_journal.php", { method: "POST", body });
+  await request(`actions/journals.php?date=${encodeURIComponent(id)}`, { method: "DELETE" });
   monthCache.clear();
   return true;
 }

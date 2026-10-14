@@ -46,9 +46,7 @@ export async function updateProfilePhoto(file) {
 
 /** Hapus foto profil; avatar kembali menampilkan inisial nama. */
 export async function removeProfilePhoto() {
-  const body = new FormData();
-  body.append("remove", "1");
-  const { profile } = await request("actions/profile_photo.php", { method: "POST", body });
+  const { profile } = await request("actions/profile_photo.php", { method: "DELETE" });
   profilePromise = Promise.resolve(profile);
   return profile;
 }

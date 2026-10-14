@@ -6,6 +6,7 @@
  * GET ?date=yyyy-mm-dd - jurnal pada tanggal itu, atau null.
  * GET ?latest=1        - jurnal terbaru, atau null.
  * POST                 - buat atau perbarui jurnal: date, note, photo (file, opsional), removePhoto ("1").
+ * DELETE ?date=yyyy-mm-dd - hapus jurnal pada tanggal itu beserta fotonya.
  */
 declare(strict_types=1);
 
@@ -60,8 +61,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     jsonResponse(['success' => false, 'message' => 'Parameter month, date, atau latest wajib diisi.'], 400);
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $date = (string) ($_GET['date'] ?? '');
+    if (!isValidDateKey($date)) {
+        jsonResponse(['success' => false, 'message' => 'Format tanggal tidak valid.'], 400);
+    }
+
+    try {
+        $existing = $journals->getChild($date)->getValue();
+        if (!is_array($existing)) {
+            jsonResponse(['success' => false, 'message' => 'Jurnal tidak ditemukan.'], 404);
+        }
+
+        $database->getReference()->update([
+            'journals/' . $uid . '/' . $date => null,
+            'journalDates/' . $uid . '/' . $date => null,
+        ]);
+        refreshJournalStats($database, $uid);
+    } catch (Throwable $error) {
+        error_log('Journal delete failed: ' . $error->getMessage());
+        jsonResponse(['success' => false, 'message' => 'Jurnal gagal dihapus. Coba lagi beberapa saat lagi.'], 500);
+    }
+
+    if (!empty($existing['photoUrl'])) {
+        try {
+            cloudinaryDestroy(CLOUDINARY_ROOT . '/journals/' . $uid . '/' . $date);
+        } catch (Throwable $error) {
+            // Jurnal sudah terhapus; foto yang gagal dihapus cukup dicatat.
+            error_log('Journal photo delete failed: ' . $error->getMessage());
+        }
+    }
+
+    jsonResponse(['success' => true]);
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Allow: GET, POST');
+    header('Allow: GET, POST, DELETE');
     jsonResponse(['success' => false, 'message' => 'Metode tidak didukung.'], 405);
 }
 

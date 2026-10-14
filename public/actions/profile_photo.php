@@ -3,7 +3,7 @@
  * Foto profil pengguna yang sedang login.
  *
  * POST photo=<file> - ganti foto: diunggah ke Cloudinary, lalu URL-nya disimpan di users/{uid}/photoUrl.
- * POST remove=1     - hapus foto: photoUrl dihapus dan fotonya dihapus dari Cloudinary.
+ * DELETE            - hapus foto: photoUrl dihapus dan fotonya dihapus dari Cloudinary.
  */
 declare(strict_types=1);
 
@@ -11,9 +11,10 @@ require_once __DIR__ . '/../../src/session.php';
 
 $uid = requireLoginUid();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Allow: POST');
-    jsonResponse(['success' => false, 'message' => 'Gunakan metode POST.'], 405);
+$method = $_SERVER['REQUEST_METHOD'];
+if ($method !== 'POST' && $method !== 'DELETE') {
+    header('Allow: POST, DELETE');
+    jsonResponse(['success' => false, 'message' => 'Metode tidak didukung.'], 405);
 }
 
 require_once __DIR__ . '/../../config/firebase_config.php';
@@ -23,7 +24,7 @@ require_once __DIR__ . '/../../src/cloudinary.php';
 /** Foto biasanya sudah dikompres di browser (photoService.js); batas ini hanya pengaman. */
 const AVATAR_MAX_BYTES = 3 * 1024 * 1024;
 
-if (($_POST['remove'] ?? '') === '1') {
+if ($method === 'DELETE') {
     try {
         $database->getReference('users/' . $uid . '/photoUrl')->remove();
         $profile = getUserProfile($auth, $database, $uid);

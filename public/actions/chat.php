@@ -5,6 +5,8 @@
  * GET  - pesan 3 hari terakhir (minimal 20), urut dari yang terlama, beserta hasMore.
  *        ?before={id} - pesan-pesan sebelum id itu, untuk dimuat saat pengguna menggulir ke atas.
  * POST - simpan pesan pengguna (text). Balasan Nomi diminta terpisah lewat nomi_reply.php.
+ * DELETE ?id={id} - hapus satu pesan.
+ * DELETE ?all=1   - bersihkan seluruh riwayat.
  */
 declare(strict_types=1);
 
@@ -37,8 +39,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     jsonResponse(['success' => true, 'messages' => $messages, 'hasMore' => $hasMore]);
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    $clearAll = ($_GET['all'] ?? '') === '1';
+    $id = (string) ($_GET['id'] ?? '');
+    if (!$clearAll && !isValidMessageId($id)) {
+        jsonResponse(['success' => false, 'message' => 'Pesan tidak valid.'], 400);
+    }
+
+    try {
+        $path = $clearAll ? 'chats/' . $uid : 'chats/' . $uid . '/' . $id;
+        $database->getReference($path)->remove();
+    } catch (Throwable $error) {
+        error_log('Chat delete failed: ' . $error->getMessage());
+        jsonResponse(['success' => false, 'message' => 'Pesan gagal dihapus. Coba lagi.'], 500);
+    }
+    jsonResponse(['success' => true]);
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Allow: GET, POST');
+    header('Allow: GET, POST, DELETE');
     jsonResponse(['success' => false, 'message' => 'Metode tidak didukung.'], 405);
 }
 

@@ -50,9 +50,9 @@ export async function getNomiReply() {
 }
 
 export async function deleteMessage(id) {
-  await post("actions/delete_chat.php", { id });
+  await request(`actions/chat.php?id=${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
 export async function clearMessages() {
-  await post("actions/delete_chat.php", { all: "1" });
+  await request("actions/chat.php?all=1", { method: "DELETE" });
 }

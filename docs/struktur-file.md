@@ -49,6 +49,8 @@ File di sini tidak dipanggil langsung oleh browser. Isinya fungsi yang dipakai u
 
 ## `public/actions/`: endpoint PHP yang dipanggil browser
 
+Aturan penamaan: endpoint data memakai nama benda dan membedakan operasi lewat method HTTP (GET baca, POST simpan, DELETE hapus), misalnya `journals.php` dan `chat.php`. Endpoint aksi memakai kata kerja, misalnya `login.php` dan `change_email.php`.
+
 | File | Tujuan |
 |---|---|
 | `register.php` | Membuat akun Firebase Auth dan profil, mengirim email verifikasi, lalu mengarahkan ke `cek-email.html`. **(Create)** |
@@ -59,15 +61,13 @@ File di sini tidak dipanggil langsung oleh browser. Isinya fungsi yang dipakai u
 | `resend_verification.php` | Mengirim ulang email verifikasi. Email tujuan diambil dari session, bukan dari input browser. |
 | `reset_password.php` | Mengirim email reset kata sandi ke email akun yang sedang login. |
 | `profile.php` | GET: membaca profil. POST: mengubah nama dan bio. **(Read, Update)** |
-| `profile_photo.php` | Mengganti foto profil (upload ke Cloudinary, lalu menyimpan URL-nya) atau menghapusnya (`remove=1`). **(Update, Delete)** |
+| `profile_photo.php` | POST: mengganti foto profil (upload ke Cloudinary, lalu menyimpan URL-nya). DELETE: menghapus foto profil. **(Update, Delete)** |
 | `change_email.php` | Mengganti email dengan verifikasi ulang (wajib memasukkan kata sandi). **(Update)** |
 | `delete_account.php` | Menghapus akun beserta semua data dan fotonya. Wajib konfirmasi kata sandi atau login Google ulang. **(Delete)** |
-| `journals.php` | GET: tanggal yang punya jurnal per bulan (dari `journalDates`), isi jurnal per tanggal, atau jurnal terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. **(Create, Read, Update)** |
-| `delete_journal.php` | Menghapus jurnal di satu tanggal beserta fotonya di Cloudinary. **(Delete)** |
+| `journals.php` | GET: tanggal yang punya jurnal per bulan (dari `journalDates`), isi jurnal per tanggal, atau jurnal terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. DELETE `?date=`: menghapus jurnal di satu tanggal beserta fotonya di Cloudinary. **(Create, Read, Update, Delete)** |
 | `streak.php` | Menghitung streak dan status 5 hari terakhir untuk dashboard. |
-| `chat.php` | GET: riwayat chat, termasuk `?before=` untuk memuat pesan lama. POST: menyimpan pesan pengguna. **(Create, Read)** |
+| `chat.php` | GET: riwayat chat, termasuk `?before=` untuk memuat pesan lama. POST: menyimpan pesan pengguna. DELETE: menghapus satu pesan (`?id=`) atau seluruh riwayat (`?all=1`). **(Create, Read, Delete)** |
 | `nomi_reply.php` | Meminta balasan dari Gemini, lalu menyimpan balasan Nomi ke database. |
-| `delete_chat.php` | Menghapus satu pesan (`id`) atau seluruh riwayat (`all=1`). **(Delete)** |
 | `affirmation.php` | Mengambil satu afirmasi acak dari 365 afirmasi, yang berbeda dari afirmasi terakhir. Bisa dibuka tanpa login. |
 
 ## `public/*.html`: halaman
