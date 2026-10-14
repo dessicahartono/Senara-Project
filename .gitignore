@@ -3,3 +3,4 @@ firebase_credentials.json
 /vendor
 /cloudinary_config.php
 /gemini_config.php
+.DS_Store
