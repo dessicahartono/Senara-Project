@@ -27,9 +27,15 @@ try {
 
     $name = $database->getReference('users/' . $uid . '/name')->getValue();
     $firstName = is_string($name) ? (explode(' ', trim($name))[0] ?? '') : '';
+
+    $quotaError = claimNomiReplyQuota($database, $uid);
 } catch (Throwable $error) {
     error_log('Nomi context read failed: ' . $error->getMessage());
     jsonResponse(['success' => false, 'message' => 'Nomi sedang tidak bisa membalas. Coba lagi sebentar.'], 500);
+}
+
+if ($quotaError !== null) {
+    jsonResponse(['success' => false, 'message' => $quotaError], 429);
 }
 
 try {

@@ -25,6 +25,36 @@ const NOMI_CONTEXT_MESSAGES = 10;
 /** Batas token balasan Nomi. Panjang balasan utamanya diatur lewat system prompt; ini hanya pengaman. */
 const NOMI_MAX_OUTPUT_TOKENS = 256;
 
+/** Jeda minimal (detik) antar balasan Nomi untuk satu pengguna. */
+const NOMI_REPLY_COOLDOWN = 3;
+
+/** Batas balasan Nomi per pengguna per hari (WIB), agar kuota Gemini tidak dihabiskan satu pengguna. */
+const NOMI_DAILY_LIMIT = 100;
+
+/**
+ * Catat satu permintaan balasan Nomi di chatUsage/{uid}. Mengembalikan pesan penolakan untuk pengguna
+ * jika batas terlampaui, atau null jika boleh lanjut. Disimpan per uid, bukan di session, agar tidak
+ * bisa dilewati dengan login ulang, dan tidak ikut terhapus saat riwayat chat dibersihkan.
+ */
+function claimNomiReplyQuota(Database $database, string $uid): ?string
+{
+    $reference = $database->getReference('chatUsage/' . $uid);
+    $usage = $reference->getValue();
+    $usage = is_array($usage) ? $usage : [];
+    $today = (new DateTimeImmutable('now', new DateTimeZone('Asia/Jakarta')))->format('Y-m-d');
+    $count = ($usage['date'] ?? '') === $today ? (int) ($usage['count'] ?? 0) : 0;
+
+    if (time() - (int) ($usage['lastAt'] ?? 0) < NOMI_REPLY_COOLDOWN) {
+        return 'Tunggu sebentar sebelum mengirim pesan lagi.';
+    }
+    if ($count >= NOMI_DAILY_LIMIT) {
+        return 'Nomi sudah banyak mengobrol denganmu hari ini. Lanjut lagi besok, ya.';
+    }
+
+    $reference->set(['date' => $today, 'count' => $count + 1, 'lastAt' => time()]);
+    return null;
+}
+
 /** id pesan berupa kunci push() Firebase; dicek agar tidak bisa dipakai menyusun path lain. */
 function isValidMessageId(string $id): bool
 {
