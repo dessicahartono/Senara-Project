@@ -276,7 +276,7 @@ $("#btn-clear").addEventListener("click", async () => {
   render({ notice: "Riwayat chat telah dibersihkan. Memulai ruang obrolan baru dengan tenang." });
 });
 
-/* ---------- Latihan napas (Mode Tenang) ---------- */
+/* ---------- Latihan napas ---------- */
 
 const BREATH_STEPS = [
   { label: "Tarik Napas...", phase: "inhale" },
@@ -304,7 +304,7 @@ function stopBreathing() {
   clearInterval(breatheTimer);
 }
 
-$("#btn-calm").addEventListener("click", () => {
+$("#btn-breathe").addEventListener("click", () => {
   setMenu(false);
   stopBreathing();
   setBreathStep(BREATH_PREPARE);

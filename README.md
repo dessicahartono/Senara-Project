@@ -59,7 +59,7 @@ Satu afirmasi acak dari **365 kalimat**, selalu berbeda dari afirmasi yang terak
 - Riwayat chat tersimpan per pengguna. Saat dibuka, yang tampil adalah pesan 3 hari terakhir (minimal 20 pesan). Pesan yang lebih lama dimuat 30 per sekali saat digulir ke atas.
 - Gemini hanya menerima **6 pesan terakhir** sebagai konteks, dan *thinking* diatur serendah mungkin, supaya hemat token dan kuota.
 - Hapus satu pesan atau bersihkan seluruh riwayat.
-- **Mode Tenang:** latihan napas terpandu (Tarik Napas, Tahan, Hembuskan, Rileks). Berjalan sepenuhnya di browser.
+- **Latihan Napas:** latihan napas terpandu (Tarik Napas, Tahan, Hembuskan, Rileks). Berjalan sepenuhnya di browser.
 
 ### Journaling
 

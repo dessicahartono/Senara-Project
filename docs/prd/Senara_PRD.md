@@ -79,7 +79,7 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 >
 > • Pengguna dapat menghapus satu pesan atau membersihkan seluruh riwayat percakapan (Delete).
 >
-> • **Mode Tenang (latihan napas).** Dibuka dari menu opsi (⋯) di pojok kanan atas room chat. Muncul pop-up dengan latar gradien yang terus bergerak sebagai tanda latihan sedang berjalan. Selama 4 detik pertama tampil ajakan "Persiapkan dirimu tunggu instruksi dari Nomi", lalu lingkaran animasi memandu napas dalam satu putaran berulang, masing-masing 3 detik: "Tarik Napas...", "Tahan Sejenak...", "Hembuskan Perlahan...", lalu "Rileks...". Animasi lingkaran mengikuti setiap fase. Tombol Selesai menutup pop-up dan menghentikan timer. Fitur ini menjadi tempat pengguna mempraktikkan latihan napas yang kadang disarankan Nomi. Berjalan sepenuhnya di browser, tanpa menyimpan data ke database dan tanpa memanggil Gemini.
+> • **Latihan Napas.** Dibuka dari menu opsi (⋯) di pojok kanan atas room chat. Muncul pop-up dengan latar gradien yang terus bergerak sebagai tanda latihan sedang berjalan. Selama 4 detik pertama tampil ajakan "Persiapkan dirimu tunggu instruksi dari Nomi", lalu lingkaran animasi memandu napas dalam satu putaran berulang, masing-masing 3 detik: "Tarik Napas...", "Tahan Sejenak...", "Hembuskan Perlahan...", lalu "Rileks...". Animasi lingkaran mengikuti setiap fase. Tombol Selesai menutup pop-up dan menghentikan timer. Fitur ini menjadi tempat pengguna mempraktikkan latihan napas yang kadang disarankan Nomi. Berjalan sepenuhnya di browser, tanpa menyimpan data ke database dan tanpa memanggil Gemini.
 >
 > • **Memuat riwayat secara bertahap.** Seluruh riwayat tetap tersimpan di chats/{uid}, tetapi tidak dimuat sekaligus. Saat halaman Nomi dibuka, endpoint chat.php hanya mengirim pesan 3 hari terakhir. Bila 3 hari terakhir berisi kurang dari 20 pesan (misalnya pengguna lama tidak chat), yang dikirim adalah 20 pesan terakhir, sehingga ruang chat tidak pernah kosong selama masih ada riwayat. Jumlahnya dibatasi paling banyak 200 pesan sebagai pengaman.
 >
@@ -312,7 +312,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 
 > • Operasi Firebase Auth: login email, login Google, logout, cek dan kirim ulang email verifikasi, reset password, dan login ulang sebelum hapus akun.
 >
-> • Data statis di frontend: langkah latihan napas Mode Tenang di chat Nomi.
+> • Data statis di frontend: langkah Latihan Napas di chat Nomi.
 
 **B. RANCANGAN TEKNIS**
 

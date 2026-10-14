@@ -85,7 +85,7 @@ Aturan penamaan: endpoint data memakai nama benda dan membedakan operasi lewat m
 | `login.html` | Form masuk. |
 | `cek-email.html` | Pemberitahuan "cek emailmu" setelah daftar, dengan tombol kirim ulang. |
 | `dashboard.html` | Beranda setelah login: sapaan, afirmasi, dan streak. |
-| `nomi-chat.html` | Ruang chat dengan Nomi, termasuk Mode Tenang. |
+| `nomi-chat.html` | Ruang chat dengan Nomi, termasuk Latihan Napas. |
 | `journaling.html` | Form menulis atau mengedit jurnal (tanggal, foto, catatan). |
 | `arsip.html` | Kalender jurnal beserta panel detail. |
 | `profil.html` | Profil, pengaturan akun, logout, dan hapus akun. |
@@ -107,7 +107,7 @@ Satu file untuk tiap halaman HTML, berisi logika interaksi halaman itu.
 | `login.js` | Validasi form masuk, menampilkan pesan error dari PHP, login Google, dan kirim ulang verifikasi. |
 | `cek-email.js` | Menampilkan email tujuan dan tombol kirim ulang dengan hitung mundur 60 detik. |
 | `dashboard.js` | Sapaan, afirmasi, dan tampilan streak. |
-| `nomi-chat.js` | Menampilkan chat, memuat pesan lama saat scroll ke atas, mengirim dan menghapus pesan, serta animasi napas Mode Tenang. |
+| `nomi-chat.js` | Menampilkan chat, memuat pesan lama saat scroll ke atas, mengirim dan menghapus pesan, serta animasi Latihan Napas. |
 | `journaling.js` | Form jurnal, kompres foto, mode edit otomatis, dan hapus jurnal. |
 | `arsip.js` | Render kalender dari daftar tanggal ber-jurnal, membaca detail jurnal per tanggal saat diklik, ringkasan bulan, edit dan hapus. |
 | `profil.js` | Edit nama dan bio, ganti dan hapus foto, ganti email, reset kata sandi, dan hapus akun. |
