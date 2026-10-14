@@ -83,7 +83,7 @@ Setelah login, pengguna masuk ke ruang utama Senara yang terdiri dari 5 menu uta
 >
 > • **Gulir ke atas untuk pesan lama.** Saat pengguna menggulir sampai dekat bagian atas, frontend meminta chat.php?before={id pesan terlama} dan backend mengirim 30 pesan sebelumnya beserta penanda hasMore. Pesan lama disisipkan di atas tanpa menggeser posisi baca. Bila hasMore bernilai false, seluruh riwayat sudah tampil.
 >
-> • **Kenapa tidak membebani database saat pengguna bertambah.** Setiap pengguna punya node sendiri (chats/{uid}), dan setiap query dibatasi (limitToLast), jadi kecepatan memuat tidak bergantung pada panjang riwayat maupun jumlah pengguna. Satu pesan sekitar 200 byte, sehingga kuota 1 GB Realtime Database muat sekitar 5 juta pesan. Gemini hanya menerima 10 pesan terakhir sebagai konteks, berapa pun panjang riwayatnya.
+> • **Kenapa tidak membebani database saat pengguna bertambah.** Setiap pengguna punya node sendiri (chats/{uid}), dan setiap query dibatasi (limitToLast), jadi kecepatan memuat tidak bergantung pada panjang riwayat maupun jumlah pengguna. Satu pesan sekitar 200 byte, sehingga kuota 1 GB Realtime Database muat sekitar 5 juta pesan. Gemini hanya menerima 6 pesan terakhir sebagai konteks, berapa pun panjang riwayatnya, dan thinking diatur serendah mungkin (src/gemini.php) agar token tidak terbuang.
 >
 > • **Catatan teknis.** Rentang 3 hari dicari dengan orderByKey().startAt(awalan kunci push()): 8 karakter pertama kunci push() adalah waktu pembuatan, sehingga tidak perlu index tambahan pada createdAt. Batas-batasnya diatur sebagai konstanta di src/chat.php (CHAT_RECENT_DAYS, CHAT_MIN_MESSAGES, CHAT_RECENT_MAX, CHAT_PAGE_SIZE, NOMI_CONTEXT_MESSAGES). Bila nanti perlu menghemat penyimpanan, bisa ditambahkan aturan retensi (misalnya menghapus pesan yang lebih tua dari 1 tahun).
 
@@ -155,6 +155,20 @@ Dengan rata-rata 300 KB per foto, kuota penyimpanan paket gratis Cloudinary suda
 > • Menampilkan data akun pengguna (nama, email, tanggal mendaftar).
 >
 > • Fitur update profil. Detail lengkap ada di Bagian 5.
+
+### **f. Rangkuman Mingguan (Weekly Summary)**
+
+> • Kartu "Minggumu Bersama Nomi" di dashboard berisi rangkuman 2–3 kalimat dan maksimal 3 tema dari chat pengguna dengan Nomi minggu lalu (Senin sampai Minggu, WIB).
+>
+> • Rangkuman dibuat Gemini saat dashboard pertama kali dibuka di minggu itu, lalu disimpan di summaries/{uid}. Gemini dipanggil paling banyak sekali per pengguna per minggu. Kartu dimuat terpisah agar afirmasi dan streak tidak ikut menunggu.
+>
+> • Hemat token: hanya pesan pengguna yang dikirim (balasan Nomi dan pesan di bawah 10 karakter dilewati), setiap pesan dipotong 300 karakter, total maksimal 6.000 karakter (pesan terbaru diutamakan). Jawaban berupa JSON dengan batas 300 token.
+>
+> • Jika pesan pengguna minggu itu kurang dari 5, Gemini tidak dipanggil dan kartu mengajak pengguna ngobrol dengan Nomi. Jika Gemini gagal, rangkuman sebelumnya tetap ditampilkan dan percobaan berikutnya ditunda 1 jam.
+>
+> • Prompt rangkuman tidak mendiagnosis dan tidak mengutip pesan. Bila ada tanda ingin menyakiti diri, rangkuman tidak mengulang detailnya dan mengajak menghubungi SEJIWA 119 ext. 8.
+>
+> • Privasi: rangkuman ikut terhapus saat pengguna membersihkan seluruh riwayat chat atau menghapus akun.
 
 # 
 
@@ -238,7 +252,7 @@ Total ada 12 fungsi CRUD (3 Create, 3 Read, 3 Update, 3 Delete) yang seluruhnya 
 
 ## **6.1 Daftar Lengkap Operasi CRUD**
 
-Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 29 operasi: 6 Create, 11 Read, 7 Update, 5 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
+Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, ada lebih banyak operasi baca dan tulis ke Realtime Database dan Cloudinary. Totalnya 32 operasi: 7 Create, 12 Read, 8 Update, 5 Delete. Kolom "Fungsi Utama" menunjukkan operasi mana yang termasuk dalam 12 fungsi di atas.
 
 **Create**
 
@@ -250,6 +264,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **C4**  | Mengunggah foto jurnal                                       | Cloudinary, lalu photoUrl di jurnal                     | journalService.saveJournal      | -                |
 | **C5**  | Menyimpan pesan pengguna di chat Nomi                        | chats/{uid}/{messageId}                                 | chatService.sendMessage         | Create 3         |
 | **C6**  | Menyimpan balasan Nomi                                       | chats/{uid}/{messageId}                                 | chatService.getNomiReply        | Create 3         |
+| **C7**  | Membuat rangkuman mingguan pertama kali                      | summaries/{uid}                                         | summaryService.getWeeklySummary | -                |
 
 **Read**
 
@@ -266,6 +281,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **R9**  | Arsip: panel detail jurnal pada tanggal terpilih       | journals/{uid}/{dateKey}                                | journalService.getJournalByDate | Read 1           |
 | **R10** | Chat Nomi: memuat riwayat percakapan (3 hari terakhir, minimal 20 pesan) | chats/{uid}, orderByKey().startAt(), limitToLast | chatService.getMessages | -          |
 | **R11** | Chat Nomi: memuat 30 pesan lama saat menggulir ke atas       | chats/{uid}, orderByKey().endAt(id), limitToLast(31)    | chatService.getOlderMessages    | -                |
+| **R12** | Dashboard: rangkuman mingguan chat dengan Nomi               | summaries/{uid}, dan chats/{uid} per minggu saat dibuat | summaryService.getWeeklySummary | -                |
 
 **Update**
 
@@ -278,6 +294,7 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | **U5**  | Ganti foto profil (avatar)                                   | Cloudinary dan users/{uid}/photoUrl                     | userService.updateProfilePhoto  | Update 3         |
 | **U6**  | Hitung ulang streak setelah jurnal dibuat atau dihapus       | users/{uid}/stats: streak, lastCheckIn                  | journalService (saat simpan/hapus) | -             |
 | **U7**  | Ganti alamat email (berlaku setelah link verifikasi diklik)  | Firebase Auth email, users/{uid}: pendingEmail, email   | userService.changeEmail         | -                |
+| **U8**  | Mengganti rangkuman dengan rangkuman minggu baru             | summaries/{uid}                                         | summaryService.getWeeklySummary | -                |
 
 **Delete**
 
@@ -285,8 +302,8 @@ Tabel di atas adalah 12 fungsi CRUD utama. Dalam alur website yang sebenarnya, a
 | ------- | ------------------------------------------------------------ | ------------------------------------------------------- | ------------------------------- | ---------------- |
 | **D1**  | Hapus jurnal beserta fotonya (dari Journaling dan Arsip) | journals, journalDates, Cloudinary, dan stats         | journalService.deleteJournal    | Delete 1         |
 | **D2**  | Hapus satu pesan chat                                        | chats/{uid}/{messageId}                                 | chatService.deleteMessage       | Delete 2         |
-| **D3**  | Bersihkan seluruh riwayat chat                               | chats/{uid}                                             | chatService.clearMessages       | Delete 2         |
-| **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, Cloudinary, Firebase Auth | userService.deleteAccount  | Delete 3         |
+| **D3**  | Bersihkan seluruh riwayat chat beserta rangkumannya          | chats/{uid} dan summaries/{uid}                         | chatService.clearMessages       | Delete 2         |
+| **D4**  | Hapus akun beserta seluruh datanya                           | users, journals, journalDates, chats, chatUsage, summaries, Cloudinary, Firebase Auth | userService.deleteAccount  | Delete 3         |
 | **D5**  | Hapus foto profil (avatar kembali ke inisial nama)           | Cloudinary dan users/{uid}/photoUrl                     | userService.removeProfilePhoto  | -                |
 
 **Tidak dihitung sebagai CRUD database**
@@ -310,7 +327,7 @@ flowchart LR
     B -->|1, 5. Admin SDK: login, verifikasi ID token Google| A
     B -->|2. Admin SDK| D[(Firebase Realtime Database)]
     B -->|3. Signed upload| C[Cloudinary]
-    B -->|6. System prompt + 10 pesan terakhir| G[Gemini API]
+    B -->|6. System prompt + 6 pesan terakhir, dan pesan seminggu untuk rangkuman| G[Gemini API]
     A -.->|7. Email verifikasi dan ganti email| U
 ```
 
@@ -495,7 +512,7 @@ classDiagram
 | **PhotoService**       | Mengompres foto di browser sebelum dikirim ke backend; backend yang mengunggah dan menghapus foto di Cloudinary                                                         | Frontend → backend PHP |
 | **AffirmationService** | Mengambil satu afirmasi acak setiap halaman dimuat, tidak sama dengan afirmasi yang terakhir tampil                                                                     | Frontend → backend PHP |
 | **ChatService**        | Mengirim pesan ke backend dan membaca riwayat chat                                                                                                                      | Frontend → backend PHP |
-| **GeminiClient**       | Memanggil Gemini API dengan system prompt Nomi dan 10 pesan terakhir (generateNomiReply di src/chat.php)                                                                                              | Backend                      |
+| **GeminiClient**       | Memanggil Gemini API untuk balasan Nomi (6 pesan terakhir) dan rangkuman mingguan (callGemini di src/gemini.php)                                                                                              | Backend                      |
 
 ## **9.3 Relasi Antar Kelas**
 
@@ -539,6 +556,12 @@ chats
   {uid}
     {messageId}                    kunci dari push(), otomatis urut waktu
       sender, text, createdAt
+summaries
+  {uid}
+    weekStart, weekEnd             minggu yang dirangkum (Senin dan Minggu, WIB)
+    status                         "ready" atau "not_enough"
+    text, themes, messageCount, generatedAt
+    retryAfter                     hanya ada setelah Gemini gagal
 ```
 
 | **Path**                         | **Isi**                                               | **Kapan dibaca**                               |
@@ -548,6 +571,7 @@ chats
 | **journalDates/{uid}/{dateKey}** | Penanda tanggal yang punya jurnal (bernilai true)     | Saat membuka kalender bulanan dan menghitung streak |
 | **affirmations/{1..365}**        | Kalimat afirmasi                                      | Satu node acak setiap halaman dimuat           |
 | **chats/{uid}/{messageId}**      | Riwayat percakapan dengan Nomi                        | Saat membuka halaman chat (3 hari terakhir, minimal 20 pesan) dan saat menggulir ke atas (30 pesan per muat) |
+| **summaries/{uid}**              | Rangkuman mingguan terakhir (satu node, ditimpa setiap minggu) | Saat membuka dashboard                 |
 
 **Keterangan field:**
 
@@ -563,6 +587,11 @@ chats
 | **stats.streak**           | Angka hari berturut-turut yang punya jurnal.                                                             |
 | **stats.lastCheckIn**      | dateKey jurnal terbaru, atau null.                                                                       |
 | **dateKey**                | Tanggal berformat yyyy-mm-dd.                                                                            |
+| **weekStart, weekEnd**     | dateKey Senin dan Minggu dari minggu yang dirangkum (WIB).                                               |
+| **status**                 | "ready" jika rangkuman dibuat, "not_enough" jika pesan pengguna minggu itu kurang dari 5.                |
+| **text, themes**           | String rangkuman (2–3 kalimat) dan array maksimal 3 tema; tidak ada jika status "not_enough".            |
+| **messageCount**           | Jumlah pesan pengguna yang dirangkum.                                                                    |
+| **retryAfter**             | Unix timestamp; Gemini tidak dipanggil lagi sebelum waktu ini setelah gagal.                             |
 
 Nama field disamakan dengan data yang dipakai frontend, sehingga data dari endpoint PHP bisa langsung ditampilkan tanpa pemetaan ulang.
 

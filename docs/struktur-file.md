@@ -33,7 +33,7 @@ Setiap konfigurasi dibaca dari env lebih dulu (dipakai saat deploy), lalu dari f
 | `FIREBASE_DATABASE_URL` | (nilai bawaan di kode) | `config/firebase_config.php` |
 | `FIREBASE_WEB_CONFIG_JSON` | `firebase_web_config.php` | `get_firebase_web_config.php`, `src/verification.php` (ganti email) |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | `cloudinary_config.php` | `src/cloudinary.php` |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | `gemini_config.php` | `src/chat.php` |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | `gemini_config.php` | `src/gemini.php` |
 
 ## `src/`: logika backend bersama
 
@@ -44,7 +44,9 @@ File di sini tidak dipanggil langsung oleh browser. Isinya fungsi yang dipakai u
 | `session.php` | Mengurus session login. `requireLoginUid()` mengambil `uid` dari session, atau menjawab 401 jika belum login. Ada juga `jsonResponse()` untuk mengirim JSON dan `destroyLoginSession()` untuk logout. |
 | `users.php` | Logika profil. `getUserProfile()` menggabungkan data database dengan status dari Firebase Auth (termasuk menyamakan email setelah ganti email). `ensureUserProfile()` dan `createUserProfileIfMissing()` membuat profil baru, sedangkan `deleteUserData()` menghapus semua data pengguna sekaligus. |
 | `journals.php` | Logika jurnal: validasi tanggal (`isValidDateKey`), zona waktu WIB, format data jurnal, perhitungan streak (`computeStreak`), dan `refreshJournalStats()` yang memperbarui statistik setelah jurnal dibuat atau dihapus. |
-| `chat.php` | Logika chat Nomi. Berisi konstanta batas (3 hari, minimal 20 pesan, 30 pesan per scroll, 10 pesan konteks Gemini), fungsi mengambil pesan awal dan pesan lama (`initialMessages`, `messagesBefore`), serta pemanggilan Gemini API beserta system prompt Nomi. |
+| `chat.php` | Logika chat Nomi. Berisi konstanta batas (3 hari, minimal 20 pesan, 30 pesan per scroll, 6 pesan konteks Gemini), batas pemakaian per pengguna (`claimNomiReplyQuota`), fungsi mengambil pesan awal dan pesan lama (`initialMessages`, `messagesBefore`), serta system prompt dan balasan Nomi. |
+| `gemini.php` | Pemanggilan Gemini API yang dipakai bersama: `geminiConfig()` membaca API key dan model, `geminiThinkingConfig()` mengatur thinking serendah mungkin sesuai model, dan `callGemini()` mengirim permintaan lalu mengembalikan teks jawaban. |
+| `summary.php` | Rangkuman mingguan: menentukan minggu yang dirangkum (Senin sampai Minggu WIB), memilih dan memangkas pesan pengguna (maksimal 6.000 karakter), meminta rangkuman JSON ke Gemini, lalu menyimpannya di `summaries/{uid}` (`weeklySummary()`). |
 | `cloudinary.php` | Upload dan hapus foto di Cloudinary: membuat signature (signed upload), `cloudinaryUpload()`, `cloudinaryDestroy()`, menghapus semua foto milik satu pengguna, dan memvalidasi file foto (harus JPG, PNG, atau WebP). |
 | `verification.php` | Urusan email: mengirim email verifikasi, menyimpan data "menunggu verifikasi" di session untuk kirim ulang, dan `sendEmailChangeLink()` untuk ganti email lewat REST API Firebase. |
 
@@ -67,8 +69,9 @@ Aturan penamaan: endpoint data memakai nama benda dan membedakan operasi lewat m
 | `delete_account.php` | Menghapus akun beserta semua data dan fotonya. Wajib konfirmasi kata sandi atau login Google ulang. **(Delete)** |
 | `journals.php` | GET: tanggal yang punya jurnal per bulan (dari `journalDates`), isi jurnal per tanggal, atau jurnal terbaru. POST: membuat atau mengubah jurnal sekaligus fotonya. DELETE `?date=`: menghapus jurnal di satu tanggal beserta fotonya di Cloudinary. **(Create, Read, Update, Delete)** |
 | `streak.php` | Menghitung streak dan status 5 hari terakhir untuk dashboard. |
-| `chat.php` | GET: riwayat chat, termasuk `?before=` untuk memuat pesan lama. POST: menyimpan pesan pengguna. DELETE: menghapus satu pesan (`?id=`) atau seluruh riwayat (`?all=1`). **(Create, Read, Delete)** |
+| `chat.php` | GET: riwayat chat, termasuk `?before=` untuk memuat pesan lama. POST: menyimpan pesan pengguna. DELETE: menghapus satu pesan (`?id=`) atau seluruh riwayat beserta rangkuman mingguannya (`?all=1`). **(Create, Read, Delete)** |
 | `nomi_reply.php` | Meminta balasan dari Gemini, lalu menyimpan balasan Nomi ke database. |
+| `weekly_summary.php` | GET: rangkuman mingguan chat dengan Nomi untuk dashboard; dibuat lewat Gemini sekali per minggu lalu disimpan. **(Create, Read, Update)** |
 | `affirmation.php` | Mengambil satu afirmasi acak dari 365 afirmasi, yang berbeda dari afirmasi terakhir. Bisa dibuka tanpa login. |
 
 ## `public/*.html`: halaman
@@ -119,6 +122,7 @@ Lapisan yang memanggil endpoint PHP (dengan `fetch`), supaya halaman tidak meman
 | `journalService.js` | CRUD jurnal, streak, dan ringkasan bulan (dengan cache per bulan). |
 | `chatService.js` | Pesan chat, balasan Nomi, hapus pesan, dan daftar pertanyaan cepat. |
 | `affirmationService.js` | Afirmasi acak (nomor terakhir disimpan di `sessionStorage`). |
+| `summaryService.js` | Rangkuman mingguan chat dengan Nomi untuk kartu di dashboard. |
 | `photoService.js` | Kompres foto di browser (lebar maksimal 1080 px, WebP kualitas 0.8). |
 
 ### `components/`

@@ -47,6 +47,8 @@ Slider 4 slide (Tentang Senara, contoh afirmasi harian, perkenalan Nomi, dan aja
 
 Sapaan dengan nama depan, afirmasi harian, dan **streak** (jumlah hari berturut-turut menulis jurnal) beserta status 5 hari terakhir.
 
+**Rangkuman mingguan:** kartu "Minggumu Bersama Nomi" berisi rangkuman 2–3 kalimat dan maksimal 3 tema dari chat dengan Nomi minggu lalu (Senin sampai Minggu, WIB). Rangkuman dibuat Gemini saat dashboard pertama kali dibuka di minggu itu, lalu disimpan, sehingga Gemini dipanggil paling banyak sekali per pengguna per minggu. Jika chat minggu itu kurang dari 5 pesan, Gemini tidak dipanggil dan kartu mengajak pengguna ngobrol dengan Nomi. Rangkuman ikut terhapus saat riwayat chat dibersihkan.
+
 ### Afirmasi harian
 
 Satu afirmasi acak dari **365 kalimat**, selalu berbeda dari afirmasi yang terakhir tampil. Bisa dibagikan, dan juga tampil di landing page tanpa login.
@@ -55,7 +57,7 @@ Satu afirmasi acak dari **365 kalimat**, selalu berbeda dari afirmasi yang terak
 
 - Nomi adalah pendengar yang hangat dan menjawab singkat dalam bahasa Indonesia santai. Nomi **bukan psikolog**: tidak memberi diagnosis atau saran obat. Bila pengguna menyebut ingin menyakiti diri, Nomi mengarahkan ke orang terpercaya, layanan kesehatan jiwa **119 ext. 8**, atau layanan darurat **112**.
 - Riwayat chat tersimpan per pengguna. Saat dibuka, yang tampil adalah pesan 3 hari terakhir (minimal 20 pesan). Pesan yang lebih lama dimuat 30 per sekali saat digulir ke atas.
-- Gemini hanya menerima **10 pesan terakhir** sebagai konteks, supaya hemat token dan kuota.
+- Gemini hanya menerima **6 pesan terakhir** sebagai konteks, dan *thinking* diatur serendah mungkin, supaya hemat token dan kuota.
 - Hapus satu pesan atau bersihkan seluruh riwayat.
 - **Mode Tenang:** latihan napas terpandu (Tarik Napas, Tahan, Hembuskan, Rileks). Berjalan sepenuhnya di browser.
 
@@ -104,7 +106,7 @@ flowchart LR
     B -->|Admin SDK| A
     B -->|Admin SDK| D[(Firebase Realtime Database)]
     B -->|Signed upload| C[Cloudinary]
-    B -->|System prompt + 10 pesan terakhir| G[Gemini API]
+    B -->|Chat: system prompt + 6 pesan terakhir<br>Rangkuman: pesan pengguna seminggu| G[Gemini API]
     A -.->|Email verifikasi dan ganti email| U
 ```
 
@@ -114,6 +116,7 @@ flowchart LR
 | Baca dan tulis data | Browser memanggil endpoint PHP. Backend membaca dan menulis Realtime Database lewat Admin SDK, hanya pada path milik `uid` yang sedang login. |
 | Upload foto | Foto dikompres di browser, lalu backend mengunggahnya ke Cloudinary dan menyimpan URL-nya di database. |
 | Chat Nomi | Backend mengirim system prompt Nomi dan pesan terakhir ke Gemini API, menyimpan balasannya, lalu meneruskannya ke browser. |
+| Rangkuman mingguan | Backend mengambil pesan pengguna minggu lalu (dipangkas maksimal 6.000 karakter), meminta rangkuman JSON ke Gemini API, lalu menyimpannya di `summaries/{uid}`. |
 | Web mailer | Email verifikasi dan link ganti email dikirim oleh server Firebase, jadi tidak perlu layanan email tambahan. |
 
 ## Fungsi CRUD
@@ -132,10 +135,10 @@ flowchart LR
 | **Update 2** | Simpan perubahan profil (nama lengkap, bio) | `users/{uid}` |
 | **Update 3** | Ganti foto profil | `users/{uid}/photoUrl` |
 | **Delete 1** | Hapus jurnal beserta fotonya di Cloudinary | `journals`, `journalDates`, dan `stats` |
-| **Delete 2** | Hapus satu pesan atau bersihkan riwayat chat | `chats/{uid}` |
-| **Delete 3** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, `chatUsage`, Cloudinary, Firebase Auth |
+| **Delete 2** | Hapus satu pesan atau bersihkan riwayat chat | `chats/{uid}` (bersihkan riwayat juga menghapus `summaries/{uid}`) |
+| **Delete 3** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, `chatUsage`, `summaries`, Cloudinary, Firebase Auth |
 
-Dalam alur website yang sebenarnya ada lebih banyak operasi (total 29). Daftar lengkapnya ada di [PRD bagian 6.1](docs/prd/Senara_PRD.md).
+Dalam alur website yang sebenarnya ada lebih banyak operasi (total 32). Daftar lengkapnya ada di [PRD bagian 6.1](docs/prd/Senara_PRD.md).
 
 ## Struktur Database
 
@@ -166,6 +169,12 @@ chats
 chatUsage
   {uid}
     date, count, lastAt            pemakaian balasan Nomi hari ini
+summaries
+  {uid}
+    weekStart, weekEnd             minggu yang dirangkum (Senin dan Minggu, WIB)
+    status                         ready atau not_enough
+    text, themes, messageCount, generatedAt
+    retryAfter                     hanya ada setelah Gemini gagal, jeda 1 jam sebelum mencoba lagi
 ```
 
 | Path | Isi |
@@ -176,6 +185,7 @@ chatUsage
 | `affirmations/{1..365}` | Kalimat afirmasi, dibaca satu node acak setiap kali |
 | `chats/{uid}/{messageId}` | Riwayat percakapan dengan Nomi (`sender` bernilai `user` atau `nomi`) |
 | `chatUsage/{uid}` | Batas pemakaian Gemini: jeda 3 detik antar balasan dan maksimal 100 balasan per hari (WIB) |
+| `summaries/{uid}` | Rangkuman mingguan terakhir. Satu node per pengguna, ditimpa setiap minggu. |
 
 Penjelasan setiap field dan strategi optimasinya ada di [PRD bagian 10 dan 11](docs/prd/Senara_PRD.md).
 

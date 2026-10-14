@@ -212,6 +212,43 @@
   color: var(--color-on-surface-variant);
 }
 
+/* ---------- Rangkuman mingguan ---------- */
+.weekly-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.weekly-summary__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.weekly-summary__text {
+  max-width: 48rem;
+  color: var(--color-on-surface);
+}
+
+.weekly-summary.is-loading .weekly-summary__text {
+  color: var(--color-on-surface-variant);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.weekly-summary__themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.weekly-summary__themes:empty {
+  display: none;
+}
+
+.weekly-summary__cta {
+  align-self: flex-start;
+}
+
 /* ---------- Aksi cepat ---------- */
 .dashboard__actions {
   display: flex;

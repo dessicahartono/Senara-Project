@@ -40,6 +40,17 @@ export function formatDate(value) {
   });
 }
 
+/** "5 – 11 Oktober 2026", atau "28 September – 4 Oktober 2026" jika beda bulan */
+export function formatDateRange(start, end) {
+  const from = toDate(start);
+  const to = toDate(end);
+  const sameMonth = from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear();
+  const fromText = sameMonth
+    ? from.toLocaleDateString(LOCALE, { day: "numeric" })
+    : from.toLocaleDateString(LOCALE, { day: "numeric", month: "long" });
+  return `${fromText} – ${formatDate(to)}`;
+}
+
 /** "Oktober 2024" */
 export function formatMonthYear(value) {
   return toDate(value).toLocaleDateString(LOCALE, { month: "long", year: "numeric" });

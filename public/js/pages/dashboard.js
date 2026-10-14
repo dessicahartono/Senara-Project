@@ -2,8 +2,9 @@ import { mountAppShell } from "../components/app-shell.js";
 import { showToast } from "../components/toast.js";
 import { getRandomAffirmation } from "../services/affirmationService.js";
 import { getStreak } from "../services/journalService.js";
-import { $, icon, escapeHtml } from "../utils/dom.js";
-import { formatDateLong, formatWeekdayShort, firstName } from "../utils/format.js";
+import { getWeeklySummary } from "../services/summaryService.js";
+import { $, icon, escapeHtml, show } from "../utils/dom.js";
+import { formatDateLong, formatDateRange, formatWeekdayShort, firstName } from "../utils/format.js";
 
 const shareBtn = $("#btn-share-affirmation");
 let affirmation = null;
@@ -28,6 +29,39 @@ async function init() {
   }
 
   renderStreak(streak);
+  // Dimuat terpisah setelah bagian lain tampil, karena pembuatan rangkuman lewat Gemini bisa memakan beberapa detik.
+  loadWeeklySummary();
+}
+
+async function loadWeeklySummary() {
+  const card = $("#weekly-summary");
+  const text = $("#summary-text");
+  let summary = null;
+  try {
+    summary = await getWeeklySummary();
+  } catch (err) {
+    text.textContent = err.message || "Rangkuman mingguan belum bisa dimuat. Coba lagi nanti.";
+  }
+
+  card.classList.remove("is-loading");
+  card.setAttribute("aria-busy", "false");
+  if (!summary) return;
+
+  $("#summary-period").textContent =
+    `Rangkuman ${formatDateRange(summary.weekStart, summary.weekEnd)}${summary.stale ? " · belum diperbarui" : ""}`;
+
+  if (summary.status === "ready") {
+    text.textContent = summary.text;
+    $("#summary-themes").innerHTML = summary.themes
+      .map((theme) => `<span class="chip chip--sm chip--sage">${escapeHtml(theme)}</span>`)
+      .join("");
+    return;
+  }
+
+  text.textContent =
+    "Belum cukup cerita minggu lalu untuk dirangkum. Ngobrol lebih banyak dengan Nomi minggu ini, " +
+    "rangkumanmu akan muncul di sini hari Senin.";
+  show($("#summary-cta"));
 }
 
 function renderStreak({ count, lastDays }) {

@@ -47,8 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     }
 
     try {
-        $path = $clearAll ? 'chats/' . $uid : 'chats/' . $uid . '/' . $id;
-        $database->getReference($path)->remove();
+        if ($clearAll) {
+            // Rangkuman mingguan ikut dihapus agar isi chat yang sudah dibersihkan tidak tersisa di dashboard.
+            $database->getReference()->update(['chats/' . $uid => null, 'summaries/' . $uid => null]);
+        } else {
+            $database->getReference('chats/' . $uid . '/' . $id)->remove();
+        }
     } catch (Throwable $error) {
         error_log('Chat delete failed: ' . $error->getMessage());
         jsonResponse(['success' => false, 'message' => 'Pesan gagal dihapus. Coba lagi.'], 500);

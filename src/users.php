@@ -80,6 +80,7 @@ function deleteUserData(Database $database, string $uid): void
         'journalDates/' . $uid => null,
         'chats/' . $uid => null,
         'chatUsage/' . $uid => null,
+        'summaries/' . $uid => null,
     ]);
 }
 
