@@ -8,8 +8,9 @@ require_once __DIR__ . '/chat.php';
 /**
  * Rangkuman mingguan dari chat dengan Nomi, ditampilkan di dashboard.
  *
- * Yang dirangkum adalah minggu kalender sebelumnya (Senin sampai Minggu, WIB). Hasilnya disimpan di
- * summaries/{uid}, sehingga Gemini dipanggil paling banyak sekali per pengguna per minggu.
+ * Yang dirangkum adalah minggu sebelumnya (Minggu sampai Sabtu, WIB, sama seperti streak). Rangkuman
+ * mulai tampil hari Senin dan tidak berubah sampai Senin berikutnya. Hasilnya disimpan di summaries/{uid},
+ * sehingga Gemini dipanggil paling banyak sekali per pengguna per minggu.
  */
 
 /** Jumlah pesan pengguna minimal agar rangkuman dibuat. Di bawah ini Gemini tidak dipanggil. */
@@ -32,12 +33,17 @@ const SUMMARY_RETRY_DELAY = 3600;
 
 const SUMMARY_TIMEZONE = 'Asia/Jakarta';
 
-/** Rentang minggu yang dirangkum: Senin minggu lalu 00:00 sampai Senin minggu ini 00:00 (WIB). */
+/**
+ * Rentang minggu yang dirangkum: Minggu 00:00 sampai Minggu berikutnya 00:00 (WIB), yaitu minggu yang
+ * berakhir sebelum Senin minggu ini. Pergantian rangkuman tetap hari Senin.
+ */
 function summaryWeek(): array
 {
+    // "monday this week" memakai minggu Senin-Minggu, jadi pada hari Minggu hasilnya Senin enam hari lalu.
     $thisMonday = (new DateTimeImmutable('now', new DateTimeZone(SUMMARY_TIMEZONE)))
         ->modify('monday this week')->setTime(0, 0);
-    return ['start' => $thisMonday->modify('-7 days'), 'end' => $thisMonday];
+    $end = $thisMonday->modify('-1 day');
+    return ['start' => $end->modify('-7 days'), 'end' => $end];
 }
 
 /** Nama hari singkat (WIB) dari createdAt pesan, agar Gemini bisa melihat pola sepanjang minggu. */

@@ -160,7 +160,7 @@ Dengan rata-rata 300 KB per foto, kuota penyimpanan paket gratis Cloudinary suda
 
 ### **f. Rangkuman Mingguan (Weekly Summary)**
 
-> • Kartu "Minggumu Bersama Nomi" di dashboard berisi rangkuman 2–3 kalimat dan maksimal 3 tema dari chat pengguna dengan Nomi minggu lalu (Senin sampai Minggu, WIB).
+> • Kartu "Kilasan Mingguanmu Bersama Nomi" di dashboard berisi rangkuman 2–3 kalimat dan maksimal 3 tema dari chat pengguna dengan Nomi minggu lalu (Minggu sampai Sabtu, WIB). Rangkuman tampil mulai hari Senin dan tidak berubah sampai Senin berikutnya.
 >
 > • Rangkuman dibuat Gemini saat dashboard pertama kali dibuka di minggu itu, lalu disimpan di summaries/{uid}. Gemini dipanggil paling banyak sekali per pengguna per minggu. Kartu dimuat terpisah agar afirmasi dan streak tidak ikut menunggu.
 >

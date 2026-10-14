@@ -1,6 +1,6 @@
 <?php
 /**
- * Rangkuman mingguan chat dengan Nomi untuk dashboard (minggu lalu, Senin sampai Minggu WIB).
+ * Rangkuman mingguan chat dengan Nomi untuk dashboard (minggu lalu, Minggu sampai Sabtu WIB; berganti setiap Senin).
  *
  * GET - rangkuman yang tersimpan, atau dibuat lewat Gemini jika minggu itu belum dirangkum.
  *       status "ready" berisi text dan themes; "not_enough" jika chat minggu itu terlalu sedikit.

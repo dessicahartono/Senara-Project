@@ -5,7 +5,7 @@
 import { ACTIONS } from "../config.js";
 
 /**
- * Rangkuman minggu lalu (Senin sampai Minggu). Bisa memakan beberapa detik saat pertama kali dibuat
+ * Rangkuman minggu lalu (Minggu sampai Sabtu), berganti setiap Senin. Bisa memakan beberapa detik saat pertama kali dibuat
  * minggu itu, karena backend memanggil Gemini.
  * @returns {Promise<{status: "ready"|"not_enough", weekStart: string, weekEnd: string,
  *   text: string|null, themes: string[], messageCount: number, stale?: boolean}>}
