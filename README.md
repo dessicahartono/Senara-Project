@@ -130,7 +130,7 @@ flowchart LR
 | **Create 3** | Chat Nomi: menyimpan pesan pengguna dan balasan Nomi | `chats/{uid}/{messageId}` |
 | **Read 1** | Arsip: membuka jurnal pada tanggal terpilih | `journals/{uid}/{dateKey}` |
 | **Read 2** | Arsip: menampilkan kalender bulanan | `journalDates/{uid}`, query per bulan |
-| **Read 3** | Profil: membaca data diri dan statistik | `users/{uid}` |
+| **Read 3** | Profil: membaca data diri dan statistik | `users/{uid}` dan `journalDates/{uid}` |
 | **Update 1** | Edit jurnal (catatan, foto) | `journals/{uid}/{dateKey}`: note, photoUrl, updatedAt |
 | **Update 2** | Simpan perubahan profil (nama lengkap, bio) | `users/{uid}` |
 | **Update 3** | Ganti foto profil | `users/{uid}/photoUrl` |
@@ -138,7 +138,7 @@ flowchart LR
 | **Delete 2** | Hapus satu pesan atau bersihkan riwayat chat | `chats/{uid}` (bersihkan riwayat juga menghapus `summaries/{uid}`) |
 | **Delete 3** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, `chatUsage`, `summaries`, Cloudinary, Firebase Auth |
 
-Dalam alur website yang sebenarnya ada lebih banyak operasi (total 32). Daftar lengkapnya ada di [PRD bagian 6.1](docs/prd/Senara_PRD.md).
+12 adalah syarat minimum. Dalam alur website yang sebenarnya ada 34 operasi (7 Create, 11 Read, 11 Update, 5 Delete). Daftar lengkapnya ada di [Rancangan Teknis bagian 6](docs/rancangan-teknis.md#6-daftar-lengkap-operasi-crud).
 
 ## Struktur Database
 
@@ -171,7 +171,7 @@ chatUsage
     date, count, lastAt            pemakaian balasan Nomi hari ini
 summaries
   {uid}
-    weekStart, weekEnd             minggu yang dirangkum (Senin dan Minggu, WIB)
+    weekStart, weekEnd             minggu yang dirangkum (Minggu dan Sabtu, WIB)
     status                         ready atau not_enough
     text, themes, messageCount, generatedAt
     retryAfter                     hanya ada setelah Gemini gagal, jeda 1 jam sebelum mencoba lagi
@@ -187,7 +187,7 @@ summaries
 | `chatUsage/{uid}` | Batas pemakaian Gemini: jeda 3 detik antar balasan dan maksimal 100 balasan per hari (WIB) |
 | `summaries/{uid}` | Rangkuman mingguan terakhir. Satu node per pengguna, ditimpa setiap minggu. |
 
-Penjelasan setiap field dan strategi optimasinya ada di [PRD bagian 10 dan 11](docs/prd/Senara_PRD.md).
+Penjelasan setiap field dan strategi optimasinya ada di [Rancangan Teknis bagian 5 dan 9](docs/rancangan-teknis.md).
 
 ## Menjalankan Secara Lokal
 
@@ -310,12 +310,12 @@ Senara-Project/
 │   ├── js/                      # pages, services, components, utils
 │   ├── css/                     # design tokens, base, layout, components, per halaman
 │   └── assets/images/
-├── docs/                        # PRD dan penjelasan struktur file
+├── docs/                        # PRD, rancangan teknis, dan penjelasan struktur file
 ├── Dockerfile
 └── composer.json
 ```
 
-Penjelasan lengkap setiap file ada di [docs/struktur-file.md](docs/struktur-file.md), dan kebutuhan produk ada di [docs/prd/Senara_PRD.md](docs/prd/Senara_PRD.md).
+Penjelasan lengkap setiap file ada di [docs/struktur-file.md](docs/struktur-file.md), kebutuhan produk ada di [docs/prd/Senara_PRD.md](docs/prd/Senara_PRD.md), dan rancangan teknis (arsitektur, database, daftar lengkap CRUD) ada di [docs/rancangan-teknis.md](docs/rancangan-teknis.md).
 
 ## Keamanan
 

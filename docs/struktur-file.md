@@ -14,7 +14,8 @@ Penjelasan tujuan dan isi setiap file di project Senara, dikelompokkan per folde
 | `.gitattributes` | Memaksa semua file teks memakai line ending LF agar tidak muncul perubahan palsu CRLF. |
 | `Dockerfile` | Image PHP 8.3 + Apache untuk deploy: install dependency Composer, set DocumentRoot ke `public/`, dan port dari env `PORT` (bawaan 8080). |
 | `.dockerignore` | File yang tidak ikut masuk image Docker: file rahasia, `vendor/`, `.git/`, dan `docs/`. |
-| `docs/prd/Senara_PRD.md` (dan `media/`) | Dokumen PRD (Product Requirements Document): rancangan kebutuhan produk beserta gambarnya. |
+| `docs/prd/Senara_PRD.md` | PRD (Product Requirement Document): latar belakang, target pengguna, ruang lingkup, dan kebutuhan fungsional dari sisi pengguna. |
+| `docs/rancangan-teknis.md` | Rancangan teknis: arsitektur, class diagram, struktur database, daftar lengkap operasi CRUD, dan keputusan teknis. |
 | `docs/struktur-file.md` | Dokumen ini. |
 
 ## `config/`
