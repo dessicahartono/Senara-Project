@@ -8,7 +8,11 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
-$firebaseWebConfig = json_decode((string) getenv('FIREBASE_WEB_CONFIG_JSON'), true) ?: require __DIR__ . '/../../firebase_web_config.php';
+$firebaseWebConfig = json_decode((string) getenv('FIREBASE_WEB_CONFIG_JSON'), true);
+$localConfigFile = __DIR__ . '/../../firebase_web_config.php';
+if (!$firebaseWebConfig && is_file($localConfigFile)) {
+    $firebaseWebConfig = require $localConfigFile;
+}
 $requiredKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
 
 foreach ($requiredKeys as $key) {

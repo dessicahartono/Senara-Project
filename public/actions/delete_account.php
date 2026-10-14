@@ -44,6 +44,9 @@ if (in_array('password', $providers, true)) {
     } catch (FailedToSignIn | InvalidArgumentException) {
         // SDK menolak kata sandi kurang dari 6 karakter dengan InvalidArgumentException.
         jsonResponse(['success' => false, 'message' => 'Kata sandi tidak cocok.'], 403);
+    } catch (Throwable $error) {
+        error_log('Delete account sign-in failed: ' . $error->getMessage());
+        jsonResponse(['success' => false, 'message' => 'Konfirmasi kata sandi gagal. Coba lagi beberapa saat lagi.'], 502);
     }
 } else {
     $idToken = (string) ($_POST['idToken'] ?? '');
