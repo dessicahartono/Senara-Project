@@ -10,6 +10,20 @@ const card = $(".auth-card");
 const emailInput = $("#email-input");
 const passwordInput = $("#password-input");
 
+// Login dikirim lewat form biasa, jadi halaman dimuat ulang saat gagal dan isian ikut hilang.
+// Email disimpan sementara agar pengguna cukup mengetik ulang bagian yang bermasalah.
+const LAST_EMAIL_KEY = "senara:loginEmail";
+
+function takeLastEmail() {
+  try {
+    const email = sessionStorage.getItem(LAST_EMAIL_KEY) ?? "";
+    sessionStorage.removeItem(LAST_EMAIL_KEY);
+    return email;
+  } catch {
+    return ""; // sessionStorage bisa diblokir browser; abaikan
+  }
+}
+
 const el = {
   banners: $("#banners"),
   unverified: $("#banner-unverified"),
@@ -102,8 +116,17 @@ function validate() {
 const LOGIN_ERRORS = ["invalid", "invalidemail", "toomany", "unverified", "server"];
 const params = new URLSearchParams(window.location.search);
 const loginError = params.get("error");
+const lastEmail = takeLastEmail();
 if (LOGIN_ERRORS.includes(loginError)) {
   setState(loginError);
+  // Isi kembali email; fokus ke kolom yang perlu diperbaiki. Kata sandi tidak pernah disimpan.
+  emailInput.value = lastEmail;
+  if (loginError === "invalidemail" || !lastEmail) {
+    emailInput.focus();
+    emailInput.select();
+  } else {
+    passwordInput.focus();
+  }
 } else if (params.has("verified")) {
   setState("verified");
 }
@@ -142,6 +165,12 @@ form.addEventListener("submit", (e) => {
   if (!validate()) {
     e.preventDefault();
     shake(card);
+    return;
+  }
+  try {
+    sessionStorage.setItem(LAST_EMAIL_KEY, emailInput.value.trim());
+  } catch {
+    // sessionStorage bisa diblokir browser; email hanya tidak terisi kembali
   }
 });
 
