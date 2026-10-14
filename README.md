@@ -6,14 +6,28 @@ Senara adalah website refleksi diri berbasis layanan cloud. Pengguna bisa membac
 
 ## Daftar Isi
 
+- [Persyaratan Proyek](#persyaratan-proyek)
 - [Fitur](#fitur)
 - [Teknologi](#teknologi)
+- [Arsitektur](#arsitektur)
+- [Fungsi CRUD](#fungsi-crud)
+- [Struktur Database](#struktur-database)
 - [Menjalankan Secara Lokal](#menjalankan-secara-lokal)
 - [Menjalankan dengan Docker](#menjalankan-dengan-docker)
 - [Deploy ke Render](#deploy-ke-render)
 - [Struktur Project](#struktur-project)
 - [Keamanan](#keamanan)
+- [Keputusan Desain](#keputusan-desain)
 - [Tim](#tim)
+
+## Persyaratan Proyek
+
+Website ini dibangun untuk memenuhi persyaratan berikut:
+
+- Berbasis layanan cloud, dengan **Firebase** sebagai layanan wajib.
+- **12 fungsi CRUD** (3 Create, 3 Read, 3 Update, 3 Delete) yang terhubung ke **Firebase Realtime Database**.
+- **Register dan login** menggunakan **Firebase Authentication**.
+- **Web mailer** lewat Firebase: setelah register, pengguna menerima email verifikasi.
 
 ## Fitur
 
@@ -23,9 +37,10 @@ Slider 4 slide (Tentang Senara, contoh afirmasi harian, perkenalan Nomi, dan aja
 
 ### Registrasi dan login
 
-- Daftar dengan **nama lengkap, email, dan kata sandi**, atau **Login with Google**.
-- Setelah daftar, Firebase mengirim **email verifikasi**. Login dengan email baru bisa dilakukan setelah email diverifikasi.
+- Daftar dengan **nama lengkap, email, dan kata sandi** (minimal 6 karakter), atau **Login with Google**.
+- Setelah daftar, Firebase mengirim **email verifikasi**. Login dengan email baru bisa dilakukan setelah email diverifikasi. Akun Google dianggap sudah terverifikasi.
 - Email verifikasi bisa dikirim ulang dari halaman Cek Email atau Login, dengan jeda 60 detik.
+- *Email Enumeration Protection* aktif, sehingga akun yang tidak ditemukan dan kata sandi yang salah sama-sama ditampilkan sebagai "Email atau kata sandi salah".
 - Semua halaman setelah login hanya bisa dibuka oleh pengguna yang sudah login.
 
 ### Dashboard
@@ -40,6 +55,7 @@ Satu afirmasi acak dari **365 kalimat**, selalu berbeda dari afirmasi yang terak
 
 - Nomi adalah pendengar yang hangat dan menjawab singkat dalam bahasa Indonesia santai. Nomi **bukan psikolog**: tidak memberi diagnosis atau saran obat. Bila pengguna menyebut ingin menyakiti diri, Nomi mengarahkan ke orang terpercaya, layanan kesehatan jiwa **119 ext. 8**, atau layanan darurat **112**.
 - Riwayat chat tersimpan per pengguna. Saat dibuka, yang tampil adalah pesan 3 hari terakhir (minimal 20 pesan). Pesan yang lebih lama dimuat 30 per sekali saat digulir ke atas.
+- Gemini hanya menerima **10 pesan terakhir** sebagai konteks, supaya hemat token dan kuota.
 - Hapus satu pesan atau bersihkan seluruh riwayat.
 - **Mode Tenang:** latihan napas terpandu (Tarik Napas, Tahan, Hembuskan, Rileks). Berjalan sepenuhnya di browser.
 
@@ -48,7 +64,7 @@ Satu afirmasi acak dari **365 kalimat**, selalu berbeda dari afirmasi yang terak
 - Satu jurnal per tanggal, berisi **foto** dan/atau **catatan** (maksimal 2000 karakter).
 - Jika tanggal yang dipilih sudah punya jurnal, form otomatis masuk mode Edit.
 - Tanggal bisa dipilih mundur, tetapi tidak untuk tanggal yang belum terjadi (WIB).
-- Foto dikompres otomatis di browser (lebar maksimal 1080 px, WebP), lalu disimpan di Cloudinary.
+- Foto dikompres otomatis di browser (lebar maksimal 1080 px, WebP kualitas 0.8), sehingga foto HP sekitar 5 MB turun ke kisaran 200–400 KB. Backend lalu mengunggahnya ke Cloudinary dan database hanya menyimpan URL-nya.
 
 ### Arsip
 
@@ -76,6 +92,88 @@ Kalender bulanan dengan penanda di tanggal yang punya jurnal. Klik tanggal untuk
 | Penyimpanan foto | Cloudinary |
 | Chatbot AI | Google Gemini API |
 | Hosting | Docker (PHP + Apache) di Render |
+
+## Arsitektur
+
+Senara memakai arsitektur **klien + Firebase (Backend-as-a-Service) + backend PHP tipis** di Render. Browser tidak mengakses database secara langsung; semua data lewat backend.
+
+```mermaid
+flowchart LR
+    U[Browser pengguna] -->|HTTPS: halaman dan endpoint PHP| B[Backend PHP di Render]
+    U -->|Login Google| A[Firebase Authentication]
+    B -->|Admin SDK| A
+    B -->|Admin SDK| D[(Firebase Realtime Database)]
+    B -->|Signed upload| C[Cloudinary]
+    B -->|System prompt + 10 pesan terakhir| G[Gemini API]
+    A -.->|Email verifikasi dan ganti email| U
+```
+
+| Alur | Penjelasan |
+|---|---|
+| Registrasi dan login | Registrasi dan login email dikirim lewat form ke backend PHP, yang memanggil Firebase Authentication lewat Admin SDK. Login Google dilakukan browser lewat Firebase SDK, lalu ID token-nya diverifikasi backend. Setelah berhasil, backend menyimpan `uid` di session. |
+| Baca dan tulis data | Browser memanggil endpoint PHP. Backend membaca dan menulis Realtime Database lewat Admin SDK, hanya pada path milik `uid` yang sedang login. |
+| Upload foto | Foto dikompres di browser, lalu backend mengunggahnya ke Cloudinary dan menyimpan URL-nya di database. |
+| Chat Nomi | Backend mengirim system prompt Nomi dan pesan terakhir ke Gemini API, menyimpan balasannya, lalu meneruskannya ke browser. |
+| Web mailer | Email verifikasi dan link ganti email dikirim oleh server Firebase, jadi tidak perlu layanan email tambahan. |
+
+## Fungsi CRUD
+
+12 fungsi CRUD utama yang terhubung ke Firebase Realtime Database:
+
+| Operasi | Fungsi dan fitur | Path dan data |
+|---|---|---|
+| **Create 1** | Registrasi: membuat profil pengguna | `users/{uid}`: name, email, createdAt, stats awal |
+| **Create 2** | Journaling: menyimpan jurnal baru | `journals/{uid}/{dateKey}` dan `journalDates/{uid}/{dateKey}` |
+| **Create 3** | Chat Nomi: menyimpan pesan pengguna dan balasan Nomi | `chats/{uid}/{messageId}` |
+| **Read 1** | Arsip: membuka jurnal pada tanggal terpilih | `journals/{uid}/{dateKey}` |
+| **Read 2** | Arsip: menampilkan kalender bulanan | `journalDates/{uid}`, query per bulan |
+| **Read 3** | Profil: membaca data diri dan statistik | `users/{uid}` |
+| **Update 1** | Edit jurnal (catatan, foto) | `journals/{uid}/{dateKey}`: note, photoUrl, updatedAt |
+| **Update 2** | Simpan perubahan profil (nama lengkap, bio) | `users/{uid}` |
+| **Update 3** | Ganti foto profil | `users/{uid}/photoUrl` |
+| **Delete 1** | Hapus jurnal beserta fotonya di Cloudinary | `journals`, `journalDates`, dan `stats` |
+| **Delete 2** | Hapus satu pesan atau bersihkan riwayat chat | `chats/{uid}` |
+| **Delete 3** | Hapus akun beserta seluruh datanya | `users`, `journals`, `journalDates`, `chats`, Cloudinary, Firebase Auth |
+
+Dalam alur website yang sebenarnya ada lebih banyak operasi (total 29). Daftar lengkapnya ada di [PRD bagian 6.1](docs/prd/Senara_PRD.md).
+
+## Struktur Database
+
+Realtime Database menyimpan data sebagai satu pohon JSON. Data dipisah per jenis, lalu per pengguna (`uid`), sehingga membaca profil tidak ikut menarik semua jurnal atau chat.
+
+```
+users
+  {uid}
+    name, email, bio, photoUrl, createdAt
+    pendingEmail                   hanya ada selama ganti email menunggu verifikasi
+    stats
+      streak, lastCheckIn
+journals
+  {uid}
+    {dateKey}                      contoh: 2026-09-29
+      note, photoUrl, photoName, createdAt, updatedAt
+journalDates
+  {uid}
+    {dateKey}: true
+affirmations
+  1: "teks afirmasi ke-1"
+  ...
+  365: "teks afirmasi ke-365"
+chats
+  {uid}
+    {messageId}                    kunci dari push(), otomatis urut waktu
+      sender, text, createdAt
+```
+
+| Path | Isi |
+|---|---|
+| `users/{uid}` | Profil dan statistik ringkas (streak, tanggal jurnal terakhir) |
+| `journals/{uid}/{dateKey}` | Isi lengkap jurnal pada tanggal itu. Karena jurnal hanya satu per tanggal, tanggal langsung menjadi kunci. |
+| `journalDates/{uid}/{dateKey}` | Penanda ringan tanggal yang punya jurnal, untuk kalender dan perhitungan streak |
+| `affirmations/{1..365}` | Kalimat afirmasi, dibaca satu node acak setiap kali |
+| `chats/{uid}/{messageId}` | Riwayat percakapan dengan Nomi (`sender` bernilai `user` atau `nomi`) |
+
+Penjelasan setiap field dan strategi optimasinya ada di [PRD bagian 10 dan 11](docs/prd/Senara_PRD.md).
 
 ## Menjalankan Secara Lokal
 
@@ -211,6 +309,15 @@ Penjelasan lengkap setiap file ada di [docs/struktur-file.md](docs/struktur-file
 - **Validasi di backend:** format tanggal, panjang catatan, jenis dan ukuran foto, dan lainnya diperiksa sebelum data disimpan.
 - **Rahasia hanya ada di server:** service account Firebase, API key Gemini, dan API secret Cloudinary tidak pernah dikirim ke browser.
 - **Konfirmasi untuk aksi sensitif:** ganti email dan hapus akun meminta kata sandi (atau login Google ulang).
+
+## Keputusan Desain
+
+- **Backend PHP tipis, bukan langsung dari browser:** service account Firebase, API key Gemini, dan API secret Cloudinary harus tetap rahasia, dan kuota Gemini tidak boleh bisa dipakai pihak luar.
+- **Cloudinary untuk foto:** Firebase Storage pada project baru wajib memakai paket Blaze (berbayar), sedangkan Cloudinary punya paket gratis.
+- **Gemini untuk chatbot:** memiliki paket gratis.
+- **Satu deploy di Render:** frontend dan backend berada di satu origin, jadi tidak perlu pengaturan CORS. Firebase dipakai sebagai layanan backend (Auth dan Realtime Database), bukan hosting.
+- **Web mailer hanya untuk verifikasi:** email dikirim oleh server Firebase, sehingga pembatasan port SMTP di Render paket gratis tidak berpengaruh. Tidak ada welcome email.
+- **Satu jurnal per tanggal,** dengan `dateKey` (`yyyy-mm-dd`) sebagai kunci database.
 
 ## Tim
 

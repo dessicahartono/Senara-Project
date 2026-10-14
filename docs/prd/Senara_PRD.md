@@ -420,8 +420,8 @@ classDiagram
         +String text
     }
     class AuthService {
-        +register()
-        +login()
+        +register() form ke register.php
+        +login() form ke login.php
         +signInWithGoogle()
         +logout()
         +sendPasswordReset()
@@ -489,7 +489,7 @@ classDiagram
 
 | **Kelas**              | **Tanggung jawab**                                                                                                                                                      | **Berjalan di**              |
 |------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|
-| **AuthService**        | Registrasi dan login email (form ke backend PHP), login Google (googleAuth.js), logout dan reset password (authService.js)                                                                                    | Frontend + backend PHP |
+| **AuthService**        | Registrasi dan login email lewat form HTML yang langsung dikirim ke register.php dan login.php (tanpa fungsi JS), login Google (googleAuth.js), logout dan reset password (authService.js)                     | Frontend + backend PHP |
 | **UserService**        | Membaca dan memperbarui profil, ganti dan hapus foto profil, ganti email, hapus akun                                                                                                                       | Frontend → backend PHP |
 | **JournalService**     | Create, Read (tanggal ber-jurnal per bulan dari journalDates, isi jurnal per tanggal), Update, dan Delete jurnal, serta streak. Jika tanggal yang dipilih sudah punya jurnal, form membuka mode Edit, bukan membuat jurnal kedua. | Frontend → backend PHP |
 | **PhotoService**       | Mengompres foto di browser sebelum dikirim ke backend; backend yang mengunggah dan menghapus foto di Cloudinary                                                         | Frontend → backend PHP |
