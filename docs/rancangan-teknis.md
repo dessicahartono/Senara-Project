@@ -312,28 +312,125 @@ summaries
 | `chatUsage/{uid}` | Kuota harian balasan Nomi | Setiap kali Nomi diminta membalas |
 | `summaries/{uid}` | Rangkuman mingguan terakhir | Membuka dashboard |
 
-**Keterangan field:**
+Nama field disamakan dengan data yang dipakai frontend, sehingga data dari endpoint bisa langsung ditampilkan. Beberapa aturan berlaku untuk semua node:
 
-| Field | Tipe dan isi |
+- **dateKey** adalah tanggal berformat `yyyy-mm-dd`, misalnya `2026-10-19`. Tanggal "hari ini" selalu dihitung dalam WIB.
+- **createdAt, updatedAt, generatedAt** adalah waktu ISO 8601 dalam UTC, misalnya `"2026-10-02T08:30:00Z"`.
+- **lastAt, retryAfter** adalah Unix timestamp (detik).
+- Realtime Database tidak menyimpan nilai `null`. Field opsional yang kosong, seperti `photoUrl` tanpa foto, tidak muncul di node sama sekali.
+
+### 5.1 users
+
+Profil setiap pengguna beserta statistik jurnal ringkas. Dibuat otomatis saat registrasi atau login Google pertama, lalu dibaca di setiap halaman setelah login untuk sidebar dan halaman Profil.
+
+Setiap pengguna punya satu node `users/{uid}`:
+
+| Field | Isi |
 |---|---|
-| name, email, bio | String. email disalin dari Firebase Auth dan disamakan lagi setelah ganti email; email di Auth tetap sumber utama. bio boleh kosong (maks. 160 karakter); name maks. 40 karakter. |
-| pendingEmail | String, opsional. Email baru yang link verifikasinya belum diklik. |
-| photoUrl | URL Cloudinary (atau URL foto Google untuk profil Google sampai diganti atau dihapus). Tidak ada jika tanpa foto. |
-| photoName | Nama file asli foto jurnal, ditampilkan di form edit. |
-| note | Catatan jurnal, maks. 2000 karakter. |
-| sender | `"user"` atau `"nomi"`. |
-| createdAt, updatedAt | Waktu ISO 8601 (UTC), contoh `"2026-10-02T08:30:00Z"`. |
-| stats.streak | Jumlah hari berturut-turut yang punya jurnal. |
-| stats.lastCheckIn | dateKey jurnal terbaru, atau tidak ada. |
-| dateKey | Tanggal berformat yyyy-mm-dd. |
-| chatUsage.date, count, lastAt | Tanggal WIB, jumlah balasan Nomi hari itu, dan Unix timestamp balasan terakhir. |
-| weekStart, weekEnd | dateKey Minggu dan Sabtu dari minggu yang dirangkum (WIB). |
-| status | `"ready"` jika rangkuman dibuat, `"not_enough"` jika pesan pengguna minggu itu kurang dari 5. |
-| text | Rangkuman 2–3 kalimat; tidak ada jika `"not_enough"`. |
-| messageCount, generatedAt | Jumlah pesan yang dirangkum dan waktu pembuatan. |
-| retryAfter | Unix timestamp; Gemini tidak dipanggil lagi sebelum waktu ini setelah gagal. |
+| `name` | Nama tampilan, wajib diisi, maks. 40 karakter. Saat login Google diambil dari nama akun Google; jika kosong, diambil dari bagian depan email. |
+| `email` | Salinan email dari Firebase Auth. Email di Auth tetap sumber utama; salinan ini disamakan lagi setelah ganti email. |
+| `bio` | Bio singkat, boleh kosong, maks. 160 karakter. |
+| `photoUrl` | URL foto profil di Cloudinary (`senara/avatars/{uid}`), atau URL foto Google untuk akun Google sampai diganti atau dihapus. Tidak ada jika tanpa foto. |
+| `createdAt` | Waktu akun dibuat. |
+| `pendingEmail` | Opsional. Email baru yang link verifikasinya belum diklik. Dihapus otomatis setelah email di Auth berubah. |
+| `stats.streak` | Jumlah hari berturut-turut yang punya jurnal. |
+| `stats.lastCheckIn` | dateKey jurnal terbaru. Tidak ada jika belum pernah menulis jurnal. |
 
-Nama field disamakan dengan data yang dipakai frontend, sehingga data dari endpoint bisa langsung ditampilkan. Karena jurnal hanya satu per tanggal, tanggal langsung dipakai sebagai kunci, tanpa journalId.
+`stats` hanya diperbarui saat jurnal disimpan atau dihapus. Karena streak bisa putus seiring berjalannya hari, dashboard menghitung ulang streak dari `journalDates` lewat `streak.php`, bukan membaca `stats.streak`.
+
+### 5.2 journals
+
+Isi lengkap jurnal harian. Satu pengguna hanya punya satu jurnal per tanggal, jadi dateKey langsung dipakai sebagai kunci tanpa journalId.
+
+Setiap jurnal tersimpan di `journals/{uid}/{dateKey}`:
+
+| Field | Isi |
+|---|---|
+| `note` | Catatan jurnal, maks. 2000 karakter. Boleh kosong jika ada foto; minimal salah satu dari catatan atau foto harus diisi. |
+| `photoUrl` | URL foto jurnal di Cloudinary (`senara/journals/{uid}/{dateKey}`). Tidak ada jika tanpa foto. |
+| `photoName` | Nama file asli foto (maks. 120 karakter), ditampilkan di form edit. Tidak ada jika tanpa foto. |
+| `createdAt` | Waktu jurnal pertama kali dibuat. Tidak berubah saat jurnal disunting. |
+| `updatedAt` | Waktu jurnal terakhir disimpan. |
+
+Jurnal baru hanya bisa dibuat untuk hari ini sampai 2 hari sebelumnya (`JOURNAL_BACKDATE_DAYS`), agar streak tidak bisa diisi mundur. Jurnal lama yang sudah ada tetap bisa disunting.
+
+### 5.3 journalDates
+
+Penanda tanggal yang punya jurnal. Node ini sengaja dipisah dari `journals` agar kalender Arsip, ringkasan bulan, dan streak cukup membaca daftar tanggal tanpa ikut mengunduh isi jurnal.
+
+Setiap tanggal tersimpan di `journalDates/{uid}/{dateKey}`:
+
+| Kunci / nilai | Isi |
+|---|---|
+| `{dateKey}` | Tanggal yang punya jurnal. |
+| nilai | Selalu `true`. |
+
+`journals` dan `journalDates` selalu ditulis dan dihapus bersamaan dalam satu multi-path update, sehingga keduanya tidak pernah berbeda.
+
+### 5.4 affirmations
+
+Kumpulan 365 kalimat afirmasi harian. Node ini diisi sekali di awal dengan import file JSON lewat Firebase Console, lalu hanya dibaca oleh website dan tidak pernah ditulis. Tidak memerlukan login karena afirmasi juga tampil di landing page.
+
+| Kunci / nilai | Isi |
+|---|---|
+| `1` sampai `365` | Nomor afirmasi. |
+| nilai | Teks afirmasi (String). |
+
+Setiap kali halaman dimuat, hanya satu nomor acak yang dibaca, bukan seluruh 365 kalimat. Nomor yang terakhir tampil dilewati agar afirmasi tidak muncul dua kali berturut-turut.
+
+### 5.5 chats
+
+Riwayat percakapan dengan Nomi. Pesan pengguna dan balasan Nomi disimpan di tempat yang sama dan dibedakan lewat `sender`.
+
+Setiap pesan tersimpan di `chats/{uid}/{messageId}`:
+
+| Field | Isi |
+|---|---|
+| `{messageId}` | Kunci dari `push()`. 8 karakter pertamanya berisi waktu pembuatan, jadi pesan otomatis urut waktu dan bisa diambil per rentang waktu tanpa index tambahan. |
+| `sender` | `"user"` untuk pesan pengguna, `"nomi"` untuk balasan Nomi. |
+| `text` | Isi pesan. Pesan pengguna maks. 1000 karakter; panjang balasan Nomi dibatasi `maxOutputTokens` 256. |
+| `createdAt` | Waktu pesan dikirim. |
+
+Halaman chat memuat pesan 3 hari terakhir (minimal 20 pesan), lalu 30 pesan lebih lama setiap kali pengguna menggulir ke atas. Pengguna bisa menghapus satu pesan atau membersihkan seluruh riwayat; saat riwayat dibersihkan, `summaries/{uid}` ikut dihapus agar isi chat tidak tersisa di dashboard.
+
+### 5.6 chatUsage
+
+Catatan pemakaian chat Nomi per pengguna. Gunanya membatasi seberapa sering Gemini dipanggil, supaya kuota API tidak cepat habis dan tidak disalahgunakan, misalnya kena spam.
+
+Setiap pengguna punya satu node `chatUsage/{uid}` dengan 3 field:
+
+| Field | Isi |
+|---|---|
+| `date` | Tanggal hari ini (WIB), misalnya `2026-10-19`. |
+| `count` | Jumlah balasan Nomi yang sudah diminta pada tanggal itu. |
+| `lastAt` | Waktu (Unix timestamp) balasan terakhir diminta. |
+
+Setiap kali pengguna meminta balasan Nomi, `claimNomiReplyQuota()` di `src/chat.php` memeriksa node ini:
+
+1. Jika belum lewat 3 detik sejak `lastAt` (`NOMI_REPLY_COOLDOWN`), permintaan ditolak.
+2. Jika `count` sudah 100 (`NOMI_DAILY_LIMIT`), permintaan ditolak sampai besok.
+3. Jika `date` bukan hari ini, `count` dianggap 0, jadi kuota direset otomatis tanpa job terjadwal.
+4. Jika lolos, `count` bertambah 1 dan `lastAt` diisi waktu sekarang, baru Gemini dipanggil.
+
+Kuota disimpan per uid, bukan di session, agar tidak bisa dilewati dengan login ulang. Node ini juga tidak ikut terhapus saat riwayat chat dibersihkan, dan baru hilang saat akun dihapus.
+
+### 5.7 summaries
+
+Rangkuman mingguan chat dengan Nomi yang tampil di dashboard. Yang dirangkum adalah minggu lalu (Minggu sampai Sabtu, WIB); rangkuman mulai tampil hari Senin dan tidak berubah sampai Senin berikutnya. Setiap pengguna hanya punya satu node yang ditimpa setiap minggu, sehingga Gemini dipanggil paling banyak sekali per pengguna per minggu.
+
+Setiap pengguna punya satu node `summaries/{uid}`:
+
+| Field | Isi |
+|---|---|
+| `weekStart` | dateKey hari Minggu dari minggu yang dirangkum. |
+| `weekEnd` | dateKey hari Sabtu dari minggu yang dirangkum. |
+| `status` | `"ready"` jika rangkuman dibuat, `"not_enough"` jika pesan pengguna minggu itu kurang dari 5. |
+| `text` | Rangkuman 2–3 kalimat (maks. 50 kata) dari Gemini. Tidak ada jika `"not_enough"`. |
+| `messageCount` | Jumlah pesan pengguna yang dipakai sebagai bahan rangkuman. Pesan yang sangat pendek (di bawah 10 karakter) tidak dihitung. |
+| `generatedAt` | Waktu rangkuman dibuat. |
+| `retryAfter` | Opsional. Hanya ada setelah Gemini gagal; Gemini tidak dipanggil lagi sebelum waktu ini (jeda 1 jam). |
+
+Saat rangkuman minggu baru berhasil dibuat, seluruh node ditimpa dengan `set()`, sehingga `retryAfter` dari kegagalan sebelumnya ikut hilang. Jika Gemini gagal dan masih ada rangkuman minggu sebelumnya, rangkuman lama itu yang ditampilkan dengan tanda "belum diperbarui".
 
 ---
 
