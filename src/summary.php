@@ -95,13 +95,12 @@ function summarySystemPrompt(string $firstName): string
         hangat dan tidak menghakimi.
         - summary: 2-3 kalimat, maksimal 50 kata, tentang perasaan dan topik yang menonjol. Jangan mengutip pesan
           dan jangan mendiagnosis.
-        - themes: maksimal 3 topik, masing-masing 1-3 kata.
         Jika ada tanda ingin menyakiti diri, jangan ulangi detailnya; tambahkan ajakan lembut untuk menghubungi
         orang yang dipercaya atau SEJIWA di 119 ekstensi 8.
     PROMPT;
 }
 
-/** Ambil summary dan themes dari jawaban JSON Gemini. Melempar RuntimeException jika tidak valid. */
+/** Ambil summary dari jawaban JSON Gemini. Melempar RuntimeException jika tidak valid. */
 function parseSummaryResponse(string $text): array
 {
     $data = json_decode($text, true);
@@ -109,14 +108,7 @@ function parseSummaryResponse(string $text): array
     if ($summary === '') {
         throw new RuntimeException('Rangkuman dari Gemini tidak valid.');
     }
-
-    $themes = [];
-    foreach (is_array($data['themes'] ?? null) ? $data['themes'] : [] as $theme) {
-        if (is_string($theme) && trim($theme) !== '') {
-            $themes[] = mb_substr(trim($theme), 0, 30);
-        }
-    }
-    return ['text' => $summary, 'themes' => array_slice($themes, 0, 3)];
+    return ['text' => $summary];
 }
 
 function generateSummaryText(array $lines, string $firstName): array
@@ -132,9 +124,8 @@ function generateSummaryText(array $lines, string $firstName): array
                 'type' => 'OBJECT',
                 'properties' => [
                     'summary' => ['type' => 'STRING'],
-                    'themes' => ['type' => 'ARRAY', 'items' => ['type' => 'STRING']],
                 ],
-                'required' => ['summary', 'themes'],
+                'required' => ['summary'],
             ],
         ]
     );
@@ -149,7 +140,6 @@ function formatSummary(array $stored): array
         'weekStart' => $stored['weekStart'] ?? null,
         'weekEnd' => $stored['weekEnd'] ?? null,
         'text' => $stored['text'] ?? null,
-        'themes' => is_array($stored['themes'] ?? null) ? array_values($stored['themes']) : [],
         'messageCount' => (int) ($stored['messageCount'] ?? 0),
     ];
 }

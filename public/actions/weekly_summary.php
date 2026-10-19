@@ -3,7 +3,7 @@
  * Rangkuman mingguan chat dengan Nomi untuk dashboard (minggu lalu, Minggu sampai Sabtu WIB; berganti setiap Senin).
  *
  * GET - rangkuman yang tersimpan, atau dibuat lewat Gemini jika minggu itu belum dirangkum.
- *       status "ready" berisi text dan themes; "not_enough" jika chat minggu itu terlalu sedikit.
+ *       status "ready" berisi text; "not_enough" jika chat minggu itu terlalu sedikit.
  *       stale = true jika rangkuman minggu ini gagal dibuat dan yang dikirim adalah rangkuman sebelumnya.
  */
 declare(strict_types=1);

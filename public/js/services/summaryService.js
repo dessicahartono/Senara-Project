@@ -8,7 +8,7 @@ import { ACTIONS } from "../config.js";
  * Rangkuman minggu lalu (Minggu sampai Sabtu), berganti setiap Senin. Bisa memakan beberapa detik saat pertama kali dibuat
  * minggu itu, karena backend memanggil Gemini.
  * @returns {Promise<{status: "ready"|"not_enough", weekStart: string, weekEnd: string,
- *   text: string|null, themes: string[], messageCount: number, stale?: boolean}>}
+ *   text: string|null, messageCount: number, stale?: boolean}>}
  */
 export async function getWeeklySummary() {
   const response = await fetch(`${ACTIONS}weekly_summary.php`, { credentials: "same-origin", cache: "no-store" });

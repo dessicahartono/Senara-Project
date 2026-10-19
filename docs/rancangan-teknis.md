@@ -159,7 +159,6 @@ classDiagram
         +String weekEnd
         +String status
         +String text
-        +String[] themes
         +int messageCount
     }
     class Affirmation {
@@ -299,7 +298,7 @@ summaries
   {uid}
     weekStart, weekEnd             minggu yang dirangkum (Minggu dan Sabtu, WIB)
     status                         "ready" atau "not_enough"
-    text, themes, messageCount, generatedAt
+    text, messageCount, generatedAt
     retryAfter                     hanya ada setelah Gemini gagal
 ```
 
@@ -330,7 +329,7 @@ summaries
 | chatUsage.date, count, lastAt | Tanggal WIB, jumlah balasan Nomi hari itu, dan Unix timestamp balasan terakhir. |
 | weekStart, weekEnd | dateKey Minggu dan Sabtu dari minggu yang dirangkum (WIB). |
 | status | `"ready"` jika rangkuman dibuat, `"not_enough"` jika pesan pengguna minggu itu kurang dari 5. |
-| text, themes | Rangkuman 2–3 kalimat dan array maksimal 3 tema; tidak ada jika `"not_enough"`. |
+| text | Rangkuman 2–3 kalimat; tidak ada jika `"not_enough"`. |
 | messageCount, generatedAt | Jumlah pesan yang dirangkum dan waktu pembuatan. |
 | retryAfter | Unix timestamp; Gemini tidak dipanggil lagi sebelum waktu ini setelah gagal. |
 
@@ -585,7 +584,7 @@ Gemini dipakai di dua tempat, balasan Nomi (`src/chat.php`) dan rangkuman minggu
 | Batas total input | 6 pesan | Maks. 6.000 karakter; jika lebih, pesan terbaru yang diambil |
 | Perkiraan input maksimal | ±2.150 token (biasanya ±800 token karena pesan chat pendek) | ±1.650 token |
 | Batas output | `maxOutputTokens` 256 | `maxOutputTokens` 300 |
-| Perkiraan output biasa | ±30–100 token (1–4 kalimat, mengikuti panjang pesan pengguna) | ±150 token (JSON 2–3 kalimat dan maks. 3 tema) |
+| Perkiraan output biasa | ±30–100 token (1–4 kalimat, mengikuti panjang pesan pengguna) | ±100 token (JSON 2–3 kalimat) |
 | Format output | Teks biasa | JSON (`responseMimeType` + `responseSchema`) |
 | Temperature | 0.8 | 0.5 |
 | Konstanta | `CHAT_MESSAGE_MAX`, `NOMI_CONTEXT_MESSAGES`, `NOMI_MAX_OUTPUT_TOKENS` | `SUMMARY_MIN_CHARS`, `SUMMARY_MESSAGE_MAX_CHARS`, `SUMMARY_INPUT_MAX_CHARS`, `SUMMARY_MAX_OUTPUT_TOKENS` |

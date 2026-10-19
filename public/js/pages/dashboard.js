@@ -52,9 +52,6 @@ async function loadWeeklySummary() {
 
   if (summary.status === "ready") {
     text.textContent = summary.text;
-    $("#summary-themes").innerHTML = summary.themes
-      .map((theme) => `<span class="chip chip--sm chip--sage">${escapeHtml(theme)}</span>`)
-      .join("");
     return;
   }
 

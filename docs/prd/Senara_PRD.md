@@ -157,7 +157,7 @@ Setiap fitur ditulis dengan *user story* dan kriteria penerimaan. Kriteria pener
 - **Streak:** jumlah hari berturut-turut menulis jurnal. Jika hari ini belum menulis, streak belum putus sampai hari berakhir.
 - **Status 7 hari minggu ini (Minggu sampai Sabtu):** setiap hari ditandai sudah menulis, terlewat, hari ini belum menulis, atau belum tiba. Hari yang belum tiba tampil pudar.
 - **Kilasan Mingguanmu Bersama Nomi:**
-  - Berisi rangkuman 2–3 kalimat dan maksimal 3 tema dari chat dengan Nomi minggu lalu (Minggu sampai Sabtu).
+  - Berisi rangkuman 2–3 kalimat dari chat dengan Nomi minggu lalu (Minggu sampai Sabtu).
   - Tampil mulai Senin dan tidak berubah sampai Senin berikutnya.
   - Jika chat minggu lalu kurang dari 5 pesan, kartu mengajak pengguna ngobrol dengan Nomi.
   - Rangkuman tidak mendiagnosis dan tidak mengutip pesan. Bila ada tanda ingin menyakiti diri, rangkuman tidak mengulang detailnya dan mengajak menghubungi SEJIWA 119 ext. 8.

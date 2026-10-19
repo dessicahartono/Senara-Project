@@ -241,16 +241,6 @@
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-.weekly-summary__themes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs);
-}
-
-.weekly-summary__themes:empty {
-  display: none;
-}
-
 .weekly-summary__cta {
   align-self: flex-start;
 }
